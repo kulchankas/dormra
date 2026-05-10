@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dormra
 
-## Getting Started
+> Student housing aggregator for Vienna — finding a dorm room shouldn't require checking 8 websites every day.
 
-First, run the development server:
+[dormra.eu](https://dormra.eu)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## What it does
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Dormra aggregates real-time dorm availability across all major Vienna student housing providers (OeAD, STUWO, home4students, ÖJAB, Akademikerhilfe, WIHAST, Viennabase, The Fizz, and more) into one searchable directory. Users filter by budget, district, deposit, and amenities, get instant email or Telegram alerts when matching rooms become available, and track their applications through a personal kanban.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Why it exists
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Vienna has 70+ dorm buildings across 8+ providers. Each has its own website, its own application process, and its own availability calendar. International students arriving for the first time face a fragmented, multilingual, scam-prone market with no aggregator. Rooms appear and disappear within hours during peak intake (August–October). Dormra fixes this with automated availability monitoring and smart alerts.
 
-## Learn More
+## How it works
 
-To learn more about Next.js, take a look at the following resources:
+Scrapers visit each provider's website every 15 minutes and extract availability data into Supabase. A diff engine compares each new snapshot to the previous one — if availability changed, it triggers an alert. The alert dispatcher matches the change against every user's saved criteria and sends notifications via email or Telegram.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Tech stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Framework**: Next.js 16 (App Router) + TypeScript
+- **Database & Auth**: Supabase (PostgreSQL, EU region)
+- **Styling**: Tailwind CSS
+- **Scraping**: Cheerio for static sites, Playwright for JavaScript-rendered pages (OeAD)
+- **Cron**: cron-job.org running every 15 minutes
+- **Email**: Resend
+- **Notifications**: Telegram Bot API
+- **Payments**: Stripe
+- **Hosting**: Vercel
 
-## Deploy on Vercel
+## Status
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Currently in development. Targeting launch for the August 2026 intake season.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Roadmap
+
+- **Phase 1** (current): Vienna dorm directory + alerts + tracker
+- **Phase 2**: Apartment listings for students who don't get a dorm
+- **Phase 3**: Expand to Graz, Salzburg, Innsbruck, Linz
+- **Phase 4**: Berlin, Munich, Prague, Amsterdam
+- **Phase 5**: Universal application layer — apply to any dorm directly through Dormra
+
+## Project structure
+
+The app/ directory contains pages and API routes, lib/ holds shared utilities (Supabase client, diff engine, alert dispatchers), scrapers/ contains one scraper file per provider, and public/ holds static assets.
+
+## Local development
+
+Requires Node.js 21+ and a Supabase project.
