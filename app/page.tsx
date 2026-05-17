@@ -1,18 +1,18 @@
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import {
-  getAvailabilityStatus,
+  getAvailabilityStatusBulk,
   getChancesScore,
   ordinalSuffix,
   DISTRICT_NAMES,
+  type AvailabilityStatus,
   type Dorm,
 } from '@/lib/helpers'
 import HeroSearch from '@/components/HeroSearch'
 
 // ─── Dorm Preview Card ────────────────────────────────────────────────────────
 
-function DormPreviewCard({ dorm }: { dorm: Dorm }) {
-  const availability = getAvailabilityStatus(dorm.id)
+function DormPreviewCard({ dorm, availability }: { dorm: Dorm; availability: AvailabilityStatus }) {
   const chances = getChancesScore(dorm.provider)
 
   const districtLabel = dorm.district
@@ -57,12 +57,16 @@ function DormPreviewCard({ dorm }: { dorm: Dorm }) {
           {/* Availability badge — top-left */}
           <div className="absolute top-2.5 left-2.5">
             <span
-              className="inline-block font-medium text-white"
+              className="inline-block font-medium"
               style={{
                 fontSize: '10px',
                 padding: '3px 8px',
                 borderRadius: '999px',
-                background: availability.status === 'available' ? '#FF6B47' : '#6B5C53',
+                ...(availability.status === 'available'
+                  ? { background: '#FF6B47', color: '#fff' }
+                  : availability.status === 'fully_booked'
+                  ? { background: '#6B5C53', color: '#fff' }
+                  : { background: '#E5E5E5', color: '#6B5C53' }),
               }}
             >
               {availability.label}
@@ -139,6 +143,7 @@ export default async function HomePage() {
     .limit(3)
 
   const previewDorms = (data ?? []) as Dorm[]
+  const availabilityMap = await getAvailabilityStatusBulk(previewDorms.map(d => d.id))
 
   return (
     <main>
@@ -252,7 +257,11 @@ export default async function HomePage() {
               style={{ gap: '14px' }}
             >
               {previewDorms.map((dorm) => (
-                <DormPreviewCard key={dorm.id} dorm={dorm} />
+                <DormPreviewCard
+                  key={dorm.id}
+                  dorm={dorm}
+                  availability={availabilityMap.get(dorm.id) ?? { status: 'unknown', label: 'Status unknown' }}
+                />
               ))}
             </div>
           ) : (

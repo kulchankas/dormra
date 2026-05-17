@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { getAvailabilityStatusBulk, type AvailabilityStatus } from '@/lib/helpers'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -83,14 +84,6 @@ const DEFAULT_FILTERS: FilterState = {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-// Will later query availability_snapshots for real-time data
-function getAvailabilityStatus(_dormId: string): {
-  status: 'available' | 'fully_booked' | 'unknown'
-  label: string
-} {
-  return { status: 'unknown', label: 'Status unknown' }
-}
 
 type ChancesRating = {
   emoji: string
@@ -183,8 +176,7 @@ function SkeletonCard() {
 
 // ─── Dorm Card ────────────────────────────────────────────────────────────────
 
-function DormCard({ dorm }: { dorm: Dorm }) {
-  const availability = getAvailabilityStatus(dorm.id)
+function DormCard({ dorm, availability }: { dorm: Dorm; availability: AvailabilityStatus }) {
   const chances = getChancesScore(dorm.provider)
 
   const districtName = dorm.district ? DISTRICTS[dorm.district] : null
@@ -247,7 +239,9 @@ function DormCard({ dorm }: { dorm: Dorm }) {
               style={
                 availability.status === 'available'
                   ? { background: '#FF6B47', color: '#fff' }
-                  : { background: 'rgba(255,248,244,0.9)', color: '#6B5C53' }
+                  : availability.status === 'fully_booked'
+                  ? { background: '#6B5C53', color: '#fff' }
+                  : { background: 'rgba(229, 229, 229, 0.9)', color: '#6B5C53' }
               }
             >
               {availability.label}
@@ -528,6 +522,7 @@ export default function DormsPage() {
   const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+  const [availabilityMap, setAvailabilityMap] = useState<Map<string, AvailabilityStatus>>(new Map())
 
   useEffect(() => {
     supabase
@@ -535,7 +530,12 @@ export default function DormsPage() {
       .select('*')
       .eq('active', true)
       .then(({ data, error }) => {
-        if (!error && data) setDorms(data as Dorm[])
+        if (!error && data) {
+          const loaded = data as Dorm[]
+          setDorms(loaded)
+          // Single bulk query — no N+1
+          getAvailabilityStatusBulk(loaded.map(d => d.id)).then(setAvailabilityMap)
+        }
         setLoading(false)
       })
   }, [])
@@ -785,7 +785,11 @@ export default function DormsPage() {
             {!loading && filtered.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filtered.map((dorm) => (
-                  <DormCard key={dorm.id} dorm={dorm} />
+                  <DormCard
+                    key={dorm.id}
+                    dorm={dorm}
+                    availability={availabilityMap.get(dorm.id) ?? { status: 'unknown', label: 'Status unknown' }}
+                  />
                 ))}
               </div>
             )}

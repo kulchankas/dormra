@@ -1,3 +1,5 @@
+import { supabase } from './supabase'
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface Dorm {
@@ -26,14 +28,52 @@ export interface Dorm {
   image_url?: string | null
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Availability ─────────────────────────────────────────────────────────────
 
-// Will later query availability_snapshots for real-time status
-export function getAvailabilityStatus(_dormId: string): {
+export type AvailabilityStatus = {
   status: 'available' | 'fully_booked' | 'unknown'
   label: string
-} {
-  return { status: 'unknown', label: 'Status unknown' }
+}
+
+const UNKNOWN: AvailabilityStatus = { status: 'unknown', label: 'Status unknown' }
+const STALE_MS = 6 * 60 * 60 * 1000 // treat snapshots older than 6 h as stale
+
+/**
+ * Fetches the most recent snapshot for each dorm in a single query and returns
+ * a Map keyed by dorm_id. Missing dorm IDs map to 'unknown'.
+ */
+export async function getAvailabilityStatusBulk(
+  dormIds: string[],
+): Promise<Map<string, AvailabilityStatus>> {
+  const map = new Map<string, AvailabilityStatus>()
+  if (dormIds.length === 0) return map
+
+  // Pull all snapshots for these dorms, newest first.
+  // The loop below keeps only the first (= most recent) row per dorm_id.
+  const { data, error } = await supabase
+    .from('availability_snapshots')
+    .select('dorm_id, available, scrape_ok, scraped_at')
+    .in('dorm_id', dormIds)
+    .order('scraped_at', { ascending: false })
+
+  if (error || !data) return map
+
+  const now = Date.now()
+  for (const row of data) {
+    if (map.has(row.dorm_id)) continue // already captured the most-recent row
+
+    const stale = now - new Date(row.scraped_at).getTime() > STALE_MS
+    if (stale || !row.scrape_ok) {
+      map.set(row.dorm_id, UNKNOWN)
+      continue
+    }
+    map.set(row.dorm_id, row.available
+      ? { status: 'available', label: 'Available' }
+      : { status: 'fully_booked', label: 'Fully booked' },
+    )
+  }
+
+  return map
 }
 
 export function getChancesScore(provider: string): {
