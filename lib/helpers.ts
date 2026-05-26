@@ -38,29 +38,26 @@ export type AvailabilityStatus = {
 const UNKNOWN: AvailabilityStatus = { status: 'unknown', label: 'Status unknown' }
 const STALE_MS = 6 * 60 * 60 * 1000 // treat snapshots older than 6 h as stale
 
-/**
- * Fetches the most recent snapshot for each dorm in a single query and returns
- * a Map keyed by dorm_id. Missing dorm IDs map to 'unknown'.
- */
 export async function getAvailabilityStatusBulk(
   dormIds: string[],
 ): Promise<Map<string, AvailabilityStatus>> {
   const map = new Map<string, AvailabilityStatus>()
   if (dormIds.length === 0) return map
 
-  // Pull all snapshots for these dorms, newest first.
-  // The loop below keeps only the first (= most recent) row per dorm_id.
-  const { data, error } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
+  type SnapshotRow = { dorm_id: string; available: boolean; scrape_ok: boolean; scraped_at: string }
+  const { data, error } = (await db
     .from('availability_snapshots')
     .select('dorm_id, available, scrape_ok, scraped_at')
     .in('dorm_id', dormIds)
-    .order('scraped_at', { ascending: false })
+    .order('scraped_at', { ascending: false })) as { data: SnapshotRow[] | null; error: unknown }
 
   if (error || !data) return map
 
   const now = Date.now()
   for (const row of data) {
-    if (map.has(row.dorm_id)) continue // already captured the most-recent row
+    if (map.has(row.dorm_id)) continue
 
     const stale = now - new Date(row.scraped_at).getTime() > STALE_MS
     if (stale || !row.scrape_ok) {
@@ -76,21 +73,49 @@ export async function getAvailabilityStatusBulk(
   return map
 }
 
-export function getChancesScore(provider: string): {
+// ─── Chances rating ───────────────────────────────────────────────────────────
+
+export type ChancesRating = {
+  emoji: string
   label: 'Good chance' | 'Medium' | 'Competitive'
-  bg: string
+  /** Inline color for the badge text. */
   color: string
-} {
+  /** Inline color for the badge background. */
+  bg: string
+  /** Plain-English context, shown in a tooltip. */
+  tooltip: string
+}
+
+export function getChancesScore(provider: string): ChancesRating {
   const p = provider.toLowerCase()
   if (p === 'oead') {
-    return { label: 'Competitive', bg: '#FCEBEB', color: '#A32D2D' }
+    return {
+      emoji: '🔴',
+      label: 'Competitive',
+      color: '#991B1B',
+      bg: '#FEE2E2',
+      tooltip: 'OeAD housing is heavily oversubscribed — prioritised by study type and programme.',
+    }
   }
   if (p === 'home4students' || p === 'viennabase') {
-    return { label: 'Medium', bg: '#FAEEDA', color: '#854F0B' }
+    return {
+      emoji: '🟡',
+      label: 'Medium',
+      color: '#92400E',
+      bg: '#FEF3C7',
+      tooltip: 'Moderate competition. Apply early and have a backup option ready.',
+    }
   }
-  // the-fizz, stuwo, wihast, kolpinghaus, and others
-  return { label: 'Good chance', bg: '#E1F5EE', color: '#0F6E56' }
+  return {
+    emoji: '🟢',
+    label: 'Good chance',
+    color: '#14532D',
+    bg: '#DCFCE7',
+    tooltip: 'Places are usually available — good odds if you apply promptly.',
+  }
 }
+
+// ─── Misc ─────────────────────────────────────────────────────────────────────
 
 export function ordinalSuffix(n: number): string {
   const v = n % 100
@@ -110,4 +135,16 @@ export const DISTRICT_NAMES: Record<number, string> = {
   13: 'Hietzing', 14: 'Penzing', 15: 'Rudolfsheim-Fünfhaus', 16: 'Ottakring',
   17: 'Hernals', 18: 'Währing', 19: 'Döbling', 20: 'Brigittenau',
   21: 'Floridsdorf', 22: 'Donaustadt', 23: 'Liesing',
+}
+
+export function formatDistrictLabel(district: number | null): string | null {
+  if (!district) return null
+  const name = DISTRICT_NAMES[district]
+  return `${district}${ordinalSuffix(district)} district${name ? ` · ${name}` : ''}`
+}
+
+export function formatPriceLabel(min: number | null, max: number | null): string {
+  if (min && max) return `€${min}–${max} / month`
+  if (min) return `From €${min} / month`
+  return 'Price on request'
 }

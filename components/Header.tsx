@@ -1,48 +1,69 @@
 import Link from 'next/link'
+import { Sparkles } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
+import { Button } from '@/components/ui/button'
+import HeaderUserMenu from './HeaderUserMenu'
+import HeaderMobileMenu from './HeaderMobileMenu'
 
-export default function Header() {
+const NAV = [
+  { href: '/dorms', label: 'Browse dorms' },
+  { href: '/how-it-works', label: 'How it works' },
+] as const
+
+export default async function Header() {
+  let userEmail: string | null = null
+  try {
+    const supabase = await createClient()
+    const { data } = await supabase.auth.getUser()
+    userEmail = data.user?.email ?? null
+  } catch {
+    // No Supabase env in this environment — fall back to signed-out state.
+  }
+
   return (
-    <header
-      className="w-full bg-white flex items-center justify-between"
-      style={{ padding: '14px 24px', borderBottom: '1px solid #FFE4D6' }}
-    >
-      <Link
-        href="/"
-        className="font-medium flex-shrink-0"
-        style={{ color: '#C2401E', fontSize: '18px' }}
-      >
-        Dormra
-      </Link>
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-surface/85 backdrop-blur-md">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 md:px-6">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-base font-medium text-brand transition-opacity hover:opacity-90"
+        >
+          <span className="grid size-7 place-items-center rounded-md bg-brand text-brand-foreground">
+            <Sparkles className="size-3.5" aria-hidden="true" />
+          </span>
+          Dormra
+        </Link>
 
-      <nav className="flex items-center gap-5" aria-label="Main navigation">
-        <Link
-          href="/dorms"
-          className="transition-colors hover:text-[#1A1410]"
-          style={{ fontSize: '13px', color: '#6B5C53' }}
+        <nav
+          aria-label="Main navigation"
+          className="hidden items-center gap-1 md:flex"
         >
-          Browse dorms
-        </Link>
-        <Link
-          href="/how-it-works"
-          className="hidden sm:inline transition-colors hover:text-[#1A1410]"
-          style={{ fontSize: '13px', color: '#6B5C53' }}
-        >
-          How it works
-        </Link>
-        <Link
-          href="/login"
-          className="hidden sm:inline transition-colors hover:text-[#1A1410]"
-          style={{ fontSize: '13px', color: '#6B5C53' }}
-        >
-          Log in
-        </Link>
-        <span
-          className="rounded-full border text-[12px] flex-shrink-0"
-          style={{ borderColor: '#FFE4D6', color: '#6B5C53', padding: '4px 10px' }}
-        >
-          EN · EUR
-        </span>
-      </nav>
+          {NAV.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className="rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-2">
+          {userEmail ? (
+            <HeaderUserMenu email={userEmail} />
+          ) : (
+            <div className="hidden items-center gap-2 md:flex">
+              <Button variant="ghost" size="sm" nativeButton={false} className="h-8 rounded-full px-3 text-sm" render={<Link href="/login" />}>
+                Log in
+              </Button>
+              <Button size="sm" nativeButton={false} className="h-8 rounded-full px-4 text-sm" render={<Link href="/signup" />}>
+                Sign up
+              </Button>
+            </div>
+          )}
+          <HeaderMobileMenu signedIn={!!userEmail} />
+        </div>
+      </div>
     </header>
   )
 }
