@@ -20,12 +20,13 @@ export async function GET(request: NextRequest) {
   let scraped = 0
   let errors = 0
 
+  type DormRow = { id: string; slug: string; scrape_url: string | null }
   // Fetch all home4students dorms that have a scrape_url
-  const { data: dorms, error: fetchError } = await supabase
+  const { data: dorms, error: fetchError } = (await supabase
     .from('dorms')
     .select('id, slug, scrape_url')
     .eq('provider', 'home4students')
-    .not('scrape_url', 'is', null)
+    .not('scrape_url', 'is', null)) as { data: DormRow[] | null; error: { message: string } | null }
 
   if (fetchError || !dorms) {
     console.error('[CRON] Failed to fetch dorms:', fetchError?.message)

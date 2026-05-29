@@ -1,37 +1,40 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
-import { getAvailabilityStatusBulk, type AvailabilityStatus } from '@/lib/helpers'
+import { SlidersHorizontal } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import {
+  DISTRICT_NAMES,
+  getAvailabilityStatusBulk,
+  type AvailabilityStatus,
+  type Dorm,
+} from '@/lib/helpers'
+import DormCard from '@/components/DormCard'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Slider } from '@/components/ui/slider'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
+import { Badge } from '@/components/ui/badge'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface Dorm {
-  id: string
-  slug: string
-  provider: string
-  name: string
-  address: string | null
-  district: number | null
-  price_min: number | null
-  price_max: number | null
-  deposit_eur: number | null
-  deposit_months: number | null
-  website_url: string | null
-  apply_url: string | null
-  scrape_url: string | null
-  scrape_type: string | null
-  pets: boolean | null
-  couples: boolean | null
-  furnished: boolean | null
-  min_stay_months: number | null
-  max_stay_months: number | null
-  notes: string | null
-  active: boolean
-  created_at: string
-  image_url?: string | null
-}
+type SortKey = 'price_asc' | 'price_desc' | 'district_asc' | 'created_desc'
 
 interface FilterState {
   maxPrice: number
@@ -41,35 +44,7 @@ interface FilterState {
   couples: boolean
   furnished: boolean
   search: string
-  sort: 'price_asc' | 'price_desc' | 'district_asc' | 'created_desc'
-}
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const DISTRICTS: Record<number, string> = {
-  1: 'Innere Stadt',
-  2: 'Leopoldstadt',
-  3: 'Landstraße',
-  4: 'Wieden',
-  5: 'Margareten',
-  6: 'Mariahilf',
-  7: 'Neubau',
-  8: 'Josefstadt',
-  9: 'Alsergrund',
-  10: 'Favoriten',
-  11: 'Simmering',
-  12: 'Meidling',
-  13: 'Hietzing',
-  14: 'Penzing',
-  15: 'Rudolfsheim-Fünfhaus',
-  16: 'Ottakring',
-  17: 'Hernals',
-  18: 'Währing',
-  19: 'Döbling',
-  20: 'Brigittenau',
-  21: 'Floridsdorf',
-  22: 'Donaustadt',
-  23: 'Liesing',
+  sort: SortKey
 }
 
 const DEFAULT_FILTERS: FilterState = {
@@ -85,55 +60,6 @@ const DEFAULT_FILTERS: FilterState = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-type ChancesRating = {
-  emoji: string
-  label: string
-  color: string
-  bg: string
-  tooltip: string
-}
-
-function getChancesScore(provider: string): ChancesRating {
-  const p = provider.toLowerCase()
-  if (p === 'oead') {
-    return {
-      emoji: '🔴',
-      label: 'Competitive',
-      color: '#991B1B',
-      bg: '#FEE2E2',
-      tooltip: 'OeAD housing is heavily oversubscribed — prioritised by study type and programme.',
-    }
-  }
-  if (p === 'home4students' || p === 'viennabase') {
-    return {
-      emoji: '🟡',
-      label: 'Medium',
-      color: '#92400E',
-      bg: '#FEF3C7',
-      tooltip: 'Moderate competition. Apply early and have a backup option ready.',
-    }
-  }
-  // the-fizz, stuwo, wihast, kolpinghaus and others
-  return {
-    emoji: '🟢',
-    label: 'Good chance',
-    color: '#14532D',
-    bg: '#DCFCE7',
-    tooltip: 'Places are usually available — good odds if you apply promptly.',
-  }
-}
-
-function ordinalSuffix(n: number): string {
-  const v = n % 100
-  if (v >= 11 && v <= 13) return 'th'
-  switch (v % 10) {
-    case 1: return 'st'
-    case 2: return 'nd'
-    case 3: return 'rd'
-    default: return 'th'
-  }
-}
-
 function countActiveFilters(f: FilterState): number {
   return (
     (f.maxPrice < 1500 ? 1 : 0) +
@@ -145,216 +71,38 @@ function countActiveFilters(f: FilterState): number {
   )
 }
 
-function isFiltersActive(f: FilterState): boolean {
-  return countActiveFilters(f) > 0 || f.search !== ''
-}
+// ─── Skeleton grid ────────────────────────────────────────────────────────────
 
-// ─── Skeleton Card ────────────────────────────────────────────────────────────
-
-function SkeletonCard() {
+function DormCardSkeleton() {
   return (
-    <div
-      className="rounded-2xl border bg-white overflow-hidden animate-pulse"
-      style={{ borderColor: '#FFE4D6' }}
-      aria-hidden="true"
-    >
-      {/* Image placeholder */}
-      <div className="aspect-video w-full" style={{ background: '#FFE4D6' }} />
-      {/* Body */}
-      <div className="p-4 space-y-2.5">
-        <div className="h-3 rounded-full" style={{ background: '#FFE4D6', width: '30%' }} />
-        <div className="h-4 rounded-full" style={{ background: '#FFE4D6', width: '68%' }} />
-        <div className="h-3 rounded-full" style={{ background: '#FFE4D6', width: '52%' }} />
-        <div className="h-3 rounded-full" style={{ background: '#FFE4D6', width: '78%' }} />
-        <div className="h-5 rounded-full" style={{ background: '#FFE4D6', width: '50%' }} />
-        <div className="h-3 rounded-full" style={{ background: '#FFE4D6', width: '42%' }} />
-        <div className="h-3 rounded-full" style={{ background: '#FFE4D6', width: '26%' }} />
+    <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+      <Skeleton className="aspect-video w-full" />
+      <div className="space-y-2.5 p-4">
+        <Skeleton className="h-3 w-1/3 rounded-full" />
+        <Skeleton className="h-4 w-2/3 rounded-full" />
+        <Skeleton className="h-3 w-1/2 rounded-full" />
+        <Skeleton className="h-3 w-3/4 rounded-full" />
+        <Skeleton className="h-5 w-1/2 rounded-full" />
       </div>
     </div>
   )
 }
 
-// ─── Dorm Card ────────────────────────────────────────────────────────────────
+// ─── Filter panel ─────────────────────────────────────────────────────────────
 
-function DormCard({ dorm, availability }: { dorm: Dorm; availability: AvailabilityStatus }) {
-  const chances = getChancesScore(dorm.provider)
-
-  const districtName = dorm.district ? DISTRICTS[dorm.district] : null
-  const districtLabel = dorm.district
-    ? `${dorm.district}${ordinalSuffix(dorm.district)} district${districtName ? ` · ${districtName}` : ''}`
-    : null
-
-  const priceLabel =
-    dorm.price_min && dorm.price_max
-      ? `€${dorm.price_min}–${dorm.price_max} / month`
-      : dorm.price_min
-      ? `From €${dorm.price_min} / month`
-      : 'Price on request'
-
-  const depositLabel = dorm.deposit_months
-    ? `Deposit: ${dorm.deposit_months} month${dorm.deposit_months !== 1 ? 's' : ''}`
-    : dorm.deposit_eur
-    ? `Deposit: €${dorm.deposit_eur}`
-    : null
-
-  const amenities = [
-    dorm.pets === true && 'Pets ✓',
-    dorm.couples === true && 'Couples ✓',
-    dorm.furnished === true && 'Furnished ✓',
-  ].filter((x): x is string => typeof x === 'string')
-
-  return (
-    <Link
-      href={`/dorms/${dorm.slug}`}
-      className="group block rounded-2xl border bg-white transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B47] focus-visible:ring-offset-2"
-      style={{ borderColor: '#FFE4D6' }}
-      aria-label={`View ${dorm.name} details`}
-    >
-      <article>
-        {/* ── Image ──────────────────────────────────────── */}
-        <div className="relative aspect-video rounded-t-2xl overflow-hidden">
-          {dorm.image_url ? (
-            <img
-              src={dorm.image_url}
-              alt={`${dorm.name} dormitory exterior`}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-            />
-          ) : (
-            // Intentional placeholder — image not yet seeded
-            <div
-              className="w-full h-full flex flex-col items-center justify-center gap-2"
-              style={{ background: '#FFE4D6' }}
-            >
-              <span className="text-2xl opacity-30">🏠</span>
-              <span className="text-xs font-medium" style={{ color: '#6B5C53' }}>
-                {dorm.provider}
-              </span>
-            </div>
-          )}
-
-          {/* Availability badge — top-left overlay */}
-          <div className="absolute top-2.5 left-2.5">
-            <span
-              className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full backdrop-blur-sm"
-              style={
-                availability.status === 'available'
-                  ? { background: '#FF6B47', color: '#fff' }
-                  : availability.status === 'fully_booked'
-                  ? { background: '#6B5C53', color: '#fff' }
-                  : { background: 'rgba(229, 229, 229, 0.9)', color: '#6B5C53' }
-              }
-            >
-              {availability.label}
-            </span>
-          </div>
-
-          {/* Reserved for future bookmark icon — top-right */}
-          <div className="absolute top-2.5 right-2.5 w-8 h-8" aria-hidden="true" />
-        </div>
-
-        {/* ── Card body ──────────────────────────────────── */}
-        <div className="p-4">
-          {/* Provider badge */}
-          <div className="mb-2">
-            <span
-              className="inline-block text-xs font-medium px-2 py-0.5 rounded-full"
-              style={{ background: '#FFE4D6', color: '#C2401E' }}
-            >
-              {dorm.provider}
-            </span>
-          </div>
-
-          {/* Name */}
-          <h2
-            className="font-medium mb-1 leading-snug"
-            style={{ color: '#1A1410', fontSize: '16px' }}
-          >
-            {dorm.name}
-          </h2>
-
-          {/* District */}
-          {districtLabel && (
-            <p className="mb-0.5" style={{ color: '#6B5C53', fontSize: '13px' }}>
-              {districtLabel}
-            </p>
-          )}
-
-          {/* Address */}
-          {dorm.address && (
-            <p
-              className="truncate mb-3"
-              style={{ color: '#6B5C53', fontSize: '13px' }}
-            >
-              {dorm.address}
-            </p>
-          )}
-
-          {/* Price + chances badge */}
-          <div className="flex items-center flex-wrap gap-2 mb-1">
-            <p className="font-semibold" style={{ color: '#1A1410', fontSize: '15px' }}>
-              {priceLabel}
-            </p>
-
-            {/* Chances indicator with CSS-only tooltip */}
-            <div className="relative group/chances">
-              <span
-                className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full cursor-help"
-                style={{ background: chances.bg, color: chances.color }}
-                aria-label={`Application chances: ${chances.label}`}
-              >
-                {chances.emoji} {chances.label}
-              </span>
-              <div
-                className="absolute bottom-full left-0 mb-1.5 z-20 w-52 text-xs rounded-xl px-3 py-2 shadow-lg pointer-events-none opacity-0 group-hover/chances:opacity-100 transition-opacity duration-150"
-                style={{ background: '#1A1410', color: '#fff' }}
-                role="tooltip"
-              >
-                {chances.tooltip}
-              </div>
-            </div>
-          </div>
-
-          {/* Deposit */}
-          {depositLabel && (
-            <p className="text-xs mb-2" style={{ color: '#6B5C53' }}>
-              {depositLabel}
-            </p>
-          )}
-
-          {/* Amenities */}
-          {amenities.length > 0 && (
-            <p className="text-xs mb-3" style={{ color: '#6B5C53' }}>
-              {amenities.join(' · ')}
-            </p>
-          )}
-
-          <span
-            className="text-sm font-medium transition-colors group-hover:underline"
-            style={{ color: '#C2401E' }}
-          >
-            View details →
-          </span>
-        </div>
-      </article>
-    </Link>
-  )
-}
-
-// ─── Filter Controls ──────────────────────────────────────────────────────────
-
-function FilterControls({
+function FilterPanel({
   filters,
-  onFiltersChange,
+  onChange,
   onReset,
   showReset,
 }: {
   filters: FilterState
-  onFiltersChange: (f: FilterState) => void
+  onChange: (f: FilterState) => void
   onReset: () => void
   showReset: boolean
 }) {
   const set = <K extends keyof FilterState>(key: K, value: FilterState[K]) =>
-    onFiltersChange({ ...filters, [key]: value })
+    onChange({ ...filters, [key]: value })
 
   const toggleDistrict = (d: number) =>
     set(
@@ -364,103 +112,62 @@ function FilterControls({
         : [...filters.districts, d],
     )
 
-  const activeCount = countActiveFilters(filters)
-
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-2">
-        <h2 className="text-base font-medium" style={{ color: '#1A1410' }}>
-          Filters
-        </h2>
-        {activeCount > 0 && (
-          <span
-            className="text-xs font-semibold px-1.5 py-0.5 rounded-full"
-            style={{ background: '#FF6B47', color: '#fff' }}
-          >
-            {activeCount}
-          </span>
+        <h2 className="text-base font-medium text-foreground">Filters</h2>
+        {countActiveFilters(filters) > 0 && (
+          <Badge className="h-5 text-xs">{countActiveFilters(filters)}</Badge>
         )}
       </div>
 
       {/* Max price slider */}
-      <div>
-        <label
-          htmlFor="filter-max-price"
-          className="block text-sm font-medium mb-2"
-          style={{ color: '#1A1410' }}
-        >
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">
           Max price:{' '}
-          <span style={{ color: '#C2401E' }}>
-            {filters.maxPrice < 1500 ? `€${filters.maxPrice}/month` : 'Any'}
+          <span className="text-brand">
+            {filters.maxPrice < 1500 ? `€${filters.maxPrice}/mo` : 'Any'}
           </span>
-        </label>
-        <input
-          id="filter-max-price"
-          type="range"
+        </Label>
+        <Slider
           min={200}
           max={1500}
           step={50}
-          value={filters.maxPrice}
-          onChange={(e) => set('maxPrice', Number(e.target.value))}
-          className="w-full accent-[#C2401E]"
-          aria-valuemin={200}
-          aria-valuemax={1500}
-          aria-valuenow={filters.maxPrice}
-          aria-valuetext={
-            filters.maxPrice < 1500 ? `€${filters.maxPrice} per month` : 'Any price'
-          }
+          value={[filters.maxPrice]}
+          onValueChange={(vals) => set('maxPrice', Array.isArray(vals) ? (vals as number[])[0] : (vals as number))}
+          aria-label="Max monthly price"
         />
-        <div
-          className="flex justify-between text-xs mt-1"
-          style={{ color: '#6B5C53' }}
-          aria-hidden="true"
-        >
+        <div className="flex justify-between text-xs text-muted-foreground">
           <span>€200</span>
           <span>€1,500+</span>
         </div>
       </div>
 
       {/* Districts */}
-      <fieldset>
-        <legend className="text-sm font-medium mb-2" style={{ color: '#1A1410' }}>
-          Districts
-        </legend>
+      <fieldset className="space-y-2">
+        <legend className="text-sm font-medium text-foreground">Districts</legend>
         <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
-          {Object.entries(DISTRICTS).map(([k, name]) => {
+          {Object.entries(DISTRICT_NAMES).map(([k, name]) => {
             const num = Number(k)
             return (
-              <label
-                key={num}
-                className="flex items-start gap-1.5 text-xs cursor-pointer leading-tight"
-                style={{ color: '#6B5C53' }}
-              >
-                <input
-                  type="checkbox"
+              <label key={num} className="flex cursor-pointer items-start gap-1.5 text-xs leading-tight text-muted-foreground">
+                <Checkbox
                   checked={filters.districts.includes(num)}
-                  onChange={() => toggleDistrict(num)}
-                  className="mt-0.5 flex-shrink-0 accent-[#C2401E]"
+                  onCheckedChange={() => toggleDistrict(num)}
+                  className="mt-0.5 shrink-0"
                 />
-                <span>
-                  {num} — {name}
-                </span>
+                <span>{num} — {name}</span>
               </label>
             )
           })}
         </div>
       </fieldset>
 
-      {/* Max deposit months */}
-      <div>
-        <label
-          htmlFor="filter-max-deposit"
-          className="block text-sm font-medium mb-2"
-          style={{ color: '#1A1410' }}
-        >
-          Max deposit (months)
-        </label>
-        <input
-          id="filter-max-deposit"
+      {/* Max deposit */}
+      <div className="space-y-1.5">
+        <Label htmlFor="filter-deposit" className="text-sm font-medium">Max deposit (months)</Label>
+        <Input
+          id="filter-deposit"
           type="number"
           min={0}
           value={filters.maxDepositMonths}
@@ -468,47 +175,37 @@ function FilterControls({
             set('maxDepositMonths', e.target.value === '' ? '' : Number(e.target.value))
           }
           placeholder="e.g. 2"
-          className="w-full rounded-lg border px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-[#FF6B47]"
-          style={{ borderColor: '#FFE4D6', color: '#1A1410', background: '#fff' }}
+          className="h-9 rounded-lg"
         />
       </div>
 
-      {/* Amenity toggles */}
-      <fieldset>
-        <legend className="text-sm font-medium mb-2" style={{ color: '#1A1410' }}>
-          Amenities
-        </legend>
-        <div className="space-y-2">
-          {(
-            [
-              ['pets', 'Pets allowed'],
-              ['couples', 'Couples allowed'],
-              ['furnished', 'Furnished'],
-            ] as const
-          ).map(([key, label]) => (
-            <label key={key} className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={filters[key]}
-                onChange={(e) => set(key, e.target.checked)}
-                className="w-4 h-4 accent-[#C2401E]"
-              />
-              <span className="text-sm" style={{ color: '#1A1410' }}>
-                {label}
-              </span>
-            </label>
-          ))}
-        </div>
+      {/* Amenities */}
+      <fieldset className="space-y-2">
+        <legend className="text-sm font-medium text-foreground">Amenities</legend>
+        {(
+          [
+            ['pets', 'Pets allowed'],
+            ['couples', 'Couples allowed'],
+            ['furnished', 'Furnished'],
+          ] as const
+        ).map(([key, label]) => (
+          <label key={key} className="flex cursor-pointer items-center gap-2">
+            <Checkbox
+              checked={filters[key]}
+              onCheckedChange={(v) => set(key, !!v)}
+              className="size-4"
+            />
+            <span className="text-sm text-foreground">{label}</span>
+          </label>
+        ))}
       </fieldset>
 
-      {/* Reset — only shown when filters active */}
       {showReset && (
         <button
           onClick={onReset}
-          className="text-sm hover:underline cursor-pointer"
-          style={{ color: '#6B5C53' }}
+          className="text-sm text-muted-foreground underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none"
         >
-          Reset filters
+          Reset all filters
         </button>
       )}
     </div>
@@ -521,10 +218,10 @@ export default function DormsPage() {
   const [dorms, setDorms] = useState<Dorm[]>([])
   const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const [availabilityMap, setAvailabilityMap] = useState<Map<string, AvailabilityStatus>>(new Map())
 
   useEffect(() => {
+    const supabase = createClient()
     supabase
       .from('dorms')
       .select('*')
@@ -533,8 +230,7 @@ export default function DormsPage() {
         if (!error && data) {
           const loaded = data as Dorm[]
           setDorms(loaded)
-          // Single bulk query — no N+1
-          getAvailabilityStatusBulk(loaded.map(d => d.id)).then(setAvailabilityMap)
+          getAvailabilityStatusBulk(loaded.map((d) => d.id)).then(setAvailabilityMap)
         }
         setLoading(false)
       })
@@ -542,7 +238,6 @@ export default function DormsPage() {
 
   const filtered = useMemo(() => {
     let result = [...dorms]
-
     if (filters.search) {
       const q = filters.search.toLowerCase()
       result = result.filter((d) => d.name.toLowerCase().includes(q))
@@ -551,9 +246,7 @@ export default function DormsPage() {
       result = result.filter((d) => d.price_min == null || d.price_min <= filters.maxPrice)
     }
     if (filters.districts.length > 0) {
-      result = result.filter(
-        (d) => d.district != null && filters.districts.includes(d.district),
-      )
+      result = result.filter((d) => d.district != null && filters.districts.includes(d.district))
     }
     if (filters.maxDepositMonths !== '') {
       const max = Number(filters.maxDepositMonths)
@@ -571,217 +264,123 @@ export default function DormsPage() {
         case 'created_desc': return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       }
     })
-
     return result
   }, [dorms, filters])
 
-  const active = isFiltersActive(filters)
+  const active = countActiveFilters(filters) > 0 || filters.search !== ''
   const resetFilters = () => setFilters(DEFAULT_FILTERS)
 
-  const filterProps = {
-    filters,
-    onFiltersChange: setFilters,
-    onReset: resetFilters,
-    showReset: active,
-  }
+  const filterProps = { filters, onChange: setFilters, onReset: resetFilters, showReset: active }
 
   return (
-    <main className="min-h-screen" style={{ background: '#FFF8F4' }}>
-      <div className="max-w-7xl mx-auto px-4 py-8 md:px-8">
-
-        {/* Mobile: filter toggle button */}
-        <div className="flex items-center gap-3 mb-4 md:hidden">
-          <button
-            onClick={() => setMobileFiltersOpen((v) => !v)}
-            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border transition-colors"
-            style={{
-              borderColor: '#FFE4D6',
-              background: mobileFiltersOpen ? '#FFE4D6' : '#fff',
-              color: '#1A1410',
-            }}
-            aria-expanded={mobileFiltersOpen}
-            aria-controls="mobile-filter-panel"
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              aria-hidden="true"
-            >
-              <line x1="4" y1="6" x2="20" y2="6" />
-              <line x1="4" y1="12" x2="20" y2="12" />
-              <line x1="4" y1="18" x2="20" y2="18" />
-            </svg>
-            Filters
-            {countActiveFilters(filters) > 0 && (
-              <span
-                className="text-xs font-semibold px-1.5 py-0.5 rounded-full"
-                style={{ background: '#FF6B47', color: '#fff' }}
-              >
-                {countActiveFilters(filters)}
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* Mobile: collapsible filter panel */}
-        {mobileFiltersOpen && (
-          <div
-            id="mobile-filter-panel"
-            className="mb-6 p-5 rounded-2xl border bg-white md:hidden"
-            style={{ borderColor: '#FFE4D6' }}
-          >
-            <FilterControls {...filterProps} />
-          </div>
-        )}
-
-        {/* Two-column layout */}
+    <main className="min-h-screen bg-background">
+      <div className="mx-auto max-w-7xl px-4 py-8 md:px-8">
         <div className="flex gap-8 items-start">
-
           {/* Desktop sidebar */}
-          <aside
-            aria-label="Dorm filters"
-            className="hidden md:block flex-shrink-0 w-[280px]"
-          >
-            <div
-              className="sticky top-6 rounded-2xl border bg-white p-5"
-              style={{ borderColor: '#FFE4D6' }}
-            >
-              <FilterControls {...filterProps} />
+          <aside aria-label="Dorm filters" className="hidden md:block w-[280px] shrink-0">
+            <div className="sticky top-[calc(3.5rem+1.5rem)] rounded-2xl border border-border bg-surface p-5">
+              <FilterPanel {...filterProps} />
             </div>
           </aside>
 
-          {/* Main content area */}
+          {/* Main content */}
           <div className="flex-1 min-w-0">
-
             {/* Results header */}
             <div className="mb-5">
-              <h1 className="text-xl font-medium mb-3" style={{ color: '#1A1410' }}>
-                {loading ? (
-                  'Loading dorms…'
-                ) : active ? (
-                  <>
-                    Showing{' '}
-                    <span style={{ color: '#FF6B47' }}>{filtered.length}</span> of{' '}
-                    {dorms.length} dorms
-                  </>
-                ) : (
-                  <>
-                    <span style={{ color: '#FF6B47' }}>{dorms.length}</span> dorms in Vienna
-                  </>
-                )}
-              </h1>
+              <div className="flex items-center gap-3 mb-3">
+                <h1 className="text-xl font-medium text-foreground flex-1">
+                  {loading ? (
+                    'Loading dorms…'
+                  ) : active ? (
+                    <>Showing <span className="text-brand-accent">{filtered.length}</span> of {dorms.length} dorms</>
+                  ) : (
+                    <><span className="text-brand-accent">{dorms.length}</span> dorms in Vienna</>
+                  )}
+                </h1>
+
+                {/* Mobile filter trigger */}
+                <Sheet>
+                  <SheetTrigger
+                    render={
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-9 gap-2 rounded-full px-3 md:hidden"
+                      />
+                    }
+                  >
+                    <SlidersHorizontal className="size-3.5" />
+                    Filters
+                    {countActiveFilters(filters) > 0 && (
+                      <Badge className="h-4 min-w-4 text-[10px]">{countActiveFilters(filters)}</Badge>
+                    )}
+                  </SheetTrigger>
+                  <SheetContent side="bottom" className="rounded-t-3xl px-5 pb-10 pt-5">
+                    <SheetHeader className="mb-4 p-0">
+                      <SheetTitle>Filter dorms</SheetTitle>
+                    </SheetHeader>
+                    <div className="overflow-y-auto max-h-[70vh]">
+                      <FilterPanel {...filterProps} />
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
 
               {/* Search + sort row */}
               <div className="flex flex-wrap gap-2">
-                {/* Name search */}
                 <div className="relative flex-1 min-w-[160px]">
-                  <svg
-                    className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#6B5C53"
-                    strokeWidth="2"
-                    aria-hidden="true"
-                  >
-                    <circle cx="11" cy="11" r="8" />
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                  </svg>
-                  <input
+                  <Input
                     type="text"
                     value={filters.search}
                     onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
                     placeholder="Search by name…"
                     aria-label="Search dorms by name"
-                    className="w-full rounded-full border pl-9 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-[#FF6B47]"
-                    style={{ borderColor: '#FFE4D6', color: '#1A1410', background: '#fff' }}
+                    className="h-9 rounded-full pl-4"
                   />
                 </div>
 
-                {/* Sort */}
-                <div className="relative">
-                  <label htmlFor="sort-select" className="sr-only">
-                    Sort dorms by
-                  </label>
-                  <select
-                    id="sort-select"
-                    value={filters.sort}
-                    onChange={(e) =>
-                      setFilters((f) => ({
-                        ...f,
-                        sort: e.target.value as FilterState['sort'],
-                      }))
-                    }
-                    className="rounded-full border pl-3 pr-8 py-2 text-sm outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-[#FF6B47]"
-                    style={{ borderColor: '#FFE4D6', color: '#1A1410', background: '#fff' }}
-                  >
-                    <option value="price_asc">Price (low to high)</option>
-                    <option value="price_desc">Price (high to low)</option>
-                    <option value="district_asc">District (ascending)</option>
-                    <option value="created_desc">Recently added</option>
-                  </select>
-                  <svg
-                    className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                    width="10"
-                    height="10"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#6B5C53"
-                    strokeWidth="2"
-                    aria-hidden="true"
-                  >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </div>
+                <Select
+                  value={filters.sort}
+                  onValueChange={(v) => setFilters((f) => ({ ...f, sort: v as SortKey }))}
+                >
+                  <SelectTrigger className="h-9 w-auto min-w-[170px] rounded-full">
+                    <SelectValue placeholder="Sort by…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="price_asc">Price (low to high)</SelectItem>
+                    <SelectItem value="price_desc">Price (high to low)</SelectItem>
+                    <SelectItem value="district_asc">District</SelectItem>
+                    <SelectItem value="created_desc">Recently added</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
-            {/* Loading skeleton grid */}
+            {/* Loading */}
             {loading && (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <SkeletonCard key={i} />
-                ))}
+                {Array.from({ length: 6 }).map((_, i) => <DormCardSkeleton key={i} />)}
               </div>
             )}
 
-            {/* Empty: no dorms in DB at all */}
+            {/* Empty DB */}
             {!loading && dorms.length === 0 && (
-              <div className="text-center py-24">
-                <p className="text-lg font-medium mb-2" style={{ color: '#1A1410' }}>
-                  No dorms found
-                </p>
-                <p className="text-sm" style={{ color: '#6B5C53' }}>
-                  Check back soon — we&apos;re adding new listings.
-                </p>
+              <div className="py-24 text-center">
+                <p className="text-lg font-medium text-foreground mb-2">No dorms found</p>
+                <p className="text-sm text-muted-foreground">Check back soon — we&apos;re adding new listings.</p>
               </div>
             )}
 
-            {/* Empty: filter mismatch */}
+            {/* Filter mismatch */}
             {!loading && dorms.length > 0 && filtered.length === 0 && (
-              <div className="text-center py-24">
-                <p className="text-lg font-medium mb-2" style={{ color: '#1A1410' }}>
-                  No dorms match your filters
-                </p>
-                <p className="text-sm mb-6" style={{ color: '#6B5C53' }}>
-                  Try widening your search
-                </p>
-                <button
-                  onClick={resetFilters}
-                  className="px-6 py-2.5 rounded-full text-sm font-medium transition-opacity hover:opacity-90"
-                  style={{ background: '#C2401E', color: '#fff' }}
-                >
-                  Reset filters
-                </button>
+              <div className="py-24 text-center">
+                <p className="text-lg font-medium text-foreground mb-2">No dorms match your filters</p>
+                <p className="text-sm text-muted-foreground mb-6">Try widening your search</p>
+                <Button onClick={resetFilters} className="h-10 rounded-full px-6">Reset filters</Button>
               </div>
             )}
 
-            {/* Card grid */}
+            {/* Cards */}
             {!loading && filtered.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filtered.map((dorm) => (
@@ -789,6 +388,7 @@ export default function DormsPage() {
                     key={dorm.id}
                     dorm={dorm}
                     availability={availabilityMap.get(dorm.id) ?? { status: 'unknown', label: 'Status unknown' }}
+                    variant="full"
                   />
                 ))}
               </div>
