@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Search, SlidersHorizontal, X } from 'lucide-react'
+import { Search, SlidersHorizontal, X, Zap } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import {
   DISTRICT_NAMES,
@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Select,
@@ -31,7 +30,6 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -39,25 +37,31 @@ import { cn } from '@/lib/utils'
 type SortKey = 'price_asc' | 'price_desc' | 'district_asc' | 'created_desc'
 
 interface FilterState {
-  maxPrice: number
+  priceMin: number
+  priceMax: number
   districts: number[]
   providers: string[]
   maxDepositMonths: number | ''
+  stayMonths: number | ''
   pets: boolean
   couples: boolean
   furnished: boolean
+  availableOnly: boolean
   search: string
   sort: SortKey
 }
 
 const DEFAULT_FILTERS: FilterState = {
-  maxPrice: 1500,
+  priceMin: 0,
+  priceMax: 1500,
   districts: [],
   providers: [],
   maxDepositMonths: '',
+  stayMonths: '',
   pets: false,
   couples: false,
   furnished: false,
+  availableOnly: false,
   search: '',
   sort: 'price_asc',
 }
@@ -66,13 +70,15 @@ const DEFAULT_FILTERS: FilterState = {
 
 function countActiveFilters(f: FilterState): number {
   return (
-    (f.maxPrice < 1500 ? 1 : 0) +
+    (f.priceMin > 0 || f.priceMax < 1500 ? 1 : 0) +
     (f.districts.length > 0 ? 1 : 0) +
     (f.providers.length > 0 ? 1 : 0) +
     (f.maxDepositMonths !== '' ? 1 : 0) +
+    (f.stayMonths !== '' ? 1 : 0) +
     (f.pets ? 1 : 0) +
     (f.couples ? 1 : 0) +
-    (f.furnished ? 1 : 0)
+    (f.furnished ? 1 : 0) +
+    (f.availableOnly ? 1 : 0)
   )
 }
 
@@ -104,57 +110,101 @@ function FilterChips({
 }) {
   const chips: { key: string; label: string; onRemove: () => void }[] = []
 
-  if (filters.maxPrice < 1500) {
-    chips.push({
-      key: 'price',
-      label: `≤ €${filters.maxPrice}/mo`,
-      onRemove: () => onChange({ ...filters, maxPrice: 1500 }),
-    })
-  }
-  if (filters.maxDepositMonths !== '') {
-    chips.push({
-      key: 'deposit',
-      label: `Deposit ≤ ${filters.maxDepositMonths} mo`,
-      onRemove: () => onChange({ ...filters, maxDepositMonths: '' }),
-    })
-  }
-  filters.providers.forEach((p) => {
-    chips.push({
-      key: `prov-${p}`,
-      label: p,
-      onRemove: () => onChange({ ...filters, providers: filters.providers.filter((x) => x !== p) }),
-    })
-  })
-  filters.districts.forEach((d) => {
-    chips.push({
-      key: `dist-${d}`,
-      label: `${d}. ${DISTRICT_NAMES[d]}`,
-      onRemove: () => onChange({ ...filters, districts: filters.districts.filter((x) => x !== d) }),
-    })
-  })
-  if (filters.pets) chips.push({ key: 'pets', label: 'Pets allowed', onRemove: () => onChange({ ...filters, pets: false }) })
-  if (filters.couples) chips.push({ key: 'couples', label: 'Couples allowed', onRemove: () => onChange({ ...filters, couples: false }) })
+  if (filters.availableOnly)
+    chips.push({ key: 'avail', label: 'Available now', onRemove: () => onChange({ ...filters, availableOnly: false }) })
+  if (filters.priceMin > 0 || filters.priceMax < 1500)
+    chips.push({ key: 'price', label: `€${filters.priceMin}–${filters.priceMax < 1500 ? filters.priceMax : '1500+'}/mo`, onRemove: () => onChange({ ...filters, priceMin: 0, priceMax: 1500 }) })
+  if (filters.maxDepositMonths !== '')
+    chips.push({ key: 'deposit', label: `Deposit ≤ ${filters.maxDepositMonths} mo`, onRemove: () => onChange({ ...filters, maxDepositMonths: '' }) })
+  if (filters.stayMonths !== '')
+    chips.push({ key: 'stay', label: `Stay: ${filters.stayMonths} mo`, onRemove: () => onChange({ ...filters, stayMonths: '' }) })
+  filters.providers.forEach((p) =>
+    chips.push({ key: `p-${p}`, label: p, onRemove: () => onChange({ ...filters, providers: filters.providers.filter((x) => x !== p) }) }),
+  )
+  filters.districts.forEach((d) =>
+    chips.push({ key: `d-${d}`, label: `${d}. ${DISTRICT_NAMES[d]}`, onRemove: () => onChange({ ...filters, districts: filters.districts.filter((x) => x !== d) }) }),
+  )
+  if (filters.pets) chips.push({ key: 'pets', label: 'Pets', onRemove: () => onChange({ ...filters, pets: false }) })
+  if (filters.couples) chips.push({ key: 'couples', label: 'Couples', onRemove: () => onChange({ ...filters, couples: false }) })
   if (filters.furnished) chips.push({ key: 'furnished', label: 'Furnished', onRemove: () => onChange({ ...filters, furnished: false }) })
 
   if (chips.length === 0) return null
-
   return (
-    <div className="mb-4 flex flex-wrap items-center gap-2">
+    <div className="mb-4 flex flex-wrap items-center gap-1.5">
       {chips.map((chip) => (
-        <span
-          key={chip.key}
-          className="inline-flex items-center gap-1 rounded-full bg-brand-soft px-3 py-1 text-xs font-medium text-brand"
-        >
+        <span key={chip.key} className="inline-flex items-center gap-1 rounded-full bg-brand-soft px-2.5 py-1 text-[11px] font-medium text-brand">
           {chip.label}
-          <button
-            onClick={chip.onRemove}
-            className="ml-0.5 rounded-full text-brand/50 hover:text-brand transition-colors"
-            aria-label={`Remove ${chip.label} filter`}
-          >
-            <X className="size-3" />
+          <button onClick={chip.onRemove} className="ml-0.5 text-brand/50 hover:text-brand" aria-label={`Remove ${chip.label}`}>
+            <X className="size-2.5" />
           </button>
         </span>
       ))}
+    </div>
+  )
+}
+
+// ─── Shared toggle chip ───────────────────────────────────────────────────────
+
+function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
+        active
+          ? 'border-brand bg-brand text-white'
+          : 'border-border bg-surface text-foreground hover:border-brand/40 hover:bg-brand-soft/50',
+      )}
+    >
+      {children}
+    </button>
+  )
+}
+
+// ─── District grid ────────────────────────────────────────────────────────────
+
+function DistrictGrid({ selected, onChange }: { selected: number[]; onChange: (d: number[]) => void }) {
+  const toggle = (d: number) =>
+    onChange(selected.includes(d) ? selected.filter((x) => x !== d) : [...selected, d])
+
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-xs font-semibold text-foreground">District</span>
+        {selected.length > 0 && (
+          <button onClick={() => onChange([])} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">
+            Clear ({selected.length})
+          </button>
+        )}
+      </div>
+      <div className="grid grid-cols-5 gap-1">
+        {Object.keys(DISTRICT_NAMES).map((k) => {
+          const n = Number(k)
+          const isSelected = selected.includes(n)
+          return (
+            <button
+              key={n}
+              type="button"
+              title={`${n}. ${DISTRICT_NAMES[n]}`}
+              onClick={() => toggle(n)}
+              className={cn(
+                'h-8 w-full rounded-lg text-xs font-medium transition-all',
+                isSelected
+                  ? 'bg-brand text-white'
+                  : 'bg-muted text-muted-foreground hover:bg-brand-soft hover:text-brand',
+              )}
+            >
+              {n}
+            </button>
+          )
+        })}
+      </div>
+      {selected.length > 0 && (
+        <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">
+          {selected.map((d) => `${d}. ${DISTRICT_NAMES[d]}`).join(' · ')}
+        </p>
+      )}
     </div>
   )
 }
@@ -165,175 +215,142 @@ function FilterPanel({
   filters,
   onChange,
   onReset,
-  showReset,
   availableProviders,
+  availabilityMap,
 }: {
   filters: FilterState
   onChange: (f: FilterState) => void
   onReset: () => void
-  showReset: boolean
   availableProviders: string[]
+  availabilityMap: Map<string, AvailabilityStatus>
 }) {
+  const hasAny = countActiveFilters(filters) > 0
   const set = <K extends keyof FilterState>(key: K, value: FilterState[K]) =>
     onChange({ ...filters, [key]: value })
 
-  const toggleDistrict = (d: number) =>
-    set(
-      'districts',
-      filters.districts.includes(d)
-        ? filters.districts.filter((x) => x !== d)
-        : [...filters.districts, d],
-    )
-
-  const toggleProvider = (p: string) =>
-    set(
-      'providers',
-      filters.providers.includes(p)
-        ? filters.providers.filter((x) => x !== p)
-        : [...filters.providers, p],
-    )
-
   return (
-    <div className="space-y-0">
+    <div className="flex flex-col gap-5">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4">
-        <h2 className="text-sm font-semibold text-foreground">Filters</h2>
-        {showReset && (
-          <button
-            onClick={onReset}
-            className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline transition-colors focus-visible:underline focus-visible:outline-none"
-          >
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-semibold text-foreground">Filters</span>
+        {hasAny && (
+          <button onClick={onReset} className="text-xs text-brand hover:underline underline-offset-2 transition-colors">
             Reset all
           </button>
         )}
       </div>
 
-      {/* Max price */}
-      <div className="space-y-3 py-4 border-t border-border">
+      {/* Availability */}
+      <div className="flex flex-col gap-2">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Availability</span>
+        <Chip active={filters.availableOnly} onClick={() => set('availableOnly', !filters.availableOnly)}>
+          <Zap className="size-3" />
+          Available now
+        </Chip>
+      </div>
+
+      {/* Price range */}
+      <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <Label className="text-xs font-semibold text-foreground">Max rent</Label>
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Price / month</span>
           <span className="text-xs font-medium text-brand">
-            {filters.maxPrice < 1500 ? `€${filters.maxPrice}/mo` : 'Any'}
+            {filters.priceMin > 0 ? `€${filters.priceMin} – ` : 'Up to '}
+            {filters.priceMax < 1500 ? `€${filters.priceMax}` : 'any'}
           </span>
         </div>
         <Slider
-          min={200}
+          min={0}
           max={1500}
           step={50}
-          value={[filters.maxPrice]}
-          onValueChange={(vals) =>
-            set('maxPrice', Array.isArray(vals) ? (vals as number[])[0] : (vals as number))
-          }
-          aria-label="Max monthly price"
+          value={[filters.priceMin, filters.priceMax]}
+          onValueChange={(vals) => {
+            const v = vals as number[]
+            onChange({ ...filters, priceMin: v[0], priceMax: v[1] })
+          }}
+          aria-label="Price range"
         />
         <div className="flex justify-between text-[11px] text-muted-foreground">
-          <span>€200</span>
-          <span>€1,500+</span>
+          <span>€0</span><span>€1,500+</span>
         </div>
       </div>
 
       {/* Providers */}
       {availableProviders.length > 0 && (
-        <div className="space-y-2.5 py-4 border-t border-border">
-          <div className="flex items-center justify-between">
-            <Label className="text-xs font-semibold text-foreground">Provider</Label>
-            {filters.providers.length > 0 && (
-              <button
-                onClick={() => set('providers', [])}
-                className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-          <div className="space-y-2">
+        <div className="flex flex-col gap-2">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Provider</span>
+          <div className="flex flex-wrap gap-1.5">
             {availableProviders.map((p) => (
-              <label key={p} className="flex cursor-pointer items-center gap-2">
-                <Checkbox
-                  checked={filters.providers.includes(p)}
-                  onCheckedChange={() => toggleProvider(p)}
-                  className="shrink-0"
-                />
-                <span className="text-sm text-foreground leading-tight">{p}</span>
-              </label>
+              <Chip
+                key={p}
+                active={filters.providers.includes(p)}
+                onClick={() =>
+                  set('providers', filters.providers.includes(p)
+                    ? filters.providers.filter((x) => x !== p)
+                    : [...filters.providers, p])
+                }
+              >
+                {p}
+              </Chip>
             ))}
           </div>
         </div>
       )}
 
       {/* Districts */}
-      <fieldset className="space-y-2.5 py-4 border-t border-border">
-        <div className="flex items-center justify-between">
-          <legend className="text-xs font-semibold text-foreground">District</legend>
-          {filters.districts.length > 0 && (
-            <button
-              onClick={() => set('districts', [])}
-              className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Clear ({filters.districts.length})
-            </button>
-          )}
-        </div>
-        <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 max-h-52 overflow-y-auto pr-1">
-          {Object.entries(DISTRICT_NAMES).map(([k, name]) => {
-            const num = Number(k)
-            return (
-              <label
-                key={num}
-                className="flex cursor-pointer items-start gap-1.5 text-xs leading-snug text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Checkbox
-                  checked={filters.districts.includes(num)}
-                  onCheckedChange={() => toggleDistrict(num)}
-                  className="mt-0.5 shrink-0"
-                />
-                <span>{num}. {name}</span>
-              </label>
-            )
-          })}
-        </div>
-      </fieldset>
+      <DistrictGrid
+        selected={filters.districts}
+        onChange={(d) => set('districts', d)}
+      />
 
-      {/* Max deposit */}
-      <div className="space-y-2 py-4 border-t border-border">
-        <Label htmlFor="filter-deposit" className="text-xs font-semibold text-foreground">
-          Max deposit
-        </Label>
-        <div className="flex items-center gap-2">
-          <Input
-            id="filter-deposit"
-            type="number"
-            min={0}
-            value={filters.maxDepositMonths}
-            onChange={(e) =>
-              set('maxDepositMonths', e.target.value === '' ? '' : Number(e.target.value))
-            }
-            placeholder="e.g. 2"
-            className="h-8 rounded-lg text-sm"
-          />
-          <span className="shrink-0 text-xs text-muted-foreground">months</span>
+      {/* Requirements */}
+      <div className="flex flex-col gap-2">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Requirements</span>
+        <div className="flex flex-wrap gap-1.5">
+          {([['pets', '🐾 Pets'], ['couples', '👫 Couples'], ['furnished', '🛋 Furnished']] as const).map(([key, label]) => (
+            <Chip key={key} active={filters[key]} onClick={() => set(key, !filters[key])}>
+              {label}
+            </Chip>
+          ))}
         </div>
       </div>
 
-      {/* Amenities */}
-      <fieldset className="space-y-2.5 py-4 border-t border-border">
-        <legend className="text-xs font-semibold text-foreground mb-2.5">Requirements</legend>
-        {(
-          [
-            ['pets', 'Pets allowed'],
-            ['couples', 'Couples allowed'],
-            ['furnished', 'Furnished'],
-          ] as const
-        ).map(([key, label]) => (
-          <label key={key} className="flex cursor-pointer items-center gap-2">
-            <Checkbox
-              checked={filters[key]}
-              onCheckedChange={(v) => set(key, !!v)}
+      {/* Deposit + stay */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="f-deposit" className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Max deposit
+          </Label>
+          <div className="flex items-center gap-1">
+            <Input
+              id="f-deposit"
+              type="number"
+              min={0}
+              value={filters.maxDepositMonths}
+              onChange={(e) => set('maxDepositMonths', e.target.value === '' ? '' : Number(e.target.value))}
+              placeholder="Any"
+              className="h-8 rounded-lg text-sm"
             />
-            <span className="text-sm text-foreground">{label}</span>
-          </label>
-        ))}
-      </fieldset>
+            <span className="shrink-0 text-[11px] text-muted-foreground">mo</span>
+          </div>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="f-stay" className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Stay length
+          </Label>
+          <div className="flex items-center gap-1">
+            <Input
+              id="f-stay"
+              type="number"
+              min={1}
+              value={filters.stayMonths}
+              onChange={(e) => set('stayMonths', e.target.value === '' ? '' : Number(e.target.value))}
+              placeholder="Any"
+              className="h-8 rounded-lg text-sm"
+            />
+            <span className="shrink-0 text-[11px] text-muted-foreground">mo</span>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -369,6 +386,7 @@ export default function DormsPage() {
 
   const filtered = useMemo(() => {
     let result = [...dorms]
+
     if (filters.search) {
       const q = filters.search.toLowerCase()
       result = result.filter(
@@ -378,8 +396,14 @@ export default function DormsPage() {
           (d.address ?? '').toLowerCase().includes(q),
       )
     }
-    if (filters.maxPrice < 1500) {
-      result = result.filter((d) => d.price_min == null || d.price_min <= filters.maxPrice)
+    if (filters.availableOnly) {
+      result = result.filter((d) => availabilityMap.get(d.id)?.status === 'available')
+    }
+    if (filters.priceMin > 0) {
+      result = result.filter((d) => d.price_max == null || d.price_max >= filters.priceMin)
+    }
+    if (filters.priceMax < 1500) {
+      result = result.filter((d) => d.price_min == null || d.price_min <= filters.priceMax)
     }
     if (filters.providers.length > 0) {
       result = result.filter((d) => filters.providers.includes(d.provider))
@@ -390,6 +414,14 @@ export default function DormsPage() {
     if (filters.maxDepositMonths !== '') {
       const max = Number(filters.maxDepositMonths)
       result = result.filter((d) => d.deposit_months == null || d.deposit_months <= max)
+    }
+    if (filters.stayMonths !== '') {
+      const months = Number(filters.stayMonths)
+      result = result.filter(
+        (d) =>
+          (d.min_stay_months == null || d.min_stay_months <= months) &&
+          (d.max_stay_months == null || d.max_stay_months >= months),
+      )
     }
     if (filters.pets) result = result.filter((d) => d.pets === true)
     if (filters.couples) result = result.filter((d) => d.couples === true)
@@ -404,17 +436,18 @@ export default function DormsPage() {
       }
     })
     return result
-  }, [dorms, filters])
+  }, [dorms, filters, availabilityMap])
 
-  const active = countActiveFilters(filters) > 0 || filters.search !== ''
+  const activeCount = countActiveFilters(filters)
+  const isFiltered = activeCount > 0 || filters.search !== ''
   const resetFilters = () => setFilters(DEFAULT_FILTERS)
 
-  const filterProps = {
+  const panelProps = {
     filters,
     onChange: setFilters,
     onReset: resetFilters,
-    showReset: active,
     availableProviders,
+    availabilityMap,
   }
 
   return (
@@ -423,26 +456,26 @@ export default function DormsPage() {
         <div className="flex gap-8 items-start">
 
           {/* ── Desktop sidebar ── */}
-          <aside aria-label="Dorm filters" className="hidden md:block w-[260px] shrink-0">
-            <div className="sticky top-[calc(3.5rem+1.5rem)] rounded-2xl border border-border bg-surface px-5 pt-4 pb-5">
-              <FilterPanel {...filterProps} />
+          <aside aria-label="Dorm filters" className="hidden md:block w-[256px] shrink-0">
+            <div className="sticky top-[calc(3.5rem+1.5rem)] rounded-2xl border border-border bg-surface px-5 py-5 overflow-y-auto max-h-[calc(100vh-6rem)]">
+              <FilterPanel {...panelProps} />
             </div>
           </aside>
 
           {/* ── Main content ── */}
           <div className="flex-1 min-w-0">
 
-            {/* Results header */}
+            {/* Top bar */}
             <div className="mb-5">
-              <div className="flex items-center gap-3 mb-3">
-                {/* Title */}
-                <h1 className="flex-1 text-xl font-semibold text-foreground leading-tight">
+              <div className="flex items-center gap-2.5 mb-3">
+                {/* Results count */}
+                <h1 className="flex-1 text-xl font-semibold text-foreground">
                   {loading ? (
-                    <Skeleton className="h-6 w-40 rounded-lg" />
-                  ) : active ? (
+                    <Skeleton className="h-6 w-36 rounded-lg inline-block" />
+                  ) : isFiltered ? (
                     <span>
                       <span className="text-brand">{filtered.length}</span>
-                      <span className="text-muted-foreground font-normal"> of {dorms.length} dorms</span>
+                      <span className="font-normal text-muted-foreground text-base"> of {dorms.length} dorms</span>
                     </span>
                   ) : (
                     <span>
@@ -452,49 +485,34 @@ export default function DormsPage() {
                   )}
                 </h1>
 
-                {/* Mobile filter trigger */}
+                {/* Mobile filter button */}
                 <Sheet>
                   <SheetTrigger
                     render={
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-9 gap-2 rounded-full px-3.5 md:hidden"
-                      />
+                      <Button variant="outline" size="sm" className="h-9 gap-2 rounded-full px-3.5 md:hidden" />
                     }
                   >
                     <SlidersHorizontal className="size-3.5" />
                     Filters
-                    {countActiveFilters(filters) > 0 && (
-                      <span className="grid size-4 place-items-center rounded-full bg-brand text-[10px] font-semibold text-white">
-                        {countActiveFilters(filters)}
+                    {activeCount > 0 && (
+                      <span className="grid size-4 place-items-center rounded-full bg-brand text-[10px] font-bold text-white">
+                        {activeCount}
                       </span>
                     )}
                   </SheetTrigger>
                   <SheetContent side="bottom" className="rounded-t-3xl px-5 pb-0 pt-5">
-                    <SheetHeader className="mb-1 flex-row items-center justify-between p-0">
+                    <SheetHeader className="mb-4 flex-row items-center justify-between p-0">
                       <SheetTitle className="text-base">Filter dorms</SheetTitle>
-                      <SheetClose
-                        render={
-                          <Button variant="ghost" size="icon-sm" className="rounded-full" aria-label="Close filters" />
-                        }
-                      >
+                      <SheetClose render={<Button variant="ghost" size="icon-sm" className="rounded-full" aria-label="Close" />}>
                         <X className="size-4" />
                       </SheetClose>
                     </SheetHeader>
-                    <div className="overflow-y-auto max-h-[70vh] pb-2">
-                      <FilterPanel {...filterProps} />
+                    <div className="overflow-y-auto max-h-[65vh] pb-2">
+                      <FilterPanel {...panelProps} />
                     </div>
-                    {/* Sticky apply button */}
                     <div className="sticky bottom-0 bg-surface/95 backdrop-blur-sm border-t border-border py-3">
-                      <SheetClose
-                        render={
-                          <Button size="lg" className="h-11 w-full rounded-full text-sm" />
-                        }
-                      >
-                        {active
-                          ? `Show ${filtered.length} dorm${filtered.length !== 1 ? 's' : ''}`
-                          : 'Browse all dorms'}
+                      <SheetClose render={<Button size="lg" className="h-11 w-full rounded-full text-sm" />}>
+                        {isFiltered ? `Show ${filtered.length} dorm${filtered.length !== 1 ? 's' : ''}` : 'Browse all dorms'}
                       </SheetClose>
                     </div>
                   </SheetContent>
@@ -504,32 +522,28 @@ export default function DormsPage() {
               {/* Search + sort */}
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+                  <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
                   <Input
                     type="text"
                     value={filters.search}
                     onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
-                    placeholder="Search by name, provider…"
+                    placeholder="Name, provider, address…"
                     aria-label="Search dorms"
-                    className="h-9 rounded-full pl-8 pr-4 text-sm"
+                    className="h-9 rounded-full pl-8 pr-8 text-sm"
                   />
                   {filters.search && (
                     <button
                       onClick={() => setFilters((f) => ({ ...f, search: '' }))}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                      aria-label="Clear search"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
                       <X className="size-3.5" />
                     </button>
                   )}
                 </div>
 
-                <Select
-                  value={filters.sort}
-                  onValueChange={(v) => setFilters((f) => ({ ...f, sort: v as SortKey }))}
-                >
-                  <SelectTrigger className="h-9 w-auto min-w-[160px] rounded-full text-sm">
-                    <SelectValue placeholder="Sort…" />
+                <Select value={filters.sort} onValueChange={(v) => setFilters((f) => ({ ...f, sort: v as SortKey }))}>
+                  <SelectTrigger className="h-9 w-auto min-w-[155px] rounded-full text-sm">
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="price_asc">Price: low → high</SelectItem>
@@ -540,8 +554,8 @@ export default function DormsPage() {
                 </Select>
               </div>
 
-              {/* Active filter chips */}
-              {!loading && active && (
+              {/* Active chips */}
+              {!loading && isFiltered && (
                 <div className="mt-3">
                   <FilterChips filters={filters} onChange={setFilters} />
                 </div>
@@ -550,7 +564,7 @@ export default function DormsPage() {
 
             {/* Loading */}
             {loading && (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {Array.from({ length: 6 }).map((_, i) => <DormCardSkeleton key={i} />)}
               </div>
             )}
@@ -566,7 +580,7 @@ export default function DormsPage() {
               </div>
             )}
 
-            {/* Filter mismatch */}
+            {/* No filter match */}
             {!loading && dorms.length > 0 && filtered.length === 0 && (
               <div className="flex flex-col items-center py-24 text-center">
                 <div className="mb-4 grid size-14 place-items-center rounded-2xl bg-muted">
@@ -580,21 +594,14 @@ export default function DormsPage() {
               </div>
             )}
 
-            {/* Cards */}
+            {/* Grid */}
             {!loading && filtered.length > 0 && (
-              <div className={cn(
-                'grid gap-4',
-                'grid-cols-1 sm:grid-cols-2',
-                // On xl, 3 cols only if sidebar is hidden (mobile). On desktop sidebar takes space so 2 cols is fine, 3 on very wide
-                'xl:grid-cols-3',
-              )}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filtered.map((dorm) => (
                   <DormCard
                     key={dorm.id}
                     dorm={dorm}
-                    availability={
-                      availabilityMap.get(dorm.id) ?? { status: 'unknown', label: 'Status unknown' }
-                    }
+                    availability={availabilityMap.get(dorm.id) ?? { status: 'unknown', label: 'Status unknown' }}
                     variant="full"
                   />
                 ))}
