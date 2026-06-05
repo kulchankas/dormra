@@ -1,6 +1,12 @@
 import Link from 'next/link'
+import { getServerUser } from '@/lib/auth'
+import UserMenu from '@/components/UserMenu'
 
-export default function Header() {
+export default async function Header() {
+  const user = await getServerUser()
+  const fullName = (user?.user_metadata?.full_name as string | undefined) ?? ''
+  const firstName = fullName.split(' ')[0] || user?.email?.split('@')[0] || ''
+
   return (
     <header
       className="w-full bg-white flex items-center justify-between"
@@ -29,13 +35,19 @@ export default function Header() {
         >
           How it works
         </Link>
-        <Link
-          href="/login"
-          className="hidden sm:inline transition-colors hover:text-[#1A1410]"
-          style={{ fontSize: '13px', color: '#6B5C53' }}
-        >
-          Log in
-        </Link>
+
+        {user ? (
+          <UserMenu displayName={firstName} />
+        ) : (
+          <Link
+            href="/login"
+            className="hidden sm:inline transition-colors hover:text-[#1A1410]"
+            style={{ fontSize: '13px', color: '#6B5C53' }}
+          >
+            Log in
+          </Link>
+        )}
+
         <span
           className="rounded-full border text-[12px] flex-shrink-0"
           style={{ borderColor: '#FFE4D6', color: '#6B5C53', padding: '4px 10px' }}
