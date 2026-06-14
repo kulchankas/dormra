@@ -1,4 +1,3 @@
-import { supabase } from './supabase'
 import { createAdminClient } from './supabase/admin'
 import { matchAlertsForDorm, getUserEmail } from './match'
 import { sendAvailabilityAlert } from './email'
@@ -8,9 +7,12 @@ type InsertedRow = { id: string; scraped_at: string }
 type PreviousRow = { available: boolean; scraped_at: string }
 
 export async function processSnapshot(dormId: string, result: ScraperResult): Promise<void> {
-  // Cast to any to work around the Proxy wrapper losing table-level type inference
+  // Snapshot writes use the service-role client so they bypass RLS. Once RLS is
+  // enabled (supabase/migrations/20260605120000_enable_rls.sql), the anon key
+  // has no insert policy on availability_snapshots — only the cron, via the
+  // service role, may write. The previous-snapshot read also goes through it.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = supabase as any
+  const db = createAdminClient() as any
 
   // 1. Insert the new snapshot (regardless of scrape_ok — we always record what happened)
   const { data: inserted, error: insertError } = (await db
