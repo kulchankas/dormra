@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense } from 'react'
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
@@ -40,6 +40,17 @@ function LoginPageContent() {
   const [isPending, startTransition] = useTransition()
   const [magicSending, setMagicSending] = useState(false)
   const [oauthLoading, setOauthLoading] = useState(false)
+
+  // Surface errors handed back by /auth/callback (expired/invalid links, etc.).
+  useEffect(() => {
+    const code = params.get('error')
+    if (!code) return
+    const messages: Record<string, string> = {
+      callback_failed:
+        'That sign-in link was invalid or has expired. Please try again.',
+    }
+    toast.error(messages[code] ?? 'Something went wrong during sign-in.')
+  }, [params])
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
