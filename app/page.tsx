@@ -129,14 +129,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Trusted by ── */}
+      {/* ── Trusted by (full-bleed conveyor) ── */}
       <section className="w-full bg-background pb-4" aria-label="Trusted by students from Vienna universities">
-        <div className="mx-auto max-w-[1100px] px-6">
-          <p className="mb-6 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/60">
-            Trusted by students from
-          </p>
-          <UniversityLogos />
-        </div>
+        <p className="mb-6 px-6 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/60">
+          Trusted by students from
+        </p>
+        <UniversityLogos />
       </section>
 
       {/* ── Stats strip ── */}
