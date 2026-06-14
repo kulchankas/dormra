@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/server'
 import { getAvailabilityStatusBulk, type Dorm } from '@/lib/helpers'
 import HeroSearch from '@/components/HeroSearch'
 import DormCard from '@/components/DormCard'
+import ScanningPill from '@/components/ScanningPill'
+import UniversityLogos from '@/components/UniversityLogos'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 
@@ -127,19 +129,34 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Trusted by ── */}
+      <section className="w-full bg-background pb-4" aria-label="Trusted by students from Vienna universities">
+        <div className="mx-auto max-w-[1100px] px-6">
+          <p className="mb-6 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/60">
+            Trusted by students from
+          </p>
+          <UniversityLogos />
+        </div>
+      </section>
+
       {/* ── Stats strip ── */}
       <div className="w-full border-y border-border bg-surface">
-        <div className="mx-auto grid max-w-[1100px] grid-cols-3 divide-x divide-border px-6">
-          {[
-            { value: '70+', label: 'dorm buildings' },
-            { value: '8+', label: 'providers covered' },
-            { value: '15 min', label: 'refresh interval' },
-          ].map(({ value, label }) => (
-            <div key={label} className="py-4 text-center">
-              <p className="text-lg font-semibold text-foreground">{value}</p>
-              <p className="text-xs text-muted-foreground">{label}</p>
-            </div>
-          ))}
+        <div className="mx-auto max-w-[1100px] px-6">
+          <div className="grid grid-cols-3 divide-x divide-border">
+            {[
+              { value: '70+', label: 'dorm buildings tracked' },
+              { value: '8+', label: 'providers covered' },
+              { value: '15 min', label: 'refresh interval' },
+            ].map(({ value, label }) => (
+              <div key={label} className="py-5 text-center">
+                <p className="text-xl font-semibold text-foreground md:text-2xl">{value}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-center pb-5">
+            <ScanningPill />
+          </div>
         </div>
       </div>
 

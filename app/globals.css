@@ -110,3 +110,30 @@
     @apply font-sans;
   }
 }
+
+/* ── Conveyor-belt marquee (logo wall) ───────────────────────────────── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 42s linear infinite;
+}
+.marquee-mask:hover .marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: center;
+  }
+  /* drop the duplicated set so logos aren't shown twice when static */
+  .marquee-track > [data-marquee-clone] {
+    display: none;
+  }
+}
