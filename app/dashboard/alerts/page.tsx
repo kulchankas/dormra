@@ -45,7 +45,7 @@ function formatAlertSummary(alert: AlertRow): string {
 export default async function AlertsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/login?redirect=/dashboard/alerts')
 
   const { data: alerts } = await supabase
     .from('user_alerts')

@@ -7,6 +7,7 @@ import HeaderMobileMenu from './HeaderMobileMenu'
 
 const NAV = [
   { href: '/dorms', label: 'Browse dorms' },
+  { href: '/dashboard/alerts', label: 'Alerts' },
   { href: '/how-it-works', label: 'How it works' },
 ] as const
 

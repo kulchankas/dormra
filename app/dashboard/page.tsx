@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/login?redirect=/dashboard')
 
   const { count: alertCount } = await supabase
     .from('user_alerts')

@@ -13,7 +13,7 @@ export default async function EditAlertPage({
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect(`/login?redirect=/dashboard/alerts/${id}`)
 
   const { data: alert } = await supabase
     .from('user_alerts')

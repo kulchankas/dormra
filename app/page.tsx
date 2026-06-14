@@ -234,6 +234,46 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Alert CTA ── */}
+      <section className="w-full bg-surface" aria-label="Set a dorm alert">
+        <div className="mx-auto max-w-[1100px] px-6 pb-12">
+          <div className="overflow-hidden rounded-3xl border border-brand/15 bg-gradient-to-br from-brand-soft to-surface px-6 py-10 text-center md:py-14">
+            <div className="mx-auto max-w-xl">
+              <div className="mb-4 inline-flex size-11 items-center justify-center rounded-2xl bg-brand text-white">
+                <Bell className="size-5" />
+              </div>
+              <h2 className="text-2xl font-semibold text-foreground md:text-[28px]">
+                Never miss a room again
+              </h2>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+                Set one alert with your budget and districts. Dormra checks every provider every
+                15 minutes and pings you the moment a match opens.
+              </p>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <Button
+                  size="lg"
+                  nativeButton={false}
+                  className="h-11 rounded-full px-7 text-sm"
+                  render={<Link href="/dashboard/alerts/new" />}
+                >
+                  <Bell className="size-4" />
+                  Set an alert
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  nativeButton={false}
+                  className="h-11 rounded-full px-7 text-sm"
+                  render={<Link href="/dorms" />}
+                >
+                  Browse dorms first
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Footer ── */}
       <footer className="w-full border-t border-border bg-background">
         <div className="mx-auto flex max-w-[1100px] items-center justify-between px-6 py-5">
