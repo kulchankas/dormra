@@ -1,19 +1,26 @@
+import fs from 'fs'
+import path from 'path'
 import type { ReactNode } from 'react'
 
 /**
- * "Trusted by students from" logo wall.
+ * "Trusted by students from" conveyor-belt logo wall.
  *
- * These are ORIGINAL emblem marks (not the universities' official trademarked
- * logos) so the wall works immediately without any licensing concerns. To use
- * real logos: drop SVG/PNG files in /public/logos and replace each `emblem`
- * with <Image src="/logos/xxx.svg" .../>.
+ * HOW TO ADD REAL LOGOS — no code changes needed:
+ *   1. Get the official logo (with permission to use it).
+ *   2. Save it as /public/logos/<slug>.svg  (png/webp/jpg also work).
+ *      Use the `slug` shown in each entry below, e.g. "uni-wien.svg".
+ *   3. Refresh. The component detects the file and renders it automatically,
+ *      replacing the original placeholder emblem below.
+ *
+ * The placeholder emblems are ORIGINAL marks (not the universities' real
+ * trademarked logos) so the wall works immediately and licence-free.
  */
 
 type Uni = {
   name: string
-  /** small original emblem shown left of the wordmark */
+  /** file name (without extension) to look for in /public/logos */
+  slug: string
   emblem: ReactNode
-  /** wordmark typographic treatment */
   wordmark: ReactNode
 }
 
@@ -22,6 +29,7 @@ const stroke = 'currentColor'
 const UNIVERSITIES: Uni[] = [
   {
     name: 'Universität Wien',
+    slug: 'uni-wien',
     emblem: (
       <svg viewBox="0 0 32 32" fill="none" className="size-7" aria-hidden="true">
         <circle cx="16" cy="16" r="14" stroke={stroke} strokeWidth="1.5" />
@@ -36,6 +44,7 @@ const UNIVERSITIES: Uni[] = [
   },
   {
     name: 'TU Wien',
+    slug: 'tu-wien',
     emblem: (
       <svg viewBox="0 0 32 32" fill="none" className="size-7" aria-hidden="true">
         <rect x="3" y="3" width="26" height="26" rx="3" stroke={stroke} strokeWidth="1.5" />
@@ -50,6 +59,7 @@ const UNIVERSITIES: Uni[] = [
   },
   {
     name: 'WU Wien',
+    slug: 'wu-wien',
     emblem: (
       <svg viewBox="0 0 32 32" fill="none" className="size-7" aria-hidden="true">
         <path d="M5 7l4 18 7-12 7 12 4-18" stroke={stroke} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
@@ -64,6 +74,7 @@ const UNIVERSITIES: Uni[] = [
   },
   {
     name: 'BOKU',
+    slug: 'boku',
     emblem: (
       <svg viewBox="0 0 32 32" fill="none" className="size-7" aria-hidden="true">
         <path d="M16 28V13" stroke={stroke} strokeWidth="1.6" strokeLinecap="round" />
@@ -78,6 +89,7 @@ const UNIVERSITIES: Uni[] = [
   },
   {
     name: 'MedUni Wien',
+    slug: 'meduni-wien',
     emblem: (
       <svg viewBox="0 0 32 32" fill="none" className="size-7" aria-hidden="true">
         <circle cx="16" cy="16" r="14" stroke={stroke} strokeWidth="1.5" />
@@ -92,6 +104,7 @@ const UNIVERSITIES: Uni[] = [
   },
   {
     name: 'FH Campus Wien',
+    slug: 'fh-campus-wien',
     emblem: (
       <svg viewBox="0 0 32 32" fill="none" className="size-7" aria-hidden="true">
         <rect x="4" y="4" width="24" height="24" rx="7" stroke={stroke} strokeWidth="1.5" />
@@ -106,6 +119,40 @@ const UNIVERSITIES: Uni[] = [
   },
 ]
 
+// ── Detect dropped-in logo files at render time (server component) ──────────
+const LOGO_DIR = path.join(process.cwd(), 'public', 'logos')
+const EXTENSIONS = ['svg', 'png', 'webp', 'jpg', 'jpeg']
+
+function findLogoSrc(slug: string): string | null {
+  for (const ext of EXTENSIONS) {
+    try {
+      if (fs.existsSync(path.join(LOGO_DIR, `${slug}.${ext}`))) {
+        return `/logos/${slug}.${ext}`
+      }
+    } catch {
+      /* ignore fs errors, fall back to placeholder */
+    }
+  }
+  return null
+}
+
+function LogoMark({ uni }: { uni: Uni }) {
+  const src = findLogoSrc(uni.slug)
+  if (src) {
+    return (
+      // Plain <img>: works for any dropped-in file (svg/png) with no Next config.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={src} alt={uni.name} className="h-7 w-auto object-contain md:h-8" />
+    )
+  }
+  return (
+    <>
+      {uni.emblem}
+      {uni.wordmark}
+    </>
+  )
+}
+
 function LogoGroup({ clone = false }: { clone?: boolean }) {
   return (
     <ul
@@ -113,14 +160,13 @@ function LogoGroup({ clone = false }: { clone?: boolean }) {
       data-marquee-clone={clone ? '' : undefined}
       className="flex shrink-0 items-center gap-x-9 pr-9 md:gap-x-12 md:pr-12"
     >
-      {UNIVERSITIES.map(({ name, emblem, wordmark }) => (
+      {UNIVERSITIES.map((uni) => (
         <li
-          key={name}
-          title={name}
+          key={uni.slug}
+          title={uni.name}
           className="flex items-center gap-2.5 whitespace-nowrap text-muted-foreground/50 grayscale transition-all duration-200 hover:text-brand hover:grayscale-0"
         >
-          {emblem}
-          {wordmark}
+          <LogoMark uni={uni} />
         </li>
       ))}
     </ul>
@@ -129,9 +175,7 @@ function LogoGroup({ clone = false }: { clone?: boolean }) {
 
 export default function UniversityLogos() {
   return (
-    <div
-      className="marquee-mask relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]"
-    >
+    <div className="marquee-mask relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
       <div className="marquee-track">
         <LogoGroup />
         <LogoGroup clone />
