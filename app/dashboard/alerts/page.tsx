@@ -1,11 +1,14 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { ArrowLeft, Bell, Plus, Pencil } from 'lucide-react'
+import { ArrowLeft, Bell, Plus, Pencil, Home } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import DeleteAlertButton from '@/components/DeleteAlertButton'
-import { DISTRICT_NAMES } from '@/lib/helpers'
+import AlertActiveToggle from '@/components/AlertActiveToggle'
+import { DISTRICT_NAMES, type Dorm } from '@/lib/helpers'
+import { countMatches } from '@/lib/alertMatch'
+import { cn } from '@/lib/utils'
 
 type AlertRow = {
   id: string
@@ -52,6 +55,9 @@ export default async function AlertsPage() {
 
   const rows = (alerts ?? []) as AlertRow[]
 
+  const { data: dormData } = await supabase.from('dorms').select('*').eq('active', true)
+  const dorms = (dormData ?? []) as Dorm[]
+
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-3xl px-4 py-8 md:px-8">
@@ -64,7 +70,7 @@ export default async function AlertsPage() {
         </Link>
 
         <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-xl font-medium text-foreground">Alerts</h1>
+          <h1 className="text-xl font-semibold text-foreground">Alerts</h1>
           <Button
             size="sm"
             nativeButton={false}
@@ -81,7 +87,7 @@ export default async function AlertsPage() {
             <Bell className="mx-auto mb-3 size-8 text-muted-foreground/40" />
             <p className="text-sm font-medium text-foreground">No alerts yet</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Create an alert and we'll ping you the moment a matching room opens.
+              Create an alert and we&apos;ll ping you the moment a matching room opens.
             </p>
             <Button
               size="sm"
@@ -95,53 +101,81 @@ export default async function AlertsPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-3">
-            {rows.map((alert) => (
-              <div
-                key={alert.id}
-                className="rounded-2xl border border-border bg-surface p-4"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground">
-                      {formatAlertSummary(alert)}
-                    </p>
+            {rows.map((alert) => {
+              const matchCount = countMatches(dorms, {
+                price_max: alert.price_max,
+                districts: alert.districts,
+                deposit_max: alert.deposit_max,
+                pets_required: alert.pets_required,
+                couples: alert.couples,
+              })
+              return (
+                <div
+                  key={alert.id}
+                  className={cn(
+                    'rounded-2xl border border-border bg-surface p-4 transition-opacity',
+                    !alert.active && 'opacity-60',
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="truncate text-sm font-semibold text-foreground">
+                          {formatAlertSummary(alert)}
+                        </p>
+                        {!alert.active && (
+                          <Badge variant="secondary" className="shrink-0 text-[10px]">Paused</Badge>
+                        )}
+                      </div>
 
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {alert.pets_required && (
-                        <Badge variant="secondary" className="text-[10px]">Pets</Badge>
-                      )}
-                      {alert.couples && (
-                        <Badge variant="secondary" className="text-[10px]">Couples</Badge>
-                      )}
-                      {alert.deposit_max != null && (
-                        <Badge variant="secondary" className="text-[10px]">
-                          Deposit ≤ €{alert.deposit_max}
-                        </Badge>
-                      )}
-                      {alert.notify_email && (
-                        <Badge variant="secondary" className="text-[10px]">Email</Badge>
-                      )}
-                      {alert.notify_telegram && (
-                        <Badge variant="secondary" className="text-[10px]">Telegram</Badge>
-                      )}
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {alert.pets_required && (
+                          <Badge variant="secondary" className="text-[10px]">Pets</Badge>
+                        )}
+                        {alert.couples && (
+                          <Badge variant="secondary" className="text-[10px]">Couples</Badge>
+                        )}
+                        {alert.deposit_max != null && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            Deposit ≤ €{alert.deposit_max}
+                          </Badge>
+                        )}
+                        {alert.notify_email && (
+                          <Badge variant="secondary" className="text-[10px]">Email</Badge>
+                        )}
+                        {alert.notify_telegram && (
+                          <Badge variant="secondary" className="text-[10px]">Telegram</Badge>
+                        )}
+                      </div>
+
+                      <Link
+                        href="/dorms"
+                        className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-2.5 py-1 text-[11px] font-medium text-brand transition-colors hover:bg-brand-soft/70"
+                      >
+                        <Home className="size-3" />
+                        {matchCount} {matchCount === 1 ? 'dorm matches' : 'dorms match'} now
+                      </Link>
+                    </div>
+
+                    <div className="flex shrink-0 flex-col items-end gap-2">
+                      <AlertActiveToggle id={alert.id} active={alert.active} />
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          nativeButton={false}
+                          render={<Link href={`/dashboard/alerts/${alert.id}`} />}
+                          aria-label="Edit alert"
+                        >
+                          <Pencil className="size-3.5" />
+                        </Button>
+                        <DeleteAlertButton id={alert.id} />
+                      </div>
                     </div>
                   </div>
-
-                  <div className="flex shrink-0 items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      nativeButton={false}
-                      render={<Link href={`/dashboard/alerts/${alert.id}`} />}
-                      aria-label="Edit alert"
-                    >
-                      <Pencil className="size-3.5" />
-                    </Button>
-                    <DeleteAlertButton id={alert.id} />
-                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>

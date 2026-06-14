@@ -1,7 +1,8 @@
 'use client'
 
 import { useRef } from 'react'
-import { LogOut, User } from 'lucide-react'
+import Link from 'next/link'
+import { LogOut, LayoutDashboard, Bell } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,9 +43,13 @@ export default function HeaderUserMenu({ email }: { email: string }) {
             <div className="mt-0.5 truncate text-sm font-medium text-foreground">{email}</div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem nativeButton={false} render={<a href="/account" />}>
-            <User className="size-4" />
-            Account
+          <DropdownMenuItem nativeButton={false} render={<Link href="/dashboard" />}>
+            <LayoutDashboard className="size-4" />
+            Dashboard
+          </DropdownMenuItem>
+          <DropdownMenuItem nativeButton={false} render={<Link href="/dashboard/alerts" />}>
+            <Bell className="size-4" />
+            My alerts
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem

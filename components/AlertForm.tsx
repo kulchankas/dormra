@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useTransition } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -9,10 +9,10 @@ import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Switch } from '@/components/ui/switch'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
-import { DISTRICT_NAMES } from '@/lib/helpers'
+import DistrictGrid from '@/components/DistrictGrid'
+import AlertMatchPreview from '@/components/AlertMatchPreview'
 import { createAlert, updateAlert, type AlertPayload } from '@/app/dashboard/alerts/actions'
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
@@ -37,11 +37,6 @@ interface Props {
   defaultValues?: AlertPayload
 }
 
-const DISTRICTS = Object.entries(DISTRICT_NAMES).map(([k, v]) => ({
-  value: Number(k),
-  label: `${k}. ${v}`,
-}))
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function AlertForm({ mode, alertId, defaultValues }: Props) {
@@ -63,7 +58,19 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
   })
 
   const notifyTelegram = useWatch({ control: form.control, name: 'notify_telegram' })
+  const priceMax = useWatch({ control: form.control, name: 'price_max' })
+  const depositMax = useWatch({ control: form.control, name: 'deposit_max' })
   const selectedDistricts = useWatch({ control: form.control, name: 'districts' })
+  const petsRequired = useWatch({ control: form.control, name: 'pets_required' })
+  const couplesRequired = useWatch({ control: form.control, name: 'couples' })
+
+  const criteria = {
+    price_max: priceMax ? Number(priceMax) : null,
+    districts: selectedDistricts ?? [],
+    deposit_max: depositMax ? Number(depositMax) : null,
+    pets_required: !!petsRequired,
+    couples: !!couplesRequired,
+  }
 
   function buildPayload(values: FormValues): AlertPayload {
     return {
@@ -96,9 +103,11 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
 
+        <AlertMatchPreview criteria={criteria} />
+
         {/* ── Budget ── */}
         <section className="rounded-2xl border border-border bg-surface p-5">
-          <h2 className="mb-4 text-sm font-medium text-foreground">Budget</h2>
+          <h2 className="mb-4 text-sm font-semibold text-foreground">Budget</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField
               control={form.control}
@@ -109,13 +118,10 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
                     Max rent per month (€)
                   </FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      min={0}
-                      placeholder="e.g. 600"
-                      className="h-9"
-                      {...field}
-                    />
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">€</span>
+                      <Input type="number" min={0} placeholder="600" className="h-9 pl-6" {...field} />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -130,13 +136,10 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
                     Max deposit (€)
                   </FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      min={0}
-                      placeholder="e.g. 1200"
-                      className="h-9"
-                      {...field}
-                    />
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">€</span>
+                      <Input type="number" min={0} placeholder="1200" className="h-9 pl-6" {...field} />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -147,53 +150,21 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
 
         {/* ── Districts ── */}
         <section className="rounded-2xl border border-border bg-surface p-5">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-medium text-foreground">Districts</h2>
-            {selectedDistricts.length > 0 && (
-              <button
-                type="button"
-                onClick={() => form.setValue('districts', [])}
-                className="text-xs text-muted-foreground hover:text-foreground"
-              >
-                Clear
-              </button>
-            )}
-          </div>
           <p className="mb-3 text-xs text-muted-foreground">
-            Leave empty to match any district.
+            Pick districts, or leave empty to match anywhere in Vienna.
           </p>
-          <div className="grid grid-cols-2 gap-y-2 gap-x-4 sm:grid-cols-3">
-            {DISTRICTS.map(({ value, label }) => (
-              <FormField
-                key={value}
-                control={form.control}
-                name="districts"
-                render={({ field }) => {
-                  const checked = field.value.includes(value)
-                  return (
-                    <label className="flex cursor-pointer items-center gap-2">
-                      <Checkbox
-                        checked={checked}
-                        onCheckedChange={(c) => {
-                          if (c) {
-                            field.onChange([...field.value, value])
-                          } else {
-                            field.onChange(field.value.filter((v: number) => v !== value))
-                          }
-                        }}
-                      />
-                      <span className="text-xs text-foreground">{label}</span>
-                    </label>
-                  )
-                }}
-              />
-            ))}
-          </div>
+          <FormField
+            control={form.control}
+            name="districts"
+            render={({ field }) => (
+              <DistrictGrid label="Districts" selected={field.value} onChange={field.onChange} />
+            )}
+          />
         </section>
 
         {/* ── Move-in date ── */}
         <section className="rounded-2xl border border-border bg-surface p-5">
-          <h2 className="mb-4 text-sm font-medium text-foreground">Move-in date</h2>
+          <h2 className="mb-4 text-sm font-semibold text-foreground">Move-in date</h2>
           <FormField
             control={form.control}
             name="move_in_before"
@@ -213,7 +184,7 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
 
         {/* ── Requirements ── */}
         <section className="rounded-2xl border border-border bg-surface p-5">
-          <h2 className="mb-4 text-sm font-medium text-foreground">Requirements</h2>
+          <h2 className="mb-4 text-sm font-semibold text-foreground">Requirements</h2>
           <div className="flex flex-col gap-4">
             <FormField
               control={form.control}
@@ -253,7 +224,7 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
 
         {/* ── Notifications ── */}
         <section className="rounded-2xl border border-border bg-surface p-5">
-          <h2 className="mb-4 text-sm font-medium text-foreground">Notifications</h2>
+          <h2 className="mb-4 text-sm font-semibold text-foreground">Notifications</h2>
           <div className="flex flex-col gap-4">
             <FormField
               control={form.control}

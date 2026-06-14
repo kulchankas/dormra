@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Menu, LogIn, UserPlus, LogOut } from 'lucide-react'
+import { Menu, LogIn, UserPlus, LogOut, LayoutDashboard, Bell } from 'lucide-react'
 import {
   Sheet,
   SheetClose,
@@ -55,6 +55,33 @@ export default function HeaderMobileMenu({ signedIn }: { signedIn: boolean }) {
               }
             />
           ))}
+
+          {signedIn && (
+            <>
+              <SheetClose
+                render={
+                  <Link
+                    href="/dashboard"
+                    className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+                  >
+                    <LayoutDashboard className="size-4 text-muted-foreground" />
+                    Dashboard
+                  </Link>
+                }
+              />
+              <SheetClose
+                render={
+                  <Link
+                    href="/dashboard/alerts"
+                    className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+                  >
+                    <Bell className="size-4 text-muted-foreground" />
+                    My alerts
+                  </Link>
+                }
+              />
+            </>
+          )}
         </nav>
 
         <Separator className="my-2" />
