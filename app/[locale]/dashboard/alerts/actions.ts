@@ -7,6 +7,9 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from '@/i18n/navigation'
 import { resolveLocale } from '@/lib/i18n-email'
 import { parseAlertPayload } from '@/lib/alert-schema'
+import { countMatchBreakdown } from '@/lib/alertMatch'
+import { getAvailabilityStatusBulk, availabilityMapToRecord } from '@/lib/availability'
+import type { Dorm } from '@/lib/types/dorm'
 
 export type AlertPayload = {
   price_max: number | null
@@ -67,7 +70,31 @@ export async function createAlert(payload: AlertPayload): Promise<{ error?: stri
 
   revalidatePath('/dashboard/alerts')
   revalidatePath('/dashboard')
-  redirect({ href: '/dashboard/alerts', locale })
+
+  const { data: dormData } = await supabase.from('dorms').select('*').eq('active', true)
+  const dorms = (dormData ?? []) as Dorm[]
+  const availabilityMap = await getAvailabilityStatusBulk(
+    dorms.map((d) => d.id),
+    supabase,
+  )
+  const availability = availabilityMapToRecord(availabilityMap)
+  const criteria = {
+    price_max: validated.price_max,
+    districts: validated.districts.length > 0 ? validated.districts : null,
+    deposit_max: validated.deposit_max,
+    pets_required: validated.pets_required,
+    couples: validated.couples,
+  }
+  const { criteriaMatches, availableMatches } = countMatchBreakdown(
+    dorms,
+    criteria,
+    availability,
+  )
+
+  redirect({
+    href: `/dashboard/alerts?created=1&available=${availableMatches}&matches=${criteriaMatches}`,
+    locale,
+  })
   return {}
 }
 
