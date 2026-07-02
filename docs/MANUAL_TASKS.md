@@ -175,6 +175,8 @@ Run through once after deploy:
 
 ## 7. Optional — monitoring
 
+- **Vercel Web Analytics**: `@vercel/analytics` is wired into `app/[locale]/layout.tsx` — no env vars needed, but it only reports data once **Analytics** is turned on for the project in Vercel Dashboard → your project → **Analytics** tab. Locally/in preview it runs in debug mode and logs to the browser console instead of sending data.
+
 Not set up yet. Consider before scale:
 
 - **Vercel** → Observability / Logs for cron route errors

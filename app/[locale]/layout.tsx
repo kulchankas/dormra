@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server'
 import { Onest, Poppins } from 'next/font/google'
+import { Analytics } from '@vercel/analytics/next'
 import Header from '@/components/Header'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -55,6 +56,7 @@ export default async function LocaleLayout({ children, params }: Props) {
             <Toaster position="bottom-right" richColors />
           </TooltipProvider>
         </NextIntlClientProvider>
+        <Analytics />
       </body>
     </html>
   )

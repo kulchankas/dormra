@@ -40,6 +40,7 @@ Scrapers visit each provider's website every 15 minutes and write availability s
 - **Cron**: cron-job.org → `GET /api/cron/scrape` every 15 min
 - **Email**: Resend
 - **Hosting**: Vercel
+- **Analytics**: Vercel Web Analytics (`@vercel/analytics`)
 
 ## Environment variables
 

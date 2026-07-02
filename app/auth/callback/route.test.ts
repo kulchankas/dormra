@@ -67,8 +67,7 @@ describe('GET /auth/callback', () => {
   })
 
   it('uses forwarded host in production', async () => {
-    const prevEnv = process.env.NODE_ENV
-    process.env.NODE_ENV = 'production'
+    vi.stubEnv('NODE_ENV', 'production')
 
     const { GET } = await import('./route')
     const request = new NextRequest('http://internal/auth/callback?code=abc&next=/dashboard', {
@@ -81,6 +80,6 @@ describe('GET /auth/callback', () => {
 
     expect(response.headers.get('location')).toBe('https://dormra.eu/dashboard')
 
-    process.env.NODE_ENV = prevEnv
+    vi.unstubAllEnvs()
   })
 })
