@@ -64,6 +64,7 @@ export default function HeaderMobileMenu({
             return (
               <SheetClose
                 key={href}
+                nativeButton={false}
                 render={
                   <Link
                     href={href}
@@ -83,6 +84,7 @@ export default function HeaderMobileMenu({
           })}
           {signedIn && showAdmin && (
             <SheetClose
+              nativeButton={false}
               render={
                 <Link
                   href="/admin"
@@ -101,6 +103,7 @@ export default function HeaderMobileMenu({
           )}
           {signedIn && (
             <SheetClose
+              nativeButton={false}
               render={
                 <Link
                   href="/dashboard"
@@ -137,6 +140,7 @@ export default function HeaderMobileMenu({
           ) : (
             <div className="flex flex-col gap-2">
               <SheetClose
+                nativeButton={false}
                 render={
                   <Button
                     size="lg"
@@ -150,6 +154,7 @@ export default function HeaderMobileMenu({
                 }
               />
               <SheetClose
+                nativeButton={false}
                 render={
                   <Button
                     size="lg"
@@ -163,6 +168,7 @@ export default function HeaderMobileMenu({
                 }
               />
               <SheetClose
+                nativeButton={false}
                 render={
                   <Button
                     variant="outline"
