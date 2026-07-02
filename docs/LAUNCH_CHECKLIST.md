@@ -11,12 +11,12 @@ Day-to-day monitoring: [`MONITORING.md`](./MONITORING.md)
 
 Nothing else in Phase 1 counts until the scrape loop runs in production.
 
-### 1. Merge and deploy the route fix
+### 1. Confirm deploy from PR #33
 
-- [ ] Merge **PR #33** — [fix(proxy): restore /api/cron/scrape and auth routes](https://github.com/kulchankas/dormra/pull/33)
-- [ ] Wait for Vercel production deploy to finish
+- [x] **PR #33 merged** — proxy fix for `/api/*`, `/auth/*`, metadata routes
+- [ ] Wait for Vercel production deploy, then verify (step 2)
 
-**Why:** Production currently returns **404** for `/api/cron/scrape`, `/auth/callback`, `/sitemap.xml`, and `/robots.txt`. cron-job.org disabled the job after repeated failures.
+**Why:** Production was returning **404** for `/api/cron/scrape` and `/auth/callback`. cron-job.org disabled the job after repeated failures.
 
 ### 2. Verify the scrape endpoint
 

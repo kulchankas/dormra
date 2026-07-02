@@ -33,8 +33,8 @@ Everything else — design, branding, monetization — is secondary until those 
 | Fix hero search | Homepage must search | ⚠️ **Partial** | Budget + navigation work; `moveIn` param passed but **not filtered** on `/dorms` |
 | Fix home4students shared-URL attribution | Wrong attribution kills trust | ⚠️ **Partial** | `ScrapeHtmlCache` dedupes fetches; per-slug keyword windows exist; **Döbling front/back share keywords** — needs live verification in `/admin` |
 | Rotate exposed Resend key | Security hygiene | ⏳ **Manual** | Only if key was ever committed or leaked |
-| Cron running every 15 min | Data stays fresh | ❌ **Broken** | Production 404 on `/api/cron/scrape`; cron-job.org auto-disabled; fix in **PR #33** |
-| Auth flows (login, reset, Google) | Users can sign up | ⚠️ **Blocked** | `/auth/callback` also 404 until PR #33; Supabase Site URL likely still `localhost:3000` |
+| Cron running every 15 min | Data stays fresh | ⚠️ **Deploying** | PR #33 merged; verify endpoint returns 401/200 (not 404), then re-enable cron-job.org |
+| Auth flows (login, reset, Google) | Users can sign up | ⚠️ **Deploying** | `/auth/callback` fixed in PR #33; still need Supabase Site URL → `https://dormra.eu` |
 | RLS + auth hardening | Before real users | ✅ **Done in code** | Migration applied; middleware guards `/dashboard` and `/admin` |
 | Admin observability | Trust the data | ✅ **Done** | `/admin` — dorm health, email log, alert stats |
 
@@ -114,12 +114,11 @@ Everything else — design, branding, monetization — is secondary until those 
 
 See [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md) — summary:
 
-1. Merge **PR #33** → redeploy
-2. Verify `curl` to `/api/cron/scrape` returns 200
-3. Re-enable **cron-job.org**
-4. Fix Supabase **Site URL** + redirect URLs
-5. Confirm `/admin` shows fresh scrape times
-6. Run one-week **false/missed alert** watch — then declare Phase 1 done
+1. Confirm **PR #33 deploy** — `curl` to `/api/cron/scrape` returns 401/200 (not 404)
+2. Re-enable **cron-job.org**
+3. Fix Supabase **Site URL** + redirect URLs
+4. Confirm `/admin` shows fresh scrape times
+5. Run one-week **false/missed alert** watch — then declare Phase 1 done
 
 ---
 
