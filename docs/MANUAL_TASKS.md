@@ -117,7 +117,9 @@ After adding/changing vars → **Redeploy** production.
 **Failure signs:**
 
 - `401 Unauthorized` → secret mismatch
+- `404 Not Found` → deploy missing the route, or i18n proxy intercepting `/api/*` (fixed in proxy matcher)
 - `500` → missing `SUPABASE_SERVICE_ROLE_KEY` or DB error
+- Job **disabled automatically** on cron-job.org → too many consecutive failures (404/401/500/timeout). Fix the error, then re-enable the job in the cron-job.org dashboard.
 
 ---
 

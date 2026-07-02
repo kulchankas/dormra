@@ -57,7 +57,8 @@ Data is read via the Supabase service role (server-side only). Non-admin users a
 | Schedule | Every 15 min → `GET https://dormra.eu/api/cron/scrape` |
 | Auth header | `Authorization: Bearer <CRON_SECRET>` |
 | Success body | `{ "ok": true, "scraped": N, ... }` |
-| Failure | 401 (secret), 500 (server/DB), timeout (scrape too slow) |
+| Failure | 401 (secret), 404 (route/proxy), 500 (server/DB), timeout (scrape too slow) |
+| Auto-disabled | cron-job.org disables after repeated failures — fix root cause, then re-enable |
 
 Execution history shows HTTP status and response time per run. If jobs fail silently, availability goes stale (>6h shows as "unknown" on the site).
 
