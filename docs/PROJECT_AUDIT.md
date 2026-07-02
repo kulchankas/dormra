@@ -70,7 +70,7 @@ Priority order — **do not start Phase 2 scrapers until Phase 1 metric met.**
 | Priority | Task | Rationale | Depends on |
 |----------|------|-----------|------------|
 | P0 | *(blocked)* home4students attribution verify | Data trust — Döbling front/back share URL | You enable cron |
-| P1 | Admin cron health — per-provider last scrape | Ops visibility for 3-job split | Cron running |
+| P1 | Admin cron health — per-provider last scrape | ✅ Shipped this sprint | — |
 | P2 | `/api/test-alert` polish | ✅ Shipped this sprint | — |
 | P3 | move_in filtering | Blocked — providers don't expose dates | Scraper data model |
 | Hold | New scrapers (ÖJAB, WIHAST, …) | Phase 2 gate | Phase 1 week clean |
@@ -140,3 +140,6 @@ Operator → GET /api/test-alert?slug=…&dryRun=1|email=…
 | 2026-07-02 | `main` | PR #33–37 ops fixes (proxy, Playwright, Chromium pack) |
 | 2026-07-02 | `cursor/cron-split-providers-5868` | PR #39 cron split; setup-cron-jobs.sh; MONITORING docs |
 | 2026-07-02 | `cursor/test-alert-and-docs-5868` | `/api/test-alert`; manual tasks + strategy audit refresh |
+| 2026-07-02 | `cursor/mobile-ux-polish-fc38` | Mobile layout/a11y/touch bugs across auth, nav, dorms, DormCard |
+| 2026-07-02 | `cursor/add-dorms-map-and-filters-fc38` | `/dorms` map view + geocoded coordinates; rent range, short-stay, near-me filters |
+| 2026-07-02 | `cursor/admin-provider-scrape-health-fc38` | Per-provider last-scraped + stale flag on `/admin` (P1) |

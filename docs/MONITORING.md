@@ -23,7 +23,7 @@ Where to watch Dormra activity — in-app admin, external dashboards, and what e
 
 | Tab | Data |
 |-----|------|
-| **Overview** | Active dorms, available count, scrape failures, alert counts, emails sent, provider breakdown |
+| **Overview** | Active dorms, available count, scrape failures, alert counts, emails sent, per-provider breakdown (dorm count, failures, last scraped, flagged stale if a provider hasn't been scraped in 30+ min — catches a disabled/failing cron-job.org job for that provider specifically) |
 | **Dorm health** | Per-dorm scrape status (available / booked / failed / stale), last check time, error messages |
 | **Email log** | Last 100 `alert_log` entries (when alerts were sent, which dorm) |
 | **Alerts** | Total/active alerts, growth (7d/30d), locale breakdown |
