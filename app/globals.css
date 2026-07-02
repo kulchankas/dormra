@@ -131,6 +131,36 @@
   .search-elevated {
     box-shadow: var(--shadow-search);
   }
+  .pixel-crisp {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+  .dorm-photo-grid {
+    background-image:
+      linear-gradient(rgb(184 56 26 / 0.35) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(184 56 26 / 0.35) 1px, transparent 1px);
+    background-size: 8px 8px;
+  }
+  @keyframes pixel-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .pixel-float {
+    animation: pixel-float 5s ease-in-out infinite;
+  }
+  .pixel-float-slow {
+    animation: pixel-float 7s ease-in-out infinite;
+  }
+  .pixel-float-delay {
+    animation: pixel-float 6s ease-in-out 1s infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pixel-float,
+    .pixel-float-slow,
+    .pixel-float-delay {
+      animation: none;
+    }
+  }
 }
 
 /* ── Conveyor-belt marquee (logo wall) ───────────────────────────────── */
