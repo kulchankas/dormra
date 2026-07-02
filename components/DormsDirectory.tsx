@@ -46,7 +46,6 @@ import {
   toggleDistrictPreset,
 } from '@/lib/district-presets'
 import { cn } from '@/lib/utils'
-import PixelHeroDecor from '@/components/pixel/PixelHeroDecor'
 
 interface Props {
   dorms: Dorm[]
@@ -417,8 +416,7 @@ export default function DormsDirectory({ dorms, availability }: Props) {
 
   return (
     <main className="min-h-screen bg-background">
-      <div className="hero-glow relative border-b border-border/40">
-        <PixelHeroDecor />
+      <div className="hero-glow border-b border-border/40">
         <div className="mx-auto max-w-7xl px-4 py-8 md:px-8 md:py-10">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
