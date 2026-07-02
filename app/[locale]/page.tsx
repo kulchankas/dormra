@@ -4,7 +4,8 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
 import { buildPageMetadata } from '@/lib/i18n-metadata'
 import { createClient } from '@/lib/supabase/server'
-import { getAvailabilityStatusBulk, type Dorm } from '@/lib/helpers'
+import { getAvailabilityStatusBulk } from '@/lib/availability'
+import { type Dorm } from '@/lib/helpers'
 import { localizeAvailabilityMap } from '@/lib/i18n-availability'
 import { Link } from '@/i18n/navigation'
 import HeroSearch from '@/components/HeroSearch'
@@ -99,7 +100,7 @@ async function DormsPreview() {
 
   const previewDorms = (data ?? []) as Dorm[]
   const availabilityMap = localizeAvailabilityMap(
-    await getAvailabilityStatusBulk(previewDorms.map((d) => d.id)),
+    await getAvailabilityStatusBulk(previewDorms.map((d) => d.id), supabase),
     (key) => tAvail(key),
   )
 

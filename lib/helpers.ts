@@ -1,17 +1,5 @@
-import { supabase } from './supabase'
-import {
-  getAvailabilityStatusBulk as fetchAvailabilityStatusBulk,
-  type AvailabilityStatus,
-} from './availability'
-
 export type { Dorm } from './types/dorm'
 export type { AvailabilityStatus } from './availability'
-
-export async function getAvailabilityStatusBulk(
-  dormIds: string[],
-): Promise<Map<string, AvailabilityStatus>> {
-  return fetchAvailabilityStatusBulk(dormIds, supabase)
-}
 
 export type ChancesRating = {
   emoji: string

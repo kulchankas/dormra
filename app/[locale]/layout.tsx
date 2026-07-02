@@ -42,9 +42,15 @@ export default async function LocaleLayout({ children, params }: Props) {
     <html lang={locale} className={`${poppins.variable} ${onest.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider locale={locale} messages={messages}>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-4 focus:py-2 focus:text-sm focus:shadow-md"
+          >
+            Skip to content
+          </a>
           <TooltipProvider>
             <Header />
-            {children}
+            <div id="main-content">{children}</div>
             <Toaster position="bottom-right" richColors />
           </TooltipProvider>
         </NextIntlClientProvider>

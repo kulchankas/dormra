@@ -5,7 +5,8 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
 import { buildPageMetadata } from '@/lib/i18n-metadata'
 import { createClient } from '@/lib/supabase/server'
-import { formatDistrictLabel, formatPriceLabel, getAvailabilityStatusBulk } from '@/lib/helpers'
+import { formatDistrictLabel, formatPriceLabel } from '@/lib/i18n-labels'
+import { getAvailabilityStatusBulk } from '@/lib/availability'
 import { localizeAvailability } from '@/lib/i18n-availability'
 import AvailabilityBadge from '@/components/AvailabilityBadge'
 import { Button } from '@/components/ui/button'
@@ -43,17 +44,18 @@ export default async function DormDetailPage({ params }: PageProps) {
   const t = await getTranslations('dormDetail')
   const tCard = await getTranslations('dormCard')
   const tAvail = await getTranslations('availability')
+  const tLabels = await getTranslations('labels')
 
   const supabase = await createClient()
   const { data: dorm } = await supabase.from('dorms').select('*').eq('slug', slug).eq('active', true).single()
   if (!dorm) notFound()
 
-  const availabilityMap = await getAvailabilityStatusBulk([dorm.id])
+  const availabilityMap = await getAvailabilityStatusBulk([dorm.id], supabase)
   const rawAvailability = availabilityMap.get(dorm.id) ?? { status: 'unknown' as const, label: 'Status unknown' }
   const availability = localizeAvailability(rawAvailability, (key) => tAvail(key))
 
-  const districtLabel = formatDistrictLabel(dorm.district)
-  const priceLabel = formatPriceLabel(dorm.price_min, dorm.price_max)
+  const districtLabel = formatDistrictLabel(dorm.district, (key, values) => tLabels(key, values))
+  const priceLabel = formatPriceLabel(dorm.price_min, dorm.price_max, (key, values) => tLabels(key, values))
   const applyHref = dorm.apply_url || dorm.website_url
 
   function boolLabel(v: boolean | null): string {

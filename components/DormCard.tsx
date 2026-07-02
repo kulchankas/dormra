@@ -5,12 +5,11 @@ import { Link } from '@/i18n/navigation'
 import { Home } from 'lucide-react'
 import DormImage from '@/components/DormImage'
 import {
-  formatDistrictLabel,
-  formatPriceLabel,
   getChancesRating,
   type AvailabilityStatus,
   type Dorm,
 } from '@/lib/helpers'
+import { formatDistrictLabel, formatPriceLabel } from '@/lib/i18n-labels'
 import AvailabilityBadge from '@/components/AvailabilityBadge'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -27,9 +26,10 @@ interface Props {
 export default function DormCard({ dorm, availability, variant = 'full' }: Props) {
   const t = useTranslations('dormCard')
   const tChances = useTranslations('chances')
+  const tLabels = useTranslations('labels')
   const chances = getChancesRating(dorm.provider, (key) => tChances(key))
-  const districtLabel = formatDistrictLabel(dorm.district)
-  const priceLabel = formatPriceLabel(dorm.price_min, dorm.price_max)
+  const districtLabel = formatDistrictLabel(dorm.district, (key, values) => tLabels(key, values))
+  const priceLabel = formatPriceLabel(dorm.price_min, dorm.price_max, (key, values) => tLabels(key, values))
   const isCompact = variant === 'compact'
 
   const depositLabel = dorm.deposit_months

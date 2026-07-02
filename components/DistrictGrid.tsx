@@ -1,36 +1,40 @@
+'use client'
+
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { DISTRICT_NAMES } from '@/lib/helpers'
 
-/**
- * Compact numbered grid of Vienna's 23 districts for the alert form.
- */
 export default function DistrictGrid({
   selected,
   onChange,
-  label = 'District',
+  label,
 }: {
   selected: number[]
   onChange: (d: number[]) => void
   label?: string
 }) {
+  const t = useTranslations('labels')
+  const tForm = useTranslations('alertForm')
+  const displayLabel = label ?? tForm('districts')
+
   const toggle = (d: number) =>
     onChange(selected.includes(d) ? selected.filter((x) => x !== d) : [...selected, d])
 
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-semibold text-foreground">{label}</span>
+        <span className="text-xs font-semibold text-foreground">{displayLabel}</span>
         {selected.length > 0 && (
           <button
             type="button"
             onClick={() => onChange([])}
             className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
           >
-            Clear ({selected.length})
+            {t('clearCount', { count: selected.length })}
           </button>
         )}
       </div>
-      <p className="mb-2 text-xs text-muted-foreground">Leave empty to match any district.</p>
+      <p className="mb-2 text-xs text-muted-foreground">{t('districtAnyHint')}</p>
       <div className="grid grid-cols-5 gap-1 sm:grid-cols-6">
         {Object.keys(DISTRICT_NAMES).map((k) => {
           const n = Number(k)

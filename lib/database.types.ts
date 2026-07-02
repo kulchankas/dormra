@@ -239,7 +239,21 @@ export interface Database {
       }
     }
     Views: Record<string, never>
-    Functions: Record<string, never>
+    Functions: {
+      get_latest_snapshots: {
+        Args: { p_dorm_ids: string[] }
+        Returns: {
+          dorm_id: string
+          available: boolean
+          scrape_ok: boolean
+          scraped_at: string
+        }[]
+      }
+      prune_old_snapshots: {
+        Args: { p_keep_days?: number }
+        Returns: number
+      }
+    }
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>
   }

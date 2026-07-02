@@ -32,6 +32,14 @@
     "de": "Deutsch",
     "ru": "Русский"
   },
+  "labels": {
+    "districtWithName": "{number}-й район · {name}",
+    "priceRange": "€{min}–{max} / мес.",
+    "priceFrom": "От €{min} / мес.",
+    "priceOnRequest": "Цена по запросу",
+    "districtAnyHint": "Оставь пустым для любого района.",
+    "clearCount": "Сбросить ({count})"
+  },
   "nav": {
     "browseDorms": "Каталог общежитий",
     "alerts": "Уведомления",
