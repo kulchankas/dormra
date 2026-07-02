@@ -79,6 +79,7 @@ psql "$DATABASE_URL" -f supabase/migrations/20260701120000_user_alerts_locale.sq
 psql "$DATABASE_URL" -f supabase/migrations/20260701130000_snapshot_rpc_and_retention.sql
 psql "$DATABASE_URL" -f supabase/migrations/20260701140000_alert_log_dedup.sql
 psql "$DATABASE_URL" -f supabase/migrations/20260702150000_dorm_coordinates.sql
+psql "$DATABASE_URL" -f supabase/migrations/20260702160000_dorm_images.sql
 ```
 
 Or paste each file into Supabase SQL Editor.
@@ -92,6 +93,14 @@ psql "$DATABASE_URL" -f supabase/seeds/home4students_vienna.sql
 ```
 
 Without this, the `/dorms` map view will show "No mapped locations" until coordinates are backfilled. New dorms added going forward should include `lat`/`lng` too — see `scripts/geocode-dorms.mjs` for the geocoding approach (Nominatim/OpenStreetMap, no API key required).
+
+**After applying `20260702160000_dorm_images.sql`**, seed the photo galleries (idempotent, safe to re-run):
+
+```bash
+psql "$DATABASE_URL" -f supabase/seeds/dorm_image_galleries.sql
+```
+
+Currently populated for OeAD only (24/26 dorms, ~5 photos each) — see `scripts/fetch-dorm-galleries.mjs` to re-run or extend to STUWO/home4students. Dorms with no `dorm_images` rows fall back to their single `image_url` on the detail page, so this is optional, not launch-blocking.
 
 ### 1.3 Regenerate TypeScript types (optional)
 
