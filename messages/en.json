@@ -119,7 +119,8 @@
     "findYourDorm": "Find your dorm",
     "closeSearch": "Close search",
     "clearDate": "Clear date",
-    "anyAmount": "Any amount"
+    "anyAmount": "Any amount",
+    "moveInPickerHint": "Optional — for alerts, not filtering yet"
   },
   "scanning": {
     "prefix": "Scanning",
@@ -220,6 +221,9 @@
     "sortPrice": "price",
     "sortSelection": "your selection",
     "noListingsYet": "No dorms listed yet",
+    "loadError": "Couldn't load dorms right now",
+    "loadErrorHint": "This is usually temporary. Try again in a moment.",
+    "tryAgain": "Try again",
     "noListingsHint": "Check back soon — we're adding new listings.",
     "noMatchExtended": "Try removing a filter or set an alert — we'll notify you when something opens.",
     "resetFilters": "Reset filters",
@@ -408,6 +412,7 @@
     "notifications": "Notifications",
     "email": "Email",
     "emailHint": "Get notified by email",
+    "emailRequiredHint": "Required — the only notification channel for now",
     "telegram": "Telegram",
     "telegramHint": "Coming soon — email alerts are active now",
     "telegramAria": "Telegram notifications coming soon"

@@ -650,7 +650,7 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                 ) : (
                   t('allSorted', {
                     total: dorms.length,
-                    sort: filters.sort === 'price_asc' ? t('sortPrice') : t('sortSelection'),
+                    sort: sortLabels[filters.sort],
                   })
                 )}
               </p>

@@ -82,6 +82,7 @@ export default function HeroSearch() {
             <p className={cn('text-sm leading-none font-medium', selectedDate ? 'text-foreground' : 'text-muted-foreground')}>
               {dateLabel}
             </p>
+            <p className="mt-1 text-[10px] leading-tight text-muted-foreground/80">{t('moveInPickerHint')}</p>
           </PopoverTrigger>
           <PopoverContent align="start" className="w-auto p-0">
             <Calendar
@@ -177,6 +178,7 @@ export default function HeroSearch() {
                   <p className={cn('text-sm font-medium', selectedDate ? 'text-foreground' : 'text-muted-foreground')}>
                     {dateLabel}
                   </p>
+                  <p className="text-[10px] text-muted-foreground/80">{t('moveInPickerHint')}</p>
                 </div>
                 {selectedDate && (
                   <button

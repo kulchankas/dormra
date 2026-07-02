@@ -85,13 +85,8 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
   }
 
   function onSubmit(values: FormValues) {
-    if (!values.notify_email) {
-      toast.error(t('emailRequired'))
-      return
-    }
-
     startTransition(async () => {
-      const payload = buildPayload(values)
+      const payload = buildPayload({ ...values, notify_email: true })
       const result = mode === 'edit' && alertId
         ? await updateAlert(alertId, payload)
         : await createAlert(payload)
@@ -232,13 +227,13 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
               control={form.control}
               name="notify_email"
               render={({ field }) => (
-                <label className="flex cursor-pointer items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm text-foreground">{t('email')}</p>
-                    <p className="text-xs text-muted-foreground">{t('emailHint')}</p>
+                    <p className="text-xs text-muted-foreground">{t('emailRequiredHint')}</p>
                   </div>
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
-                </label>
+                  <Switch checked={field.value} disabled aria-label={t('email')} />
+                </div>
               )}
             />
             <div className="h-px bg-border" />

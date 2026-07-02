@@ -6,9 +6,8 @@ One-page ordered checklist for going live. Full details: [`MANUAL_TASKS.md`](./M
 
 ## Before merge
 
-- [ ] Review and merge **i18n PR** (`cursor/i18n-de-ru-5868`) — German/Russian UI, localized emails
-- [ ] Review and merge **audit PR** (`cursor/project-audit-5868`) — security fixes, performance, ops docs
-- [ ] Resolve any conflicts between the two branches on `main` (audit branch may already include i18n commits)
+- [x] **i18n** — merged (German/Russian UI, localized emails)
+- [x] **Audit + admin** — merged (`/admin`, security fixes, ops docs)
 
 ---
 
