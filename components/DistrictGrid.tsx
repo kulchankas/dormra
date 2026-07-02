@@ -1,10 +1,9 @@
+'use client'
+
 import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { DISTRICT_NAMES } from '@/lib/helpers'
 
-/**
- * Compact numbered grid of Vienna's 23 districts for the alert form.
- */
 export default function DistrictGrid({
   selected,
   onChange,
@@ -14,25 +13,28 @@ export default function DistrictGrid({
   onChange: (d: number[]) => void
   label?: string
 }) {
-  const t = useTranslations('alertForm')
+  const t = useTranslations('labels')
+  const tForm = useTranslations('alertForm')
+  const displayLabel = label ?? tForm('districts')
+
   const toggle = (d: number) =>
     onChange(selected.includes(d) ? selected.filter((x) => x !== d) : [...selected, d])
 
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-semibold text-foreground">{label ?? t('districts')}</span>
+        <span className="text-xs font-semibold text-foreground">{displayLabel}</span>
         {selected.length > 0 && (
           <button
             type="button"
             onClick={() => onChange([])}
             className="relative text-[11px] text-muted-foreground hover:text-foreground transition-colors after:absolute after:-inset-2"
           >
-            {t('districtsClear', { count: selected.length })}
+            {t('clearCount', { count: selected.length })}
           </button>
         )}
       </div>
-      <p className="mb-2 text-xs text-muted-foreground">{t('districtsHint')}</p>
+      <p className="mb-2 text-xs text-muted-foreground">{t('districtAnyHint')}</p>
       <div className="grid grid-cols-5 gap-1.5 sm:grid-cols-6">
         {Object.keys(DISTRICT_NAMES).map((k) => {
           const n = Number(k)

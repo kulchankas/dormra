@@ -2,6 +2,27 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import type { Database } from '@/lib/database.types'
 
+const LOCALE_PREFIXES = ['de', 'ru'] as const
+
+function isDashboardPath(pathname: string): boolean {
+  if (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) return true
+  return LOCALE_PREFIXES.some(
+    (locale) =>
+      pathname === `/${locale}/dashboard` || pathname.startsWith(`/${locale}/dashboard/`),
+  )
+}
+
+function loginRedirectUrl(request: NextRequest): URL {
+  const pathname = request.nextUrl.pathname
+  const locale = LOCALE_PREFIXES.find(
+    (l) => pathname === `/${l}/dashboard` || pathname.startsWith(`/${l}/dashboard/`),
+  )
+  const prefix = locale ? `/${locale}` : ''
+  const url = new URL(`${prefix}/login`, request.url)
+  url.searchParams.set('redirect', pathname)
+  return url
+}
+
 export async function updateSession(request: NextRequest, baseResponse?: NextResponse) {
   let response =
     baseResponse ??
@@ -31,8 +52,11 @@ export async function updateSession(request: NextRequest, baseResponse?: NextRes
     },
   )
 
-  // Touching getUser() refreshes the session and reissues the cookies.
-  await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (isDashboardPath(request.nextUrl.pathname) && !user) {
+    return NextResponse.redirect(loginRedirectUrl(request))
+  }
 
   return response
 }

@@ -13,6 +13,10 @@ vi.mock('@/lib/supabase/admin', () => ({
   })),
 }))
 
+vi.mock('@/lib/snapshot-maintenance', () => ({
+  pruneOldSnapshots: vi.fn(async () => 0),
+}))
+
 vi.mock('@/scrapers', () => ({
   getScraperForProvider: vi.fn(() => null),
   usesBrowser: vi.fn(() => false),

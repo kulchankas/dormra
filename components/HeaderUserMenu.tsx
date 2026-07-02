@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { Link } from '@/i18n/navigation'
+import { signOutAction } from '@/lib/auth-actions'
 
 export default function HeaderUserMenu({ email }: { email: string }) {
   const t = useTranslations('nav')
@@ -65,7 +66,7 @@ export default function HeaderUserMenu({ email }: { email: string }) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <form ref={formRef} action="/auth/signout" method="POST" className="hidden" />
+      <form ref={formRef} action={signOutAction} className="hidden" />
     </>
   )
 }

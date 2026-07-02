@@ -32,6 +32,14 @@
     "de": "Deutsch",
     "ru": "Русский"
   },
+  "labels": {
+    "districtWithName": "{number}-й район · {name}",
+    "priceRange": "€{min}–{max} / мес.",
+    "priceFrom": "От €{min} / мес.",
+    "priceOnRequest": "Цена по запросу",
+    "districtAnyHint": "Оставь пустым для любого района.",
+    "clearCount": "Сбросить ({count})"
+  },
   "nav": {
     "skipToContent": "Перейти к содержимому",
     "browseDorms": "Каталог общежитий",
@@ -112,7 +120,8 @@
   },
   "scanning": {
     "prefix": "Сканируем",
-    "suffix": "каждые 15 мин"
+    "suffix": "каждые 15 мин",
+    "lastChecked": "обновлено {time}"
   },
   "availability": {
     "available": "Свободно",
@@ -385,8 +394,6 @@
     "maxDeposit": "Макс. депозит (месяцы)",
     "maxDepositPlaceholder": "напр. 2",
     "districts": "Районы",
-    "districtsHint": "Оставьте пустым, чтобы учитывать любой район.",
-    "districtsClear": "Очистить ({count})",
     "moveInDate": "Дата заезда",
     "moveInBy": "Мне нужно заехать до",
     "moveInHint": "Сохраняется для справки — фильтр по дате заезда скоро.",

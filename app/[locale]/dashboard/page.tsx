@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { buildPageMetadata } from '@/lib/i18n-metadata'
 import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
-import ScanningPill from '@/components/ScanningPill'
+import ScanningPillServer from '@/components/ScanningPillServer'
 import { Link, redirect } from '@/i18n/navigation'
 
 type PageProps = { params: Promise<{ locale: string }> }
@@ -43,7 +43,7 @@ export default async function DashboardPage({ params }: PageProps) {
           <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('title')}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>
           <div className="mt-4">
-            <ScanningPill />
+            <ScanningPillServer />
           </div>
         </div>
 

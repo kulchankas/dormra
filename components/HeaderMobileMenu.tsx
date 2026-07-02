@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
+import { signOutAction } from '@/lib/auth-actions'
 import { cn } from '@/lib/utils'
 
 const NAV = [
@@ -98,7 +99,7 @@ export default function HeaderMobileMenu({ signedIn }: { signedIn: boolean }) {
 
         <div className="px-4 pb-6">
           {signedIn ? (
-            <form action="/auth/signout" method="POST">
+            <form action={signOutAction}>
               <Button
                 type="submit"
                 variant="outline"

@@ -167,7 +167,6 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
               <DistrictGrid
                 selected={field.value}
                 onChange={field.onChange}
-                label={t('districts')}
               />
             )}
           />

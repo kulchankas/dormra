@@ -32,6 +32,14 @@
     "de": "Deutsch",
     "ru": "Русский"
   },
+  "labels": {
+    "districtWithName": "{number}{ordinal} district · {name}",
+    "priceRange": "€{min}–{max} / month",
+    "priceFrom": "From €{min} / month",
+    "priceOnRequest": "Price on request",
+    "districtAnyHint": "Leave empty to match any district.",
+    "clearCount": "Clear ({count})"
+  },
   "nav": {
     "skipToContent": "Skip to content",
     "browseDorms": "Browse dorms",
@@ -112,7 +120,8 @@
   },
   "scanning": {
     "prefix": "Scanning",
-    "suffix": "every 15 min"
+    "suffix": "every 15 min",
+    "lastChecked": "updated {time}"
   },
   "availability": {
     "available": "Available",
@@ -385,8 +394,6 @@
     "maxDeposit": "Max deposit (months)",
     "maxDepositPlaceholder": "e.g. 2",
     "districts": "Districts",
-    "districtsHint": "Leave empty to match any district.",
-    "districtsClear": "Clear ({count})",
     "moveInDate": "Move-in date",
     "moveInBy": "I need to move in by",
     "moveInHint": "Saved for your reference — move-in filtering is coming soon.",
