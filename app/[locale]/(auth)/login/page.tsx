@@ -1,27 +1,20 @@
 'use client'
 
-import { Suspense } from 'react'
-import { useEffect, useState, useTransition } from 'react'
-import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useEffect, useMemo, useState, useTransition } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Loader2, Mail, KeyRound } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
+import { Link, useRouter } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-
-const schema = z.object({
-  email: z.string().email('Enter a valid email address.'),
-  password: z.string().min(8, 'Password must be at least 8 characters.'),
-})
-
-type FormValues = z.infer<typeof schema>
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true">
@@ -33,6 +26,7 @@ const GoogleIcon = () => (
 )
 
 function LoginPageContent() {
+  const t = useTranslations('auth')
   const router = useRouter()
   const params = useSearchParams()
   const redirectTo = params.get('redirect') ?? '/'
@@ -41,16 +35,22 @@ function LoginPageContent() {
   const [magicSending, setMagicSending] = useState(false)
   const [oauthLoading, setOauthLoading] = useState(false)
 
-  // Surface errors handed back by /auth/callback (expired/invalid links, etc.).
+  const schema = useMemo(
+    () =>
+      z.object({
+        email: z.string().email(t('emailInvalid')),
+        password: z.string().min(8, t('passwordMin')),
+      }),
+    [t],
+  )
+
+  type FormValues = z.infer<typeof schema>
+
   useEffect(() => {
     const code = params.get('error')
     if (!code) return
-    const messages: Record<string, string> = {
-      callback_failed:
-        'That sign-in link was invalid or has expired. Please try again.',
-    }
-    toast.error(messages[code] ?? 'Something went wrong during sign-in.')
-  }, [params])
+    toast.error(code === 'callback_failed' ? t('callbackFailed') : t('genericError'))
+  }, [params, t])
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -72,7 +72,7 @@ function LoginPageContent() {
         toast.error(error.message)
         return
       }
-      toast.success('Signed in. Welcome back!')
+      toast.success(t('signedIn'))
       router.replace(redirectTo)
       router.refresh()
     })
@@ -97,7 +97,7 @@ function LoginPageContent() {
       if (error) {
         toast.error(error.message)
       } else {
-        toast.success('Check your inbox — magic link sent.')
+        toast.success(t('magicLinkSentInbox'))
       }
     } finally {
       setMagicSending(false)
@@ -127,7 +127,7 @@ function LoginPageContent() {
     const email = getValues('email')
     const result = schema.shape.email.safeParse(email)
     if (!result.success) {
-      toast.error('Enter your email above first, then click "Forgot password".')
+      toast.error(t('forgotPasswordHint'))
       return
     }
     const supabase = createClient()
@@ -135,18 +135,21 @@ function LoginPageContent() {
       redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
     })
     if (error) toast.error(error.message)
-    else toast.success('Password reset link sent.')
+    else toast.success(t('passwordResetSent'))
   }
+
+  const signupHref =
+    redirectTo !== '/'
+      ? { pathname: '/signup' as const, query: { redirect: redirectTo } }
+      : '/signup'
 
   return (
     <div className="space-y-6">
       <header className="space-y-1.5">
         <h1 className="text-2xl font-medium tracking-tight text-foreground">
-          Welcome back
+          {t('loginTitle')}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Sign in to manage your alerts and saved dorms.
-        </p>
+        <p className="text-sm text-muted-foreground">{t('loginSubtitle')}</p>
       </header>
 
       <Button
@@ -158,19 +161,19 @@ function LoginPageContent() {
         disabled={oauthLoading || isPending}
       >
         {oauthLoading ? <Loader2 className="size-4 animate-spin" /> : <GoogleIcon />}
-        Continue with Google
+        {t('continueGoogle')}
       </Button>
 
       <div className="relative">
         <Separator />
         <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-[11px] uppercase tracking-wider text-muted-foreground">
-          or with email
+          {t('orWithEmail')}
         </span>
       </div>
 
       <form onSubmit={handleSubmit(onPasswordLogin)} className="space-y-4" noValidate>
         <div className="space-y-1.5">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t('email')}</Label>
           <Input
             id="email"
             type="email"
@@ -187,13 +190,13 @@ function LoginPageContent() {
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t('password')}</Label>
             <button
               type="button"
               onClick={onForgotPassword}
               className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:underline focus-visible:outline-none"
             >
-              Forgot?
+              {t('forgotPassword')}
             </button>
           </div>
           <Input
@@ -221,7 +224,7 @@ function LoginPageContent() {
           ) : (
             <KeyRound className="size-4" />
           )}
-          Sign in
+          {t('signIn')}
         </Button>
 
         <Button
@@ -237,17 +240,14 @@ function LoginPageContent() {
           ) : (
             <Mail className="size-4" />
           )}
-          Send me a magic link instead
+          {t('sendMagicLinkInstead')}
         </Button>
       </form>
 
       <p className="text-center text-sm text-muted-foreground">
-        Don&apos;t have an account?{' '}
-        <Link
-          href={`/signup${redirectTo !== '/' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`}
-          className="font-medium text-brand underline-offset-4 hover:underline"
-        >
-          Sign up
+        {t('noAccount')}{' '}
+        <Link href={signupHref} className="font-medium text-brand underline-offset-4 hover:underline">
+          {t('signUp')}
         </Link>
       </p>
     </div>

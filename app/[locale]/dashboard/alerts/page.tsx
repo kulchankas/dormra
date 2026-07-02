@@ -1,6 +1,6 @@
-import Link from 'next/link'
-import { redirect } from 'next/navigation'
 import { ArrowLeft, Bell, Plus, Pencil, Home } from 'lucide-react'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -10,6 +10,8 @@ import ScanningPill from '@/components/ScanningPill'
 import { DISTRICT_NAMES, type Dorm } from '@/lib/helpers'
 import { alertToDormsHref, countMatches } from '@/lib/alertMatch'
 import { cn } from '@/lib/utils'
+import { dateLocale } from '@/lib/i18n-dates'
+import { Link, redirect } from '@/i18n/navigation'
 
 type AlertRow = {
   id: string
@@ -26,9 +28,21 @@ type AlertRow = {
   created_at: string
 }
 
-function formatAlertSummary(alert: AlertRow): string {
+type PageProps = { params: Promise<{ locale: string }> }
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'metadata' })
+  return { title: t('alertsPageTitle') }
+}
+
+function formatAlertSummary(
+  alert: AlertRow,
+  t: Awaited<ReturnType<typeof getTranslations<'dashboard'>>>,
+  locale: string,
+): string {
   const parts: string[] = []
-  if (alert.price_max) parts.push(`up to €${alert.price_max}/mo`)
+  if (alert.price_max) parts.push(t('alertSummaryPrice', { price: alert.price_max }))
   if (alert.districts && alert.districts.length > 0) {
     const names = alert.districts
       .map((d) => DISTRICT_NAMES[d] ?? `${d}th`)
@@ -38,20 +52,36 @@ function formatAlertSummary(alert: AlertRow): string {
   }
   if (alert.move_in_before) {
     const d = new Date(alert.move_in_before)
-    parts.push(`move-in by ${d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}`)
+    parts.push(
+      t('alertSummaryMoveIn', {
+        date: d.toLocaleDateString(dateLocale(locale), { month: 'short', year: 'numeric' }),
+      }),
+    )
   }
-  return parts.join(' · ') || 'Any room in Vienna'
+  return parts.join(' · ') || t('alertSummaryAnyRoom')
 }
 
-function formatCreatedAt(iso: string): string {
+function formatCreatedAt(iso: string, locale: string): string {
   const d = new Date(iso)
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+  return d.toLocaleDateString(dateLocale(locale), {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 
-export default async function AlertsPage() {
+export default async function AlertsPage({ params }: PageProps) {
+  const { locale } = await params
+  setRequestLocale(locale)
+  const t = await getTranslations('dashboard')
+  const tHome = await getTranslations('home')
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login?redirect=/dashboard/alerts')
+  if (!user) {
+    redirect({ href: '/login?redirect=/dashboard/alerts', locale })
+    return
+  }
 
   const [{ data: alerts }, { data: dormData }] = await Promise.all([
     supabase
@@ -74,16 +104,16 @@ export default async function AlertsPage() {
           className="mb-8 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="size-3.5" />
-          Dashboard
+          {t('backToDashboard')}
         </Link>
 
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Alerts</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('alerts')}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {rows.length === 0
-                ? 'Get emailed when a matching room opens'
-                : `${activeCount} active · ${rows.length} total`}
+                ? t('getEmailedWhenMatch')
+                : t('activeTotal', { active: activeCount, total: rows.length })}
             </p>
             {rows.length > 0 && (
               <div className="mt-3">
@@ -98,7 +128,7 @@ export default async function AlertsPage() {
             render={<Link href="/dashboard/alerts/new" />}
           >
             <Plus className="size-3.5" />
-            New alert
+            {t('newAlert')}
           </Button>
         </div>
 
@@ -107,9 +137,9 @@ export default async function AlertsPage() {
             <div className="mx-auto mb-4 grid size-14 place-items-center rounded-2xl bg-brand-soft">
               <Bell className="size-6 text-brand" />
             </div>
-            <p className="text-base font-semibold text-foreground">No alerts yet</p>
+            <p className="text-base font-semibold text-foreground">{t('noAlerts')}</p>
             <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-              Tell us your budget and districts once — we check every provider every 15 minutes and email you when a room opens.
+              {t('alertsSubtitle')}
             </p>
             <div className="mt-6 flex flex-col items-center gap-2 sm:flex-row sm:justify-center">
               <Button
@@ -118,7 +148,7 @@ export default async function AlertsPage() {
                 render={<Link href="/dashboard/alerts/new" />}
               >
                 <Plus className="size-4" />
-                Create first alert
+                {t('createFirstAlert')}
               </Button>
               <Button
                 variant="outline"
@@ -126,7 +156,7 @@ export default async function AlertsPage() {
                 className="h-10 rounded-full px-6 text-sm"
                 render={<Link href="/dorms" />}
               >
-                Browse dorms first
+                {tHome('browseFirst')}
               </Button>
             </div>
           </div>
@@ -155,31 +185,31 @@ export default async function AlertsPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <h2 className="text-sm font-semibold text-foreground sm:text-base">
-                          {formatAlertSummary(alert)}
+                          {formatAlertSummary(alert, t, locale)}
                         </h2>
                         {!alert.active && (
-                          <Badge variant="secondary" className="text-[10px]">Paused</Badge>
+                          <Badge variant="secondary" className="text-[10px]">{t('paused')}</Badge>
                         )}
                       </div>
 
                       <p className="mt-1 text-[11px] text-muted-foreground">
-                        Created {formatCreatedAt(alert.created_at)}
+                        {t('created', { date: formatCreatedAt(alert.created_at, locale) })}
                       </p>
 
                       <div className="mt-3 flex flex-wrap gap-1.5">
                         {alert.pets_required && (
-                          <Badge variant="secondary" className="text-[10px]">Pets</Badge>
+                          <Badge variant="secondary" className="text-[10px]">{t('petsBadge')}</Badge>
                         )}
                         {alert.couples && (
-                          <Badge variant="secondary" className="text-[10px]">Couples</Badge>
+                          <Badge variant="secondary" className="text-[10px]">{t('couplesBadge')}</Badge>
                         )}
                         {alert.deposit_max != null && (
                           <Badge variant="secondary" className="text-[10px]">
-                            Deposit ≤ {alert.deposit_max} mo
+                            {t('depositBadge', { months: alert.deposit_max })}
                           </Badge>
                         )}
                         {alert.notify_email && (
-                          <Badge variant="secondary" className="text-[10px]">Email</Badge>
+                          <Badge variant="secondary" className="text-[10px]">{t('emailBadge')}</Badge>
                         )}
                       </div>
 
@@ -188,7 +218,9 @@ export default async function AlertsPage() {
                         className="mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1.5 text-xs font-medium text-brand transition-colors hover:bg-brand-soft/70"
                       >
                         <Home className="size-3.5" />
-                        {matchCount} {matchCount === 1 ? 'dorm matches' : 'dorms match'} now
+                        {matchCount === 1
+                          ? t('dormMatches', { count: matchCount })
+                          : t('dormsMatch', { count: matchCount })}
                       </Link>
                     </div>
 
@@ -201,7 +233,7 @@ export default async function AlertsPage() {
                           nativeButton={false}
                           className="size-9"
                           render={<Link href={`/dashboard/alerts/${alert.id}`} />}
-                          aria-label="Edit alert"
+                          aria-label={t('editAlertAria')}
                         >
                           <Pencil className="size-3.5" />
                         </Button>

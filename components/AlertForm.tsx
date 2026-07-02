@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,6 +37,8 @@ interface Props {
 }
 
 export default function AlertForm({ mode, alertId, defaultValues }: Props) {
+  const t = useTranslations('alertForm')
+  const tDash = useTranslations('dashboard')
   const [isPending, startTransition] = useTransition()
 
   const form = useForm<FormValues>({
@@ -83,7 +86,7 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
 
   function onSubmit(values: FormValues) {
     if (!values.notify_email) {
-      toast.error('Email notifications must stay on — Telegram is not available yet.')
+      toast.error(t('emailRequired'))
       return
     }
 
@@ -99,6 +102,8 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
     })
   }
 
+  const submitLabel = mode === 'create' ? tDash('createAlert') : tDash('saveChanges')
+
   return (
     <Form {...form}>
       <form id="alert-form" onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
@@ -106,7 +111,7 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
         <AlertMatchPreview criteria={criteria} />
 
         <section className="card-elevated rounded-2xl bg-surface p-5">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">Budget</h2>
+          <h2 className="mb-4 text-sm font-semibold text-foreground">{t('budget')}</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField
               control={form.control}
@@ -114,13 +119,13 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-xs text-muted-foreground">
-                    Max rent per month (€)
+                    {t('maxRent')}
                   </FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       min={0}
-                      placeholder="e.g. 600"
+                      placeholder={t('maxRentPlaceholder')}
                       className="h-9"
                       {...field}
                     />
@@ -135,14 +140,14 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-xs text-muted-foreground">
-                    Max deposit (months)
+                    {t('maxDeposit')}
                   </FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       min={0}
                       step={1}
-                      placeholder="e.g. 2"
+                      placeholder={t('maxDepositPlaceholder')}
                       className="h-9"
                       {...field}
                     />
@@ -162,28 +167,26 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
               <DistrictGrid
                 selected={field.value}
                 onChange={field.onChange}
-                label="Districts"
+                label={t('districts')}
               />
             )}
           />
         </section>
 
         <section className="card-elevated rounded-2xl bg-surface p-5">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">Move-in date</h2>
+          <h2 className="mb-4 text-sm font-semibold text-foreground">{t('moveInDate')}</h2>
           <FormField
             control={form.control}
             name="move_in_before"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs text-muted-foreground">
-                  I need to move in by
+                  {t('moveInBy')}
                 </FormLabel>
                 <FormControl>
                   <Input type="date" className="h-9 w-48" {...field} />
                 </FormControl>
-                <p className="text-[11px] text-muted-foreground">
-                  Saved for your reference — move-in filtering is coming soon.
-                </p>
+                <p className="text-[11px] text-muted-foreground">{t('moveInHint')}</p>
                 <FormMessage />
               </FormItem>
             )}
@@ -191,7 +194,7 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
         </section>
 
         <section className="card-elevated rounded-2xl bg-surface p-5">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">Requirements</h2>
+          <h2 className="mb-4 text-sm font-semibold text-foreground">{t('requirements')}</h2>
           <div className="flex flex-col gap-4">
             <FormField
               control={form.control}
@@ -199,8 +202,8 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
               render={({ field }) => (
                 <label className="flex cursor-pointer items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm text-foreground">Pets allowed</p>
-                    <p className="text-xs text-muted-foreground">Only show rooms that allow pets</p>
+                    <p className="text-sm text-foreground">{t('petsAllowed')}</p>
+                    <p className="text-xs text-muted-foreground">{t('petsHint')}</p>
                   </div>
                   <Switch checked={field.value} onCheckedChange={field.onChange} />
                 </label>
@@ -213,8 +216,8 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
               render={({ field }) => (
                 <label className="flex cursor-pointer items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm text-foreground">Couples allowed</p>
-                    <p className="text-xs text-muted-foreground">Only show rooms that accept couples</p>
+                    <p className="text-sm text-foreground">{t('couplesAllowed')}</p>
+                    <p className="text-xs text-muted-foreground">{t('couplesHint')}</p>
                   </div>
                   <Switch checked={field.value} onCheckedChange={field.onChange} />
                 </label>
@@ -224,7 +227,7 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
         </section>
 
         <section className="card-elevated rounded-2xl bg-surface p-5">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">Notifications</h2>
+          <h2 className="mb-4 text-sm font-semibold text-foreground">{t('notifications')}</h2>
           <div className="flex flex-col gap-4">
             <FormField
               control={form.control}
@@ -232,8 +235,8 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
               render={({ field }) => (
                 <label className="flex cursor-pointer items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm text-foreground">Email</p>
-                    <p className="text-xs text-muted-foreground">Get notified by email</p>
+                    <p className="text-sm text-foreground">{t('email')}</p>
+                    <p className="text-xs text-muted-foreground">{t('emailHint')}</p>
                   </div>
                   <Switch checked={field.value} onCheckedChange={field.onChange} />
                 </label>
@@ -242,10 +245,10 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
             <div className="h-px bg-border" />
             <div className="flex items-center justify-between gap-3 opacity-60">
               <div>
-                <p className="text-sm text-foreground">Telegram</p>
-                <p className="text-xs text-muted-foreground">Coming soon — email alerts are active now</p>
+                <p className="text-sm text-foreground">{t('telegram')}</p>
+                <p className="text-xs text-muted-foreground">{t('telegramHint')}</p>
               </div>
-              <Switch checked={false} disabled aria-label="Telegram notifications coming soon" />
+              <Switch checked={false} disabled aria-label={t('telegramAria')} />
             </div>
           </div>
         </section>
@@ -257,7 +260,7 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
           className="hidden h-11 w-full rounded-full text-sm md:inline-flex"
         >
           {isPending && <Loader2 className="size-4 animate-spin" />}
-          {mode === 'create' ? 'Create alert' : 'Save changes'}
+          {submitLabel}
         </Button>
       </form>
 
@@ -270,7 +273,7 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
           className="h-12 w-full rounded-full text-sm"
         >
           {isPending && <Loader2 className="size-4 animate-spin" />}
-          {mode === 'create' ? 'Create alert' : 'Save changes'}
+          {submitLabel}
         </Button>
       </div>
     </Form>

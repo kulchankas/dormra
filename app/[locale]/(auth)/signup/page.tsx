@@ -1,37 +1,21 @@
 'use client'
 
-import { Suspense } from 'react'
-import { useState, useTransition } from 'react'
-import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useMemo, useState, useTransition } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Loader2, UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
+import { Link, useRouter } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
-
-const schema = z
-  .object({
-    email: z.string().email('Enter a valid email address.'),
-    password: z.string().min(8, 'At least 8 characters.'),
-    confirm: z.string(),
-    consent: z.boolean().refine((v) => v === true, {
-      message: 'You must accept the terms to continue.',
-    }),
-  })
-  .refine((data) => data.password === data.confirm, {
-    message: "Passwords don't match.",
-    path: ['confirm'],
-  })
-
-type FormValues = z.infer<typeof schema>
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true">
@@ -43,12 +27,33 @@ const GoogleIcon = () => (
 )
 
 function SignupPageContent() {
+  const t = useTranslations('auth')
   const router = useRouter()
   const params = useSearchParams()
   const redirectTo = params.get('redirect') ?? '/'
 
   const [isPending, startTransition] = useTransition()
   const [oauthLoading, setOauthLoading] = useState(false)
+
+  const schema = useMemo(
+    () =>
+      z
+        .object({
+          email: z.string().email(t('emailInvalid')),
+          password: z.string().min(8, t('passwordMin')),
+          confirm: z.string(),
+          consent: z.boolean().refine((v) => v === true, {
+            message: t('consentRequired'),
+          }),
+        })
+        .refine((data) => data.password === data.confirm, {
+          message: t('passwordsMismatch'),
+          path: ['confirm'],
+        }),
+    [t],
+  )
+
+  type FormValues = z.infer<typeof schema>
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -79,7 +84,7 @@ function SignupPageContent() {
         toast.error(error.message)
         return
       }
-      toast.success('Check your inbox to confirm your email.')
+      toast.success(t('signupSuccessInbox'))
       router.replace('/login')
     })
   }
@@ -103,15 +108,18 @@ function SignupPageContent() {
     }
   }
 
+  const loginHref =
+    redirectTo !== '/'
+      ? { pathname: '/login' as const, query: { redirect: redirectTo } }
+      : '/login'
+
   return (
     <div className="space-y-6">
       <header className="space-y-1.5">
         <h1 className="text-2xl font-medium tracking-tight text-foreground">
-          Create your account
+          {t('signupTitle')}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Save searches, get alerts, track applications — free while in beta.
-        </p>
+        <p className="text-sm text-muted-foreground">{t('signupSubtitle')}</p>
       </header>
 
       <Button
@@ -123,19 +131,19 @@ function SignupPageContent() {
         disabled={oauthLoading || isPending}
       >
         {oauthLoading ? <Loader2 className="size-4 animate-spin" /> : <GoogleIcon />}
-        Continue with Google
+        {t('continueGoogle')}
       </Button>
 
       <div className="relative">
         <Separator />
         <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-[11px] uppercase tracking-wider text-muted-foreground">
-          or sign up with email
+          {t('orSignUpWithEmail')}
         </span>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         <div className="space-y-1.5">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t('email')}</Label>
           <Input
             id="email"
             type="email"
@@ -151,12 +159,12 @@ function SignupPageContent() {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t('password')}</Label>
           <Input
             id="password"
             type="password"
             autoComplete="new-password"
-            placeholder="At least 8 characters"
+            placeholder={t('passwordPlaceholder')}
             aria-invalid={!!errors.password}
             className="h-11 rounded-xl"
             {...register('password')}
@@ -167,12 +175,12 @@ function SignupPageContent() {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="confirm">Confirm password</Label>
+          <Label htmlFor="confirm">{t('confirmPassword')}</Label>
           <Input
             id="confirm"
             type="password"
             autoComplete="new-password"
-            placeholder="Re-enter the password"
+            placeholder={t('confirmPasswordPlaceholder')}
             aria-invalid={!!errors.confirm}
             className="h-11 rounded-xl"
             {...register('confirm')}
@@ -190,13 +198,13 @@ function SignupPageContent() {
             aria-invalid={!!errors.consent}
           />
           <span>
-            I agree to the{' '}
+            {t('consentPrefix')}{' '}
             <Link href="/terms" className="text-brand underline-offset-4 hover:underline">
-              Terms
+              {t('termsLink')}
             </Link>{' '}
-            and{' '}
+            {t('and')}{' '}
             <Link href="/privacy" className="text-brand underline-offset-4 hover:underline">
-              Privacy Policy
+              {t('privacyLink')}
             </Link>
             .
           </span>
@@ -212,17 +220,14 @@ function SignupPageContent() {
           disabled={isPending || oauthLoading}
         >
           {isPending ? <Loader2 className="size-4 animate-spin" /> : <UserPlus className="size-4" />}
-          Create account
+          {t('createAccount')}
         </Button>
       </form>
 
       <p className="text-center text-sm text-muted-foreground">
-        Already have an account?{' '}
-        <Link
-          href={`/login${redirectTo !== '/' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`}
-          className="font-medium text-brand underline-offset-4 hover:underline"
-        >
-          Sign in
+        {t('hasAccount')}{' '}
+        <Link href={loginHref} className="font-medium text-brand underline-offset-4 hover:underline">
+          {t('signIn')}
         </Link>
       </p>
     </div>

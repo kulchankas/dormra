@@ -1,19 +1,34 @@
-import Link from 'next/link'
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import AlertForm from '@/components/AlertForm'
 import type { AlertPayload } from '@/app/[locale]/dashboard/alerts/actions'
+import { Link, redirect } from '@/i18n/navigation'
 
-export default async function EditAlertPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
-  const { id } = await params
+type PageProps = { params: Promise<{ locale: string; id: string }> }
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'metadata' })
+  return { title: t('editAlertPageTitle') }
+}
+
+export default async function EditAlertPage({ params }: PageProps) {
+  const { locale, id } = await params
+  setRequestLocale(locale)
+  const t = await getTranslations('dashboard')
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect(`/login?redirect=${encodeURIComponent(`/dashboard/alerts/${id}`)}`)
+  if (!user) {
+    redirect({
+      href: `/login?redirect=${encodeURIComponent(`/dashboard/alerts/${id}`)}`,
+      locale,
+    })
+    return
+  }
 
   const { data: alert } = await supabase
     .from('user_alerts')
@@ -45,12 +60,10 @@ export default async function EditAlertPage({
             className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="size-3.5" />
-            Back to alerts
+            {t('backToAlerts')}
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Edit alert</h1>
-          <p className="mt-2 max-w-md text-sm text-muted-foreground">
-            Update your criteria — changes apply to future availability notifications.
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('editAlert')}</h1>
+          <p className="mt-2 max-w-md text-sm text-muted-foreground">{t('editAlertSubtitle')}</p>
         </div>
       </div>
 

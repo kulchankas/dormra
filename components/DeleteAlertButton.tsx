@@ -2,12 +2,14 @@
 
 import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { deleteAlert } from '@/app/[locale]/dashboard/alerts/actions'
 import { useRouter } from '@/i18n/navigation'
 import { cn } from '@/lib/utils'
 
 export default function DeleteAlertButton({ id }: { id: string }) {
+  const t = useTranslations('dashboard')
   const [pending, setPending] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
   const router = useRouter()
@@ -35,10 +37,10 @@ export default function DeleteAlertButton({ id }: { id: string }) {
       onClick={handleClick}
       disabled={pending}
       className={cn(confirmed && 'h-8 rounded-full px-2.5 text-xs')}
-      aria-label={confirmed ? 'Confirm delete alert' : 'Delete alert'}
+      aria-label={confirmed ? t('confirmDelete') : t('deleteAlert')}
     >
       <Trash2 className="size-3.5" />
-      {confirmed && <span>Delete?</span>}
+      {confirmed && <span>{t('deleteConfirm')}</span>}
     </Button>
   )
 }

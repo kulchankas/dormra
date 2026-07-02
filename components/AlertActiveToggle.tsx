@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 import { toast } from 'sonner'
 import { Switch } from '@/components/ui/switch'
 import { toggleAlertActive } from '@/app/[locale]/dashboard/alerts/actions'
 
 export default function AlertActiveToggle({ id, active }: { id: string; active: boolean }) {
+  const t = useTranslations('dashboard')
   const router = useRouter()
   const [optimistic, setOptimistic] = useState(active)
   const [isPending, startTransition] = useTransition()
@@ -27,13 +29,13 @@ export default function AlertActiveToggle({ id, active }: { id: string; active: 
   return (
     <div className="flex items-center gap-2">
       <span className="text-[11px] font-medium text-muted-foreground">
-        {optimistic ? 'Active' : 'Paused'}
+        {optimistic ? t('active') : t('paused')}
       </span>
       <Switch
         checked={optimistic}
         onCheckedChange={handleChange}
         disabled={isPending}
-        aria-label={optimistic ? 'Pause alert' : 'Resume alert'}
+        aria-label={optimistic ? t('pauseAlert') : t('resumeAlert')}
       />
     </div>
   )
