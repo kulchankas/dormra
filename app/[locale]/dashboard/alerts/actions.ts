@@ -9,6 +9,7 @@ import { resolveLocale } from '@/lib/i18n-email'
 import { parseAlertPayload } from '@/lib/alert-schema'
 import { countMatchBreakdown } from '@/lib/alertMatch'
 import { getAvailabilityStatusBulk, availabilityMapToRecord } from '@/lib/availability'
+import { maybeSendWelcomeDigest } from '@/lib/alert-welcome-digest'
 import type { Dorm } from '@/lib/types/dorm'
 
 export type AlertPayload = {
@@ -51,22 +52,26 @@ export async function createAlert(payload: AlertPayload): Promise<{ error?: stri
 
   const locale = resolveLocale(await getLocale())
 
-  const { error } = await supabase.from('user_alerts').insert({
-    user_id: user.id,
-    price_max: validated.price_max,
-    districts: validated.districts.length > 0 ? validated.districts : null,
-    move_in_before: validated.move_in_before,
-    pets_required: validated.pets_required,
-    couples: validated.couples,
-    deposit_max: validated.deposit_max,
-    notify_email: validated.notify_email,
-    notify_telegram: validated.notify_telegram,
-    telegram_chat_id: validated.telegram_chat_id || null,
-    locale,
-    active: true,
-  })
+  const { data: inserted, error } = await supabase
+    .from('user_alerts')
+    .insert({
+      user_id: user.id,
+      price_max: validated.price_max,
+      districts: validated.districts.length > 0 ? validated.districts : null,
+      move_in_before: validated.move_in_before,
+      pets_required: validated.pets_required,
+      couples: validated.couples,
+      deposit_max: validated.deposit_max,
+      notify_email: validated.notify_email,
+      notify_telegram: validated.notify_telegram,
+      telegram_chat_id: validated.telegram_chat_id || null,
+      locale,
+      active: true,
+    })
+    .select('id')
+    .single()
 
-  if (error) return { error: error.message }
+  if (error || !inserted) return { error: error?.message ?? 'Failed to create alert' }
 
   revalidatePath('/dashboard/alerts')
   revalidatePath('/dashboard')
@@ -90,6 +95,19 @@ export async function createAlert(payload: AlertPayload): Promise<{ error?: stri
     criteria,
     availability,
   )
+
+  if (user.email) {
+    const digest = await maybeSendWelcomeDigest({
+      userId: user.id,
+      userEmail: user.email,
+      alertId: inserted.id,
+      criteria: validated,
+      locale,
+    })
+    if (digest.error) {
+      console.error('[ALERT] Welcome digest failed:', digest.error)
+    }
+  }
 
   redirect({
     href: `/dashboard/alerts?created=1&available=${availableMatches}&matches=${criteriaMatches}`,

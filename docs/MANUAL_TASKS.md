@@ -78,6 +78,8 @@ Run in order if not already applied:
 psql "$DATABASE_URL" -f supabase/migrations/20260701120000_user_alerts_locale.sql
 psql "$DATABASE_URL" -f supabase/migrations/20260701130000_snapshot_rpc_and_retention.sql
 psql "$DATABASE_URL" -f supabase/migrations/20260701140000_alert_log_dedup.sql
+psql "$DATABASE_URL" -f supabase/migrations/20260702220000_cron_runs.sql
+psql "$DATABASE_URL" -f supabase/migrations/20260702220100_alert_log_alert_id.sql
 psql "$DATABASE_URL" -f supabase/migrations/20260702150000_dorm_coordinates.sql
 ```
 

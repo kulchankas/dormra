@@ -2,7 +2,7 @@ import { setRequestLocale, getTranslations } from 'next-intl/server'
 import { formatDistanceToNow } from 'date-fns'
 import { de, ru, enGB } from 'date-fns/locale'
 import { Activity, Bell, Building2, Mail, AlertTriangle } from 'lucide-react'
-import { getAdminOverview } from '@/lib/admin-stats'
+import { getAdminOverview, getRecentCronRuns } from '@/lib/admin-stats'
 import { Link } from '@/i18n/navigation'
 
 const DATE_LOCALES = { en: enGB, de, ru } as const
@@ -50,6 +50,7 @@ export default async function AdminOverviewPage({ params }: PageProps) {
   const dateLocale = DATE_LOCALES[locale as keyof typeof DATE_LOCALES] ?? enGB
 
   const stats = await getAdminOverview()
+  const cronRuns = await getRecentCronRuns(8)
 
   const lastScrape = stats.lastScrapedAt
     ? formatDistanceToNow(new Date(stats.lastScrapedAt), { addSuffix: true, locale: dateLocale })
@@ -165,6 +166,77 @@ export default async function AdminOverviewPage({ params }: PageProps) {
             </Link>
           </p>
         )}
+      </section>
+
+      <section className="card-elevated rounded-2xl bg-surface p-5">
+        <div className="mb-4 flex items-center gap-2">
+          <Activity className="size-4 text-brand" />
+          <h2 className="text-sm font-semibold text-foreground">{t('cronRunsSection')}</h2>
+        </div>
+        {cronRuns.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t('cronRunsEmpty')}</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[560px] text-left text-sm">
+              <thead>
+                <tr className="border-b border-border text-xs text-muted-foreground">
+                  <th className="pb-2 pr-4 font-medium">{t('cronRunWhen')}</th>
+                  <th className="pb-2 pr-4 font-medium">{t('cronRunJob')}</th>
+                  <th className="pb-2 pr-4 font-medium">{t('cronRunDuration')}</th>
+                  <th className="pb-2 pr-4 font-medium">{t('cronRunResult')}</th>
+                  <th className="pb-2 font-medium">{t('cronRunCounts')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cronRuns.map((run) => {
+                  const when = formatDistanceToNow(new Date(run.startedAt), {
+                    addSuffix: true,
+                    locale: dateLocale,
+                  })
+                  const jobLabel =
+                    run.batch !== null && run.batches !== null
+                      ? `${run.providers.join(', ')} (${run.batch + 1}/${run.batches})`
+                      : run.providers.join(', ')
+                  const durationSec = (run.durationMs / 1000).toFixed(0)
+
+                  return (
+                    <tr key={run.id} className="border-b border-border/50 last:border-0">
+                      <td className="py-2.5 pr-4 text-muted-foreground">{when}</td>
+                      <td className="py-2.5 pr-4 font-medium text-foreground">{jobLabel}</td>
+                      <td className="py-2.5 pr-4 text-muted-foreground">{durationSec}s</td>
+                      <td className="py-2.5 pr-4">
+                        <span
+                          className={
+                            run.ok && run.errors === 0
+                              ? 'font-medium text-emerald-600'
+                              : 'font-medium text-amber-600'
+                          }
+                        >
+                          {run.ok
+                            ? run.errors > 0
+                              ? t('cronRunPartial', { errors: run.errors })
+                              : t('cronRunOk')
+                            : t('cronRunFailed')}
+                        </span>
+                        {run.errorMessage && (
+                          <span className="mt-0.5 block text-xs text-destructive">{run.errorMessage}</span>
+                        )}
+                      </td>
+                      <td className="py-2.5 text-muted-foreground">
+                        {t('cronRunScraped', {
+                          scraped: run.scraped,
+                          skipped: run.skipped,
+                          pruned: run.pruned,
+                        })}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <p className="mt-3 text-xs text-muted-foreground">{t('cronRunsHint')}</p>
       </section>
 
       <section className="rounded-2xl border border-dashed border-border bg-surface-soft/50 p-5">
