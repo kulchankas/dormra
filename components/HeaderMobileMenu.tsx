@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link, usePathname } from '@/i18n/navigation'
-import { Menu, LogIn, UserPlus, LogOut, Bell, LayoutDashboard, Shield } from 'lucide-react'
+import { Menu, LogIn, UserPlus, LogOut, Bell, LayoutDashboard, Shield, Settings } from 'lucide-react'
 import {
   Sheet,
   SheetClose,
@@ -102,23 +102,42 @@ export default function HeaderMobileMenu({
             />
           )}
           {signedIn && (
-            <SheetClose
-              nativeButton={false}
-              render={
-                <Link
-                  href="/dashboard"
-                  className={cn(
-                    'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
-                    pathname === '/dashboard'
-                      ? 'bg-brand-soft font-medium text-brand'
-                      : 'text-foreground hover:bg-muted',
-                  )}
-                >
-                  <LayoutDashboard className="size-4 text-muted-foreground" />
-                  {t('dashboard')}
-                </Link>
-              }
-            />
+            <>
+              <SheetClose
+                nativeButton={false}
+                render={
+                  <Link
+                    href="/dashboard"
+                    className={cn(
+                      'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
+                      pathname === '/dashboard'
+                        ? 'bg-brand-soft font-medium text-brand'
+                        : 'text-foreground hover:bg-muted',
+                    )}
+                  >
+                    <LayoutDashboard className="size-4 text-muted-foreground" />
+                    {t('dashboard')}
+                  </Link>
+                }
+              />
+              <SheetClose
+                nativeButton={false}
+                render={
+                  <Link
+                    href="/dashboard/settings"
+                    className={cn(
+                      'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
+                      pathname.startsWith('/dashboard/settings')
+                        ? 'bg-brand-soft font-medium text-brand'
+                        : 'text-foreground hover:bg-muted',
+                    )}
+                  >
+                    <Settings className="size-4 text-muted-foreground" />
+                    {t('settings')}
+                  </Link>
+                }
+              />
+            </>
           )}
         </nav>
 
