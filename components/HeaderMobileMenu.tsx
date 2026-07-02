@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link, usePathname } from '@/i18n/navigation'
-import { Menu, LogIn, UserPlus, LogOut, Bell, LayoutDashboard, Shield, Settings } from 'lucide-react'
+import { Menu, LogIn, UserPlus, Bell, LayoutDashboard, Shield, Settings } from 'lucide-react'
 import {
   Sheet,
   SheetClose,
@@ -15,7 +15,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
-import { signOutAction } from '@/lib/auth-actions'
+import SignOutButton from '@/components/SignOutButton'
 import { cn } from '@/lib/utils'
 
 const NAV = [
@@ -145,17 +145,7 @@ export default function HeaderMobileMenu({
 
         <div className="px-4 pb-6">
           {signedIn ? (
-            <form action={signOutAction}>
-              <Button
-                type="submit"
-                variant="outline"
-                size="lg"
-                className="h-11 w-full gap-2 rounded-xl text-sm"
-              >
-                <LogOut className="size-4" />
-                {t('signOut')}
-              </Button>
-            </form>
+            <SignOutButton fullWidth />
           ) : (
             <div className="flex flex-col gap-2">
               <SheetClose

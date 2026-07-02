@@ -417,6 +417,7 @@
     "accountSection": "Account",
     "email": "Email",
     "memberSince": "Member since",
+    "signOutHint": "Sign out on this device when you are done.",
     "securitySection": "Security",
     "securityHint": "Change your password while signed in.",
     "updatePassword": "Update password",

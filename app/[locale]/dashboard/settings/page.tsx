@@ -9,6 +9,7 @@ import { Link, redirect } from '@/i18n/navigation'
 import ChangePasswordForm from '@/components/ChangePasswordForm'
 import ExportAccountDataButton from '@/components/ExportAccountDataButton'
 import DeleteAccountSection from '@/components/DeleteAccountSection'
+import SignOutButton from '@/components/SignOutButton'
 
 const DATE_LOCALES = { en: enGB, de, ru } as const
 
@@ -95,6 +96,12 @@ export default async function SettingsPage({ params }: PageProps) {
                 </div>
               )}
             </dl>
+            <div className="mt-4 border-t border-border/60 pt-4">
+              <p className="text-xs text-muted-foreground">{t('signOutHint')}</p>
+              <div className="mt-3">
+                <SignOutButton size="sm" />
+              </div>
+            </div>
           </section>
 
           <section className="card-elevated rounded-2xl bg-surface p-5">

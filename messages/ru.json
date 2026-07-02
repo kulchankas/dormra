@@ -417,6 +417,7 @@
     "accountSection": "Аккаунт",
     "email": "Email",
     "memberSince": "С нами",
+    "signOutHint": "Выйдите на этом устройстве, когда закончите.",
     "securitySection": "Безопасность",
     "securityHint": "Сменить пароль, пока вы в системе.",
     "updatePassword": "Обновить пароль",
