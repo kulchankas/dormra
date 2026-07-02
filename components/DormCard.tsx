@@ -77,10 +77,10 @@ export default function DormCard({ dorm, availability, variant = 'full' }: Props
           <div className="absolute left-2.5 top-2.5">
             <span
               className={cn(
-                'inline-block rounded-full px-2 py-0.5 text-[10px] font-medium backdrop-blur-sm',
-                availability.status === 'available' && 'bg-brand-accent text-white',
-                availability.status === 'fully_booked' && 'bg-muted-foreground text-white',
-                availability.status === 'unknown' && 'bg-muted text-muted-foreground',
+                'inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold backdrop-blur-sm',
+                availability.status === 'available' && 'bg-brand-accent text-white shadow-sm',
+                availability.status === 'fully_booked' && 'bg-foreground/80 text-white',
+                availability.status === 'unknown' && 'bg-surface/90 text-muted-foreground ring-1 ring-border',
               )}
             >
               {availability.label}

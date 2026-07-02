@@ -27,7 +27,7 @@ const HOW_IT_WORKS = [
     icon: Mail,
     step: '03',
     title: 'Get notified',
-    desc: 'Email or Telegram the moment a matching room opens up.',
+    desc: 'Email alert the moment a matching room opens up.',
   },
 ] as const
 
@@ -97,8 +97,11 @@ export default function HomePage() {
       >
         <div className="mx-auto flex max-w-[680px] flex-col items-center px-6 text-center">
           {/* Eyebrow */}
-          <span className="mb-4 inline-flex items-center rounded-full bg-brand-soft px-3 py-1 text-xs font-medium text-brand">
+          <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1 text-xs font-medium text-brand">
             Vienna student housing
+            <span className="rounded-full bg-surface px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Beta
+            </span>
           </span>
 
           <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-foreground md:text-[40px]">
@@ -116,7 +119,7 @@ export default function HomePage() {
 
           {/* Provider trust bar */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
-            <span className="text-[11px] text-muted-foreground/60">Tracking</span>
+            <span className="text-[11px] text-muted-foreground/60">Providers</span>
             {PROVIDERS.map((p) => (
               <span key={p} className="text-[11px] font-medium text-muted-foreground">
                 {p}
@@ -206,7 +209,7 @@ export default function HomePage() {
             <DormsPreview />
           </Suspense>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Button
               size="lg"
               nativeButton={false}
@@ -214,6 +217,15 @@ export default function HomePage() {
               render={<Link href="/dorms" />}
             >
               Browse all dorms
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              nativeButton={false}
+              className="h-11 rounded-full px-8 text-sm"
+              render={<Link href="/signup?redirect=/dashboard/alerts/new" />}
+            >
+              Set up a free alert
             </Button>
           </div>
         </div>

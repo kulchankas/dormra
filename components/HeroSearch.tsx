@@ -32,6 +32,12 @@ export default function HeroSearch() {
     router.push(qs ? `/dorms?${qs}` : '/dorms')
   }
 
+  const mobileSummary = [
+    'Vienna',
+    selectedDate ? format(selectedDate, 'd MMM') : 'Any time',
+    budget ? `≤ €${budget}` : 'Any budget',
+  ].join(' · ')
+
   return (
     <>
       {/* ── Desktop pill search bar ── */}
@@ -123,7 +129,7 @@ export default function HeroSearch() {
         </span>
         <div className="flex-1 text-left">
           <p className="text-sm font-medium text-foreground">Search dorms</p>
-          <p className="text-xs text-muted-foreground">Vienna · Any time · Any budget</p>
+          <p className="text-xs text-muted-foreground">{mobileSummary}</p>
         </div>
       </button>
 

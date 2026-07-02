@@ -1,7 +1,7 @@
 import * as cheerio from 'cheerio'
 import type { ScraperResult } from './types'
+import { BOT_UA, scrapeFailure } from './shared'
 
-const BOT_UA = 'Dormra-Bot/1.0 (+https://dormra.eu/about)'
 const TIMEOUT_MS = 15_000
 
 // Keywords indicating rooms are currently available (EN + DE)
@@ -28,12 +28,12 @@ export async function scrapeHome4Students(
       },
     })
     if (!res.ok) {
-      return failure(dormSlug, `HTTP ${res.status} from ${scrapeUrl}`)
+      return scrapeFailure(dormSlug, `HTTP ${res.status} from ${scrapeUrl}`)
     }
     html = await res.text()
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    return failure(dormSlug, abort.signal.aborted ? `Timed out after ${TIMEOUT_MS}ms` : msg)
+    return scrapeFailure(dormSlug, abort.signal.aborted ? `Timed out after ${TIMEOUT_MS}ms` : msg)
   } finally {
     clearTimeout(timer)
   }
@@ -66,6 +66,3 @@ export async function scrapeHome4Students(
   }
 }
 
-function failure(dormSlug: string, errorMsg: string): ScraperResult {
-  return { dormSlug, available: false, roomsCount: null, rawText: '', scrapeOk: false, errorMsg }
-}

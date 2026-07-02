@@ -4,11 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import HeaderUserMenu from './HeaderUserMenu'
 import HeaderMobileMenu from './HeaderMobileMenu'
-
-const NAV = [
-  { href: '/dorms', label: 'Browse dorms' },
-  { href: '/how-it-works', label: 'How it works' },
-] as const
+import HeaderNav from './HeaderNav'
 
 export default async function Header() {
   let userEmail: string | null = null
@@ -33,24 +29,22 @@ export default async function Header() {
           Dormra
         </Link>
 
-        <nav
-          aria-label="Main navigation"
-          className="hidden items-center gap-1 md:flex"
-        >
-          {NAV.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className="rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              {label}
-            </Link>
-          ))}
-        </nav>
+        <HeaderNav />
 
         <div className="flex items-center gap-2">
           {userEmail ? (
-            <HeaderUserMenu email={userEmail} />
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                nativeButton={false}
+                className="hidden h-8 rounded-full px-3 text-sm md:inline-flex"
+                render={<Link href="/dashboard/alerts" />}
+              >
+                My alerts
+              </Button>
+              <HeaderUserMenu email={userEmail} />
+            </>
           ) : (
             <div className="hidden items-center gap-2 md:flex">
               <Button variant="ghost" size="sm" nativeButton={false} className="h-8 rounded-full px-3 text-sm" render={<Link href="/login" />}>

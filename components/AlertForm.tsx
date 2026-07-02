@@ -62,7 +62,6 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
     },
   })
 
-  const notifyTelegram = useWatch({ control: form.control, name: 'notify_telegram' })
   const selectedDistricts = useWatch({ control: form.control, name: 'districts' })
 
   function buildPayload(values: FormValues): AlertPayload {
@@ -127,13 +126,14 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-xs text-muted-foreground">
-                    Max deposit (€)
+                    Max deposit (months)
                   </FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       min={0}
-                      placeholder="e.g. 1200"
+                      step={1}
+                      placeholder="e.g. 2"
                       className="h-9"
                       {...field}
                     />
@@ -205,6 +205,9 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
                 <FormControl>
                   <Input type="date" className="h-9 w-48" {...field} />
                 </FormControl>
+                <p className="text-[11px] text-muted-foreground">
+                  Saved for your reference — move-in filtering is coming soon.
+                </p>
                 <FormMessage />
               </FormItem>
             )}
@@ -272,43 +275,13 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
               )}
             />
             <div className="h-px bg-border" />
-            <FormField
-              control={form.control}
-              name="notify_telegram"
-              render={({ field }) => (
-                <label className="flex cursor-pointer items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm text-foreground">Telegram</p>
-                    <p className="text-xs text-muted-foreground">Instant message via Telegram bot</p>
-                  </div>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </label>
-              )}
-            />
-            {notifyTelegram && (
-              <FormField
-                control={form.control}
-                name="telegram_chat_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs text-muted-foreground">
-                      Telegram chat ID
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g. 123456789"
-                        className="h-9"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+            <div className="flex items-center justify-between gap-3 opacity-60">
+              <div>
+                <p className="text-sm text-foreground">Telegram</p>
+                <p className="text-xs text-muted-foreground">Coming soon — email alerts are active now</p>
+              </div>
+              <Switch checked={false} disabled aria-label="Telegram notifications coming soon" />
+            </div>
           </div>
         </section>
 

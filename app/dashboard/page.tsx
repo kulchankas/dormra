@@ -50,21 +50,29 @@ export default async function DashboardPage() {
           </Link>
 
           {/* Saved dorms — coming soon */}
-          <div className="rounded-2xl border border-border bg-surface p-5 opacity-60">
+          <div
+            className="rounded-2xl border border-border bg-surface p-5 opacity-60"
+            title="Saved dorms — coming soon"
+          >
             <div className="mb-3 grid size-9 place-items-center rounded-xl bg-muted">
               <BookmarkCheck className="size-4 text-muted-foreground" />
             </div>
             <p className="text-sm font-medium text-foreground">Saved dorms</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">Coming soon</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">Bookmark favourites to compare later</p>
+            <p className="mt-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">Coming soon</p>
           </div>
 
           {/* Application tracker — coming soon */}
-          <div className="rounded-2xl border border-border bg-surface p-5 opacity-60">
+          <div
+            className="rounded-2xl border border-border bg-surface p-5 opacity-60"
+            title="Application tracker — coming soon"
+          >
             <div className="mb-3 grid size-9 place-items-center rounded-xl bg-muted">
               <TrendingUp className="size-4 text-muted-foreground" />
             </div>
             <p className="text-sm font-medium text-foreground">Application tracker</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">Coming soon</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">Track where you applied in one place</p>
+            <p className="mt-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">Coming soon</p>
           </div>
         </div>
 
