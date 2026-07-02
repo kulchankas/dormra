@@ -1,12 +1,15 @@
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
+import { getTranslations } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
 import DormraLogo from '@/components/DormraLogo'
 import { Button } from '@/components/ui/button'
 import HeaderUserMenu from './HeaderUserMenu'
 import HeaderMobileMenu from './HeaderMobileMenu'
 import HeaderNav from './HeaderNav'
+import LanguageSwitcher from './LanguageSwitcher'
 
 export default async function Header() {
+  const t = await getTranslations('nav')
   let userEmail: string | null = null
   try {
     const supabase = await createClient()
@@ -26,6 +29,7 @@ export default async function Header() {
         <HeaderNav />
 
         <div className="flex items-center gap-2">
+          <LanguageSwitcher className="hidden sm:flex" />
           {userEmail ? (
             <>
               <Button
@@ -35,17 +39,17 @@ export default async function Header() {
                 className="hidden h-8 rounded-full px-3 text-sm md:inline-flex"
                 render={<Link href="/dashboard/alerts" />}
               >
-                My alerts
+                {t('myAlerts')}
               </Button>
               <HeaderUserMenu email={userEmail} />
             </>
           ) : (
             <div className="hidden items-center gap-2 md:flex">
               <Button variant="ghost" size="sm" nativeButton={false} className="h-8 rounded-full px-3 text-sm" render={<Link href="/login" />}>
-                Log in
+                {t('logIn')}
               </Button>
               <Button size="sm" nativeButton={false} className="h-8 rounded-full px-4 text-sm" render={<Link href="/signup" />}>
-                Sign up
+                {t('signUp')}
               </Button>
             </div>
           )}

@@ -15,42 +15,58 @@ export async function getAvailabilityStatusBulk(
 
 export type ChancesRating = {
   emoji: string
-  label: 'Good chance' | 'Medium' | 'Competitive'
-  /** Inline color for the badge text. */
+  label: string
   color: string
-  /** Inline color for the badge background. */
   bg: string
-  /** Plain-English context, shown in a tooltip. */
   tooltip: string
 }
 
-export function getChancesScore(provider: string): ChancesRating {
+type ChancesTranslateFn = (
+  key: 'good' | 'medium' | 'competitive' | 'oeadTooltip' | 'h4sTooltip' | 'defaultTooltip',
+) => string
+
+export function getChancesRating(provider: string, t: ChancesTranslateFn): ChancesRating {
   const p = provider.toLowerCase()
   if (p === 'oead') {
     return {
       emoji: '🔴',
-      label: 'Competitive',
+      label: t('competitive'),
       color: '#991B1B',
       bg: '#FEE2E2',
-      tooltip: 'OeAD housing is heavily oversubscribed — prioritised by study type and programme.',
+      tooltip: t('oeadTooltip'),
     }
   }
   if (p === 'home4students' || p === 'viennabase') {
     return {
       emoji: '🟡',
-      label: 'Medium',
+      label: t('medium'),
       color: '#92400E',
       bg: '#FEF3C7',
-      tooltip: 'Moderate competition. Apply early and have a backup option ready.',
+      tooltip: t('h4sTooltip'),
     }
   }
   return {
     emoji: '🟢',
-    label: 'Good chance',
+    label: t('good'),
     color: '#14532D',
     bg: '#DCFCE7',
-    tooltip: 'Places are usually available — good odds if you apply promptly.',
+    tooltip: t('defaultTooltip'),
   }
+}
+
+/** @deprecated Use getChancesRating with translations instead. */
+export function getChancesScore(provider: string): ChancesRating {
+  return getChancesRating(provider, (key) => {
+    const fallback: Record<Parameters<ChancesTranslateFn>[0], string> = {
+      good: 'Good chance',
+      medium: 'Medium',
+      competitive: 'Competitive',
+      oeadTooltip: 'OeAD housing is heavily oversubscribed — prioritised by study type and programme.',
+      h4sTooltip: 'Moderate competition. Apply early and have a backup option ready.',
+      defaultTooltip: 'Places are usually available — good odds if you apply promptly.',
+    }
+    return fallback[key]
+  })
 }
 
 // ─── Misc ─────────────────────────────────────────────────────────────────────

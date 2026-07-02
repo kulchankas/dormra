@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import DistrictGrid from '@/components/DistrictGrid'
 import AlertMatchPreview from '@/components/AlertMatchPreview'
-import { createAlert, updateAlert, type AlertPayload } from '@/app/dashboard/alerts/actions'
+import { createAlert, updateAlert, type AlertPayload } from '@/app/[locale]/dashboard/alerts/actions'
 
 const schema = z.object({
   price_max: z.string().optional(),

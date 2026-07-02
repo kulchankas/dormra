@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { Link, usePathname } from '@/i18n/navigation'
 import { Menu, LogIn, UserPlus, LogOut, Bell, LayoutDashboard } from 'lucide-react'
 import {
   Sheet,
@@ -14,15 +14,17 @@ import {
 } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 import { cn } from '@/lib/utils'
 
 const NAV = [
-  { href: '/dorms', label: 'Browse dorms' },
-  { href: '/dashboard/alerts', label: 'Alerts' },
-  { href: '/how-it-works', label: 'How it works' },
-] as const
+  { href: '/dorms' as const, key: 'browseDorms' as const },
+  { href: '/dashboard/alerts' as const, key: 'alerts' as const },
+  { href: '/how-it-works' as const, key: 'howItWorks' as const },
+]
 
 export default function HeaderMobileMenu({ signedIn }: { signedIn: boolean }) {
+  const t = useTranslations('nav')
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
 
@@ -34,7 +36,7 @@ export default function HeaderMobileMenu({ signedIn }: { signedIn: boolean }) {
             variant="ghost"
             size="icon-sm"
             className="md:hidden"
-            aria-label="Open menu"
+            aria-label={t('openMenu')}
           />
         }
       >
@@ -42,11 +44,15 @@ export default function HeaderMobileMenu({ signedIn }: { signedIn: boolean }) {
       </SheetTrigger>
       <SheetContent side="right" className="w-72">
         <SheetHeader>
-          <SheetTitle>Menu</SheetTitle>
+          <SheetTitle>{t('menu')}</SheetTitle>
         </SheetHeader>
 
-        <nav className="flex flex-col gap-1 px-2" aria-label="Mobile navigation">
-          {NAV.map(({ href, label }) => {
+        <div className="px-4 pb-2">
+          <LanguageSwitcher className="w-full" />
+        </div>
+
+        <nav className="flex flex-col gap-1 px-2" aria-label={t('mobileNav')}>
+          {NAV.map(({ href, key }) => {
             const active = pathname === href || pathname.startsWith(`${href}/`)
             return (
               <SheetClose
@@ -62,7 +68,7 @@ export default function HeaderMobileMenu({ signedIn }: { signedIn: boolean }) {
                         : 'text-foreground hover:bg-muted',
                     )}
                   >
-                    {label}
+                    {t(key)}
                   </Link>
                 }
               />
@@ -81,7 +87,7 @@ export default function HeaderMobileMenu({ signedIn }: { signedIn: boolean }) {
                   )}
                 >
                   <LayoutDashboard className="size-4 text-muted-foreground" />
-                  Dashboard
+                  {t('dashboard')}
                 </Link>
               }
             />
@@ -100,7 +106,7 @@ export default function HeaderMobileMenu({ signedIn }: { signedIn: boolean }) {
                 className="h-11 w-full gap-2 rounded-xl text-sm"
               >
                 <LogOut className="size-4" />
-                Sign out
+                {t('signOut')}
               </Button>
             </form>
           ) : (
@@ -114,7 +120,7 @@ export default function HeaderMobileMenu({ signedIn }: { signedIn: boolean }) {
                     render={<Link href="/signup?redirect=/dashboard/alerts/new" />}
                   >
                     <Bell className="size-4" />
-                    Get alerts free
+                    {t('getAlertsFree')}
                   </Button>
                 }
               />
@@ -127,7 +133,7 @@ export default function HeaderMobileMenu({ signedIn }: { signedIn: boolean }) {
                     render={<Link href="/signup" />}
                   >
                     <UserPlus className="size-4" />
-                    Sign up
+                    {t('signUp')}
                   </Button>
                 }
               />
@@ -141,7 +147,7 @@ export default function HeaderMobileMenu({ signedIn }: { signedIn: boolean }) {
                     render={<Link href="/login" />}
                   >
                     <LogIn className="size-4" />
-                    Log in
+                    {t('logIn')}
                   </Button>
                 }
               />

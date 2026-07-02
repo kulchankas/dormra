@@ -1,12 +1,13 @@
 'use client'
 
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { Link } from '@/i18n/navigation'
 import { Home } from 'lucide-react'
 import DormImage from '@/components/DormImage'
 import {
   formatDistrictLabel,
   formatPriceLabel,
-  getChancesScore,
+  getChancesRating,
   type AvailabilityStatus,
   type Dorm,
 } from '@/lib/helpers'
@@ -24,27 +25,31 @@ interface Props {
 }
 
 export default function DormCard({ dorm, availability, variant = 'full' }: Props) {
-  const chances = getChancesScore(dorm.provider)
+  const t = useTranslations('dormCard')
+  const tChances = useTranslations('chances')
+  const chances = getChancesRating(dorm.provider, (key) => tChances(key))
   const districtLabel = formatDistrictLabel(dorm.district)
   const priceLabel = formatPriceLabel(dorm.price_min, dorm.price_max)
   const isCompact = variant === 'compact'
 
   const depositLabel = dorm.deposit_months
-    ? `Deposit: ${dorm.deposit_months} month${dorm.deposit_months !== 1 ? 's' : ''}`
+    ? dorm.deposit_months === 1
+      ? t('depositMonths', { count: dorm.deposit_months })
+      : t('depositMonthsPlural', { count: dorm.deposit_months })
     : dorm.deposit_eur
-    ? `Deposit: €${dorm.deposit_eur}`
-    : null
+      ? t('depositEur', { amount: dorm.deposit_eur })
+      : null
 
   const amenities = [
-    dorm.pets === true && 'Pets ✓',
-    dorm.couples === true && 'Couples ✓',
-    dorm.furnished === true && 'Furnished ✓',
+    dorm.pets === true && t('pets'),
+    dorm.couples === true && t('couples'),
+    dorm.furnished === true && t('furnished'),
   ].filter((x): x is string => typeof x === 'string')
 
   return (
     <Link
       href={`/dorms/${dorm.slug}`}
-      aria-label={`View ${dorm.name}`}
+      aria-label={t('viewAria', { name: dorm.name })}
       className={cn(
         'group card-elevated block overflow-hidden rounded-2xl bg-surface transition-all duration-200',
         availability.status === 'fully_booked' && 'opacity-[0.88]',
@@ -62,7 +67,7 @@ export default function DormCard({ dorm, availability, variant = 'full' }: Props
           {dorm.image_url ? (
             <DormImage
               src={dorm.image_url}
-              alt={`${dorm.name} dormitory`}
+              alt={t('imageAlt', { name: dorm.name })}
               sizes={isCompact ? '(max-width: 768px) 100vw, 33vw' : '(max-width: 768px) 100vw, 50vw'}
             />
           ) : (
@@ -127,7 +132,7 @@ export default function DormCard({ dorm, availability, variant = 'full' }: Props
                     className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2"
                     style={{ background: chances.bg, color: chances.color }}
                     onClick={(e) => e.preventDefault()}
-                    aria-label={`Application chances: ${chances.label}. ${chances.tooltip}`}
+                    aria-label={tChances('ariaLabel', { label: chances.label, tooltip: chances.tooltip })}
                   />
                 }
               >
@@ -147,7 +152,7 @@ export default function DormCard({ dorm, availability, variant = 'full' }: Props
 
           {!isCompact && (
             <span className="mt-1 text-sm font-medium text-brand transition-colors group-hover:underline">
-              View details →
+              {t('viewDetails')}
             </span>
           )}
         </div>

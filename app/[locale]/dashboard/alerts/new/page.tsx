@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import AlertForm from '@/components/AlertForm'
-import type { AlertPayload } from '@/app/dashboard/alerts/actions'
+import type { AlertPayload } from '@/app/[locale]/dashboard/alerts/actions'
 
 export default async function NewAlertPage({
   searchParams,

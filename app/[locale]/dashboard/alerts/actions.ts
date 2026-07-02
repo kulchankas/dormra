@@ -1,8 +1,14 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { getLocale } from 'next-intl/server'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { routing } from '@/i18n/routing'
+
+function localePath(path: string, locale: string) {
+  return locale === routing.defaultLocale ? path : `/${locale}${path}`
+}
 
 export type AlertPayload = {
   price_max: number | null
@@ -39,7 +45,7 @@ export async function createAlert(payload: AlertPayload): Promise<{ error?: stri
 
   revalidatePath('/dashboard/alerts')
   revalidatePath('/dashboard')
-  redirect('/dashboard/alerts')
+  redirect(localePath('/dashboard/alerts', await getLocale()))
 }
 
 export async function updateAlert(id: string, payload: AlertPayload): Promise<{ error?: string }> {
@@ -67,7 +73,7 @@ export async function updateAlert(id: string, payload: AlertPayload): Promise<{ 
 
   revalidatePath('/dashboard/alerts')
   revalidatePath('/dashboard')
-  redirect('/dashboard/alerts')
+  redirect(localePath('/dashboard/alerts', await getLocale()))
 }
 
 export async function toggleAlertActive(id: string, active: boolean): Promise<{ error?: string }> {

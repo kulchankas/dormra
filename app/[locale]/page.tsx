@@ -1,8 +1,11 @@
 import { Suspense } from 'react'
-import Link from 'next/link'
 import { Bell, Search, Mail } from 'lucide-react'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { getAvailabilityStatusBulk, type Dorm } from '@/lib/helpers'
+import { localizeAvailabilityMap } from '@/lib/i18n-availability'
+import { Link } from '@/i18n/navigation'
 import HeroSearch from '@/components/HeroSearch'
 import DormraLogo from '@/components/DormraLogo'
 import DormCard from '@/components/DormCard'
@@ -10,27 +13,6 @@ import ScanningPill from '@/components/ScanningPill'
 import UniversityLogos from '@/components/UniversityLogos'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
-
-const HOW_IT_WORKS = [
-  {
-    icon: Search,
-    step: '01',
-    title: 'Search & filter',
-    desc: 'All providers in one place — filter by price, district, deposit.',
-  },
-  {
-    icon: Bell,
-    step: '02',
-    title: 'Set an alert',
-    desc: 'Tell Dormra your criteria once. We check every 15 minutes.',
-  },
-  {
-    icon: Mail,
-    step: '03',
-    title: 'Get notified',
-    desc: 'Email alert the moment a matching room opens up.',
-  },
-] as const
 
 const TRACKED_PROVIDERS = [
   { name: 'OeAD', live: true },
@@ -41,7 +23,19 @@ const TRACKED_PROVIDERS = [
   { name: 'Viennabase', live: false },
 ] as const
 
+type PageProps = { params: Promise<{ locale: string }> }
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'metadata' })
+  return {
+    title: t('homeTitle'),
+    description: t('homeDescription'),
+  }
+}
+
 async function LiveStats() {
+  const t = await getTranslations('home')
   let dormCount: number | null = null
   let providerCount: number | null = null
 
@@ -63,15 +57,9 @@ async function LiveStats() {
   }
 
   const stats = [
-    {
-      value: dormCount != null ? `${dormCount}+` : '49+',
-      label: 'dorm listings',
-    },
-    {
-      value: providerCount != null ? String(providerCount) : '3',
-      label: 'providers live',
-    },
-    { value: '15 min', label: 'refresh interval' },
+    { value: dormCount != null ? `${dormCount}+` : '49+', label: t('statsListings') },
+    { value: providerCount != null ? String(providerCount) : '3', label: t('statsProviders') },
+    { value: '15 min', label: t('statsRefresh') },
   ]
 
   return (
@@ -101,6 +89,8 @@ function DormPreviewSkeleton() {
 }
 
 async function DormsPreview() {
+  const t = await getTranslations('home')
+  const tAvail = await getTranslations('availability')
   const supabase = await createClient()
   const { data } = await supabase
     .from('dorms')
@@ -110,12 +100,15 @@ async function DormsPreview() {
     .limit(3)
 
   const previewDorms = (data ?? []) as Dorm[]
-  const availabilityMap = await getAvailabilityStatusBulk(previewDorms.map((d) => d.id))
+  const availabilityMap = localizeAvailabilityMap(
+    await getAvailabilityStatusBulk(previewDorms.map((d) => d.id)),
+    (key) => tAvail(key),
+  )
 
   if (previewDorms.length === 0) {
     return (
       <p className="py-10 text-center text-sm text-muted-foreground">
-        Listings coming soon — check back shortly.
+        {t('listingsComingSoon')}
       </p>
     )
   }
@@ -126,7 +119,7 @@ async function DormsPreview() {
         <DormCard
           key={dorm.id}
           dorm={dorm}
-          availability={availabilityMap.get(dorm.id) ?? { status: 'unknown', label: 'Status unknown' }}
+          availability={availabilityMap.get(dorm.id) ?? { status: 'unknown', label: tAvail('unknown') }}
           variant="compact"
         />
       ))}
@@ -134,28 +127,36 @@ async function DormsPreview() {
   )
 }
 
-export default function HomePage() {
+export default async function HomePage({ params }: PageProps) {
+  const { locale } = await params
+  setRequestLocale(locale)
+  const t = await getTranslations('home')
+  const tNav = await getTranslations('nav')
+
+  const steps = [
+    { icon: Search, step: '01', title: t('step1Title'), desc: t('step1Desc') },
+    { icon: Bell, step: '02', title: t('step2Title'), desc: t('step2Desc') },
+    { icon: Mail, step: '03', title: t('step3Title'), desc: t('step3Desc') },
+  ]
+
   return (
     <main>
-      <section
-        className="hero-glow w-full pt-12 pb-10 md:pt-20 md:pb-14"
-        aria-label="Search student dorms in Vienna"
-      >
+      <section className="hero-glow w-full pt-12 pb-10 md:pt-20 md:pb-14" aria-label={t('heroAria')}>
         <div className="mx-auto flex max-w-[680px] flex-col items-center px-6 text-center">
           <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-border/60 bg-surface/80 px-3 py-1 text-xs font-medium text-brand backdrop-blur-sm">
-            Vienna student housing
+            {t('badge')}
             <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Beta
+              {t('beta')}
             </span>
           </span>
 
           <h1 className="text-[28px] font-bold leading-[1.15] tracking-tight text-foreground md:text-[42px]">
-            Every student dorm in Vienna.
+            {t('titleLine1')}
             <br className="hidden sm:block" />
-            <span className="text-brand"> One search.</span>
+            <span className="text-brand"> {t('titleLine2')}</span>
           </h1>
           <p className="mt-4 max-w-md text-[15px] leading-relaxed text-muted-foreground">
-            Stop refreshing 8 different websites. Dormra tracks availability across all providers — and alerts you the moment a room opens.
+            {t('subtitle')}
           </p>
 
           <div className="mt-8 flex w-full justify-center">
@@ -164,7 +165,7 @@ export default function HomePage() {
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-2">
             <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
-              Tracking
+              {t('tracking')}
             </span>
             {TRACKED_PROVIDERS.map(({ name, live }) => (
               <span
@@ -174,19 +175,19 @@ export default function HomePage() {
                     ? 'rounded-full bg-surface/70 px-2.5 py-0.5 text-[11px] font-medium text-foreground ring-1 ring-brand/25'
                     : 'rounded-full bg-surface/50 px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground/60 ring-1 ring-border/40'
                 }
-                title={live ? 'Live availability scraping' : 'Coming soon'}
+                title={live ? t('liveScraping') : t('comingSoon')}
               >
                 {name}
-                {!live ? ' · soon' : ''}
+                {!live ? ` ${t('soonSuffix')}` : ''}
               </span>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="w-full bg-background pb-4" aria-label="Trusted by students from Vienna universities">
+      <section className="w-full bg-background pb-4" aria-label={t('universitiesAria')}>
         <p className="mb-6 px-6 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/60">
-          Trusted by students from
+          {t('trustedBy')}
         </p>
         <UniversityLogos />
       </section>
@@ -210,14 +211,14 @@ export default function HomePage() {
         </div>
       </div>
 
-      <section className="w-full bg-background" aria-label="How Dormra works">
+      <section className="w-full bg-background" aria-label={t('howSectionAria')}>
         <div className="mx-auto max-w-[1100px] px-6 py-12">
           <div className="mb-6 text-center">
-            <h2 className="text-xl font-semibold text-foreground">How it works</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Three steps to stop missing rooms</p>
+            <h2 className="text-xl font-semibold text-foreground">{t('howItWorksTitle')}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{t('howItWorksSubtitle')}</p>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {HOW_IT_WORKS.map(({ icon: Icon, step, title, desc }) => (
+            {steps.map(({ icon: Icon, step, title, desc }) => (
               <div key={step} className="card-elevated rounded-2xl bg-surface p-5 transition-shadow">
                 <div className="mb-4 flex items-center justify-between">
                   <div className="grid size-10 place-items-center rounded-xl bg-brand-soft">
@@ -238,24 +239,21 @@ export default function HomePage() {
               className="h-8 rounded-full text-xs text-muted-foreground"
               render={<Link href="/how-it-works" />}
             >
-              Learn more about how Dormra works →
+              {t('learnMore')}
             </Button>
           </div>
         </div>
       </section>
 
-      <section className="w-full bg-surface pb-12 pt-10" aria-label="Dorms in Vienna">
+      <section className="w-full bg-surface pb-12 pt-10" aria-label={t('dormsSectionAria')}>
         <div className="mx-auto max-w-[1100px] px-6">
           <div className="mb-5 flex items-end justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-foreground">Latest listings</h2>
-              <p className="mt-0.5 text-sm text-muted-foreground">Recently added to Dormra</p>
+              <h2 className="text-xl font-semibold text-foreground">{t('latestListings')}</h2>
+              <p className="mt-0.5 text-sm text-muted-foreground">{t('latestListingsSubtitle')}</p>
             </div>
-            <Link
-              href="/dorms"
-              className="text-sm font-medium text-brand underline-offset-4 hover:underline"
-            >
-              Browse all →
+            <Link href="/dorms" className="text-sm font-medium text-brand underline-offset-4 hover:underline">
+              {t('browseAll')}
             </Link>
           </div>
 
@@ -272,13 +270,8 @@ export default function HomePage() {
           </Suspense>
 
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <Button
-              size="lg"
-              nativeButton={false}
-              className="h-11 rounded-full px-8 text-sm"
-              render={<Link href="/dorms" />}
-            >
-              Browse all dorms
+            <Button size="lg" nativeButton={false} className="h-11 rounded-full px-8 text-sm" render={<Link href="/dorms" />}>
+              {t('browseAllDorms')}
             </Button>
             <Button
               variant="outline"
@@ -287,13 +280,13 @@ export default function HomePage() {
               className="h-11 rounded-full px-8 text-sm"
               render={<Link href="/signup?redirect=/dashboard/alerts/new" />}
             >
-              Set up a free alert
+              {t('setupFreeAlert')}
             </Button>
           </div>
         </div>
       </section>
 
-      <section className="w-full bg-background" aria-label="Set a dorm alert">
+      <section className="w-full bg-background" aria-label={t('alertSectionAria')}>
         <div className="mx-auto max-w-[1100px] px-6 pb-12">
           <div className="card-elevated overflow-hidden rounded-3xl border border-brand/15 bg-gradient-to-br from-brand-soft to-surface px-6 py-10 text-center md:py-14">
             <div className="mx-auto max-w-xl">
@@ -301,30 +294,18 @@ export default function HomePage() {
                 <Bell className="size-5" />
               </div>
               <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-[28px]">
-                Never miss a room again
+                {t('ctaTitle')}
               </h2>
               <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-                Set one alert with your budget and districts. Dormra checks every provider every
-                15 minutes and emails you the moment a match opens.
+                {t('ctaBody')}
               </p>
               <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-                <Button
-                  size="lg"
-                  nativeButton={false}
-                  className="h-11 rounded-full px-7 text-sm"
-                  render={<Link href="/dashboard/alerts/new" />}
-                >
+                <Button size="lg" nativeButton={false} className="h-11 rounded-full px-7 text-sm" render={<Link href="/dashboard/alerts/new" />}>
                   <Bell className="size-4" />
-                  Set an alert
+                  {t('setAlert')}
                 </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  nativeButton={false}
-                  className="h-11 rounded-full px-7 text-sm"
-                  render={<Link href="/dorms" />}
-                >
-                  Browse dorms first
+                <Button variant="outline" size="lg" nativeButton={false} className="h-11 rounded-full px-7 text-sm" render={<Link href="/dorms" />}>
+                  {t('browseFirst')}
                 </Button>
               </div>
             </div>
@@ -338,17 +319,17 @@ export default function HomePage() {
             <Link href="/" className="inline-block transition-opacity hover:opacity-90">
               <DormraLogo size="sm" variant="muted" />
             </Link>
-            <p className="mt-1 text-xs text-muted-foreground">Vienna student housing · 2026</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t('footerTagline')}</p>
           </div>
-          <nav className="flex items-center gap-4" aria-label="Footer links">
+          <nav className="flex items-center gap-4" aria-label={tNav('footerNav')}>
             <Link href="/how-it-works" className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline transition-colors">
-              How it works
+              {tNav('howItWorks')}
             </Link>
             <Link href="/privacy" className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline transition-colors">
-              Privacy
+              {tNav('privacy')}
             </Link>
             <Link href="/terms" className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline transition-colors">
-              Terms
+              {tNav('terms')}
             </Link>
           </nav>
         </div>
