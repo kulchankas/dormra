@@ -1,6 +1,7 @@
 import { createAdminClient } from './supabase/admin'
 import { matchAlertsForDorm, getUserEmail } from './match'
 import { sendAvailabilityAlert } from './email'
+import { isNewlyAvailableTransition } from './availability-transition'
 import type { ScraperResult } from '@/scrapers/types'
 
 type InsertedRow = { id: string; scraped_at: string }
@@ -58,8 +59,7 @@ export async function processSnapshot(dormId: string, result: ScraperResult): Pr
   if (!previous) return
 
   // 3. Detect newly-available transitions: previous was false, current is true.
-  const wasUnavailable = previous.available === false
-  if (wasUnavailable && result.available) {
+  if (isNewlyAvailableTransition(previous, result)) {
     console.log(`[DIFF] ${dormId} became available — fetching dorm and matching alerts`)
     await sendAlertsForDorm(dormId)
   }

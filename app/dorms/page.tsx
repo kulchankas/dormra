@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Search, SlidersHorizontal, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import {
@@ -31,7 +32,6 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -341,9 +341,26 @@ function FilterPanel({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DormsPage() {
+  return (
+    <Suspense>
+      <DormsPageContent />
+    </Suspense>
+  )
+}
+
+function parseFiltersFromSearchParams(params: URLSearchParams): FilterState {
+  const maxPrice = params.get('maxPrice')
+  if (maxPrice && !Number.isNaN(Number(maxPrice))) {
+    return { ...DEFAULT_FILTERS, maxPrice: Number(maxPrice) }
+  }
+  return DEFAULT_FILTERS
+}
+
+function DormsPageContent() {
+  const searchParams = useSearchParams()
   const [dorms, setDorms] = useState<Dorm[]>([])
   const [loading, setLoading] = useState(true)
-  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
+  const [filters, setFilters] = useState<FilterState>(() => parseFiltersFromSearchParams(searchParams))
   const [availabilityMap, setAvailabilityMap] = useState<Map<string, AvailabilityStatus>>(new Map())
 
   useEffect(() => {
