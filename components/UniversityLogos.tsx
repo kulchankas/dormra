@@ -142,7 +142,11 @@ function LogoMark({ uni }: { uni: Uni }) {
     return (
       // Plain <img>: works for any dropped-in file (svg/png) with no Next config.
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={src} alt={uni.name} className="h-7 w-auto object-contain md:h-8" />
+      <img
+        src={src}
+        alt={uni.name}
+        className="h-7 w-auto max-w-[140px] object-contain object-left md:h-8 md:max-w-[160px]"
+      />
     )
   }
   return (
@@ -164,7 +168,7 @@ function LogoGroup({ clone = false }: { clone?: boolean }) {
         <li
           key={uni.slug}
           title={uni.name}
-          className="flex items-center gap-2.5 whitespace-nowrap text-muted-foreground/50 grayscale transition-all duration-200 hover:text-brand hover:grayscale-0"
+          className="flex items-center gap-2.5 whitespace-nowrap text-muted-foreground/70 transition-all duration-200 hover:text-foreground hover:opacity-100"
         >
           <LogoMark uni={uni} />
         </li>
