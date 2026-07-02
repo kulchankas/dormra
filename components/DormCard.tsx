@@ -46,6 +46,7 @@ export default function DormCard({ dorm, availability, variant = 'full' }: Props
       aria-label={`View ${dorm.name}`}
       className={cn(
         'group card-elevated block overflow-hidden rounded-2xl bg-surface transition-all duration-200',
+        availability.status === 'fully_booked' && 'opacity-[0.88]',
         'hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2',
       )}
@@ -108,7 +109,13 @@ export default function DormCard({ dorm, availability, variant = 'full' }: Props
             </p>
           )}
 
-          {!isCompact && dorm.address && (
+          {!isCompact && !districtLabel && dorm.address && (
+            <p className={cn('text-muted-foreground', isCompact ? 'text-xs' : 'text-[13px]')}>
+              {dorm.address}
+            </p>
+          )}
+
+          {!isCompact && districtLabel && dorm.address && (
             <p className="truncate text-[13px] text-muted-foreground">{dorm.address}</p>
           )}
 
