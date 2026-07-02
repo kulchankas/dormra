@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { deleteAlert } from '@/app/dashboard/alerts/actions'
-import { useRouter } from 'next/navigation'
+import { deleteAlert } from '@/app/[locale]/dashboard/alerts/actions'
+import { useRouter } from '@/i18n/navigation'
 import { cn } from '@/lib/utils'
 
 export default function DeleteAlertButton({ id }: { id: string }) {

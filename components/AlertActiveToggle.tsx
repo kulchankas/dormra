@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/navigation'
 import { toast } from 'sonner'
 import { Switch } from '@/components/ui/switch'
-import { toggleAlertActive } from '@/app/dashboard/alerts/actions'
+import { toggleAlertActive } from '@/app/[locale]/dashboard/alerts/actions'
 
 export default function AlertActiveToggle({ id, active }: { id: string; active: boolean }) {
   const router = useRouter()

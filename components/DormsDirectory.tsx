@@ -1,8 +1,9 @@
 'use client'
 
 import { useMemo } from 'react'
-import Link from 'next/link'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useSearchParams } from 'next/navigation'
+import { Link, usePathname, useRouter } from '@/i18n/navigation'
 import { format, parseISO } from 'date-fns'
 import { Bell, Search, SlidersHorizontal, X } from 'lucide-react'
 import {
@@ -59,30 +60,13 @@ type QuickFilter = {
   toggle: (filters: FilterState) => FilterState
 }
 
-const QUICK_FILTERS: QuickFilter[] = [
-  {
-    id: 'available',
-    label: 'Available now',
-    isActive: (f) => f.availableOnly,
-    toggle: (f) => ({
-      ...f,
-      availableOnly: !f.availableOnly,
-      sort: !f.availableOnly ? 'available_first' : f.sort === 'available_first' ? 'price_asc' : f.sort,
-    }),
-  },
-  {
-    id: 'budget500',
-    label: 'Under €500',
-    isActive: (f) => f.maxPrice === 500,
-    toggle: (f) => ({ ...f, maxPrice: f.maxPrice === 500 ? 1500 : 500 }),
-  },
-  {
-    id: 'couples',
-    label: 'Couples OK',
-    isActive: (f) => f.couples,
-    toggle: (f) => ({ ...f, couples: !f.couples }),
-  },
-]
+const PRESET_LABEL_KEYS = {
+  tu: 'presetTu',
+  uni: 'presetUni',
+  wu: 'presetWu',
+  boku: 'presetBoku',
+  meduni: 'presetMeduni',
+} as const
 
 function FilterChips({
   filters,
@@ -91,6 +75,7 @@ function FilterChips({
   filters: FilterState
   onChange: (f: FilterState) => void
 }) {
+  const t = useTranslations('dorms')
   const chips: { key: string; label: string; onRemove: () => void }[] = []
 
   if (filters.search) {
@@ -110,14 +95,14 @@ function FilterChips({
   if (filters.availableOnly) {
     chips.push({
       key: 'available',
-      label: 'Available now',
+      label: t('presetsAvailable'),
       onRemove: () => onChange({ ...filters, availableOnly: false }),
     })
   }
   if (filters.maxDepositMonths !== '') {
     chips.push({
       key: 'deposit',
-      label: `Deposit ≤ ${filters.maxDepositMonths} mo`,
+      label: t('depositChip', { months: filters.maxDepositMonths }),
       onRemove: () => onChange({ ...filters, maxDepositMonths: '' }),
     })
   }
@@ -132,7 +117,7 @@ function FilterChips({
   if (activePreset) {
     chips.push({
       key: `preset-${activePreset.id}`,
-      label: activePreset.label,
+      label: t(PRESET_LABEL_KEYS[activePreset.id as keyof typeof PRESET_LABEL_KEYS]),
       onRemove: () => onChange({ ...filters, districts: [] }),
     })
   } else {
@@ -144,9 +129,9 @@ function FilterChips({
       })
     })
   }
-  if (filters.pets) chips.push({ key: 'pets', label: 'Pets allowed', onRemove: () => onChange({ ...filters, pets: false }) })
-  if (filters.couples) chips.push({ key: 'couples', label: 'Couples allowed', onRemove: () => onChange({ ...filters, couples: false }) })
-  if (filters.furnished) chips.push({ key: 'furnished', label: 'Furnished', onRemove: () => onChange({ ...filters, furnished: false }) })
+  if (filters.pets) chips.push({ key: 'pets', label: t('petsAllowed'), onRemove: () => onChange({ ...filters, pets: false }) })
+  if (filters.couples) chips.push({ key: 'couples', label: t('couplesAllowed'), onRemove: () => onChange({ ...filters, couples: false }) })
+  if (filters.furnished) chips.push({ key: 'furnished', label: t('furnished'), onRemove: () => onChange({ ...filters, furnished: false }) })
 
   if (chips.length === 0) return null
 
@@ -162,7 +147,7 @@ function FilterChips({
             type="button"
             onClick={chip.onRemove}
             className="ml-0.5 rounded-full text-brand/50 hover:text-brand transition-colors"
-            aria-label={`Remove ${chip.label} filter`}
+            aria-label={t('removeFilter', { label: chip.label })}
           >
             <X className="size-3" />
           </button>
@@ -185,6 +170,7 @@ function FilterPanel({
   showReset: boolean
   availableProviders: string[]
 }) {
+  const t = useTranslations('dorms')
   const set = <K extends keyof FilterState>(key: K, value: FilterState[K]) =>
     onChange({ ...filters, [key]: value })
 
@@ -207,14 +193,14 @@ function FilterPanel({
   return (
     <div className="space-y-0">
       <div className="flex items-center justify-between pb-4">
-        <h2 className="text-sm font-semibold text-foreground">Filters</h2>
+        <h2 className="text-sm font-semibold text-foreground">{t('filters')}</h2>
         {showReset && (
           <button
             type="button"
             onClick={onReset}
             className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline transition-colors focus-visible:underline focus-visible:outline-none"
           >
-            Reset all
+            {t('resetAll')}
           </button>
         )}
       </div>
@@ -231,15 +217,15 @@ function FilterPanel({
               })
             }
           />
-          <span className="text-sm text-foreground">Available now only</span>
+          <span className="text-sm text-foreground">{t('availableOnly')}</span>
         </label>
       </div>
 
       <div className="space-y-3 py-4 border-t border-border">
         <div className="flex items-center justify-between">
-          <Label className="text-xs font-semibold text-foreground">Max rent</Label>
+          <Label className="text-xs font-semibold text-foreground">{t('maxRent')}</Label>
           <span className="text-xs font-medium text-brand">
-            {filters.maxPrice < 1500 ? `€${filters.maxPrice}/mo` : 'Any'}
+            {filters.maxPrice < 1500 ? `€${filters.maxPrice}/mo` : t('any')}
           </span>
         </div>
         <Slider
@@ -250,25 +236,25 @@ function FilterPanel({
           onValueChange={(vals) =>
             set('maxPrice', Array.isArray(vals) ? (vals as number[])[0] : (vals as number))
           }
-          aria-label="Max monthly price"
+          aria-label={t('maxPriceAria')}
         />
         <div className="flex justify-between text-[11px] text-muted-foreground">
           <span>€200</span>
-          <span>Any (€1,500+)</span>
+          <span>{t('anyRent')}</span>
         </div>
       </div>
 
       {availableProviders.length > 0 && (
         <div className="space-y-2.5 py-4 border-t border-border">
           <div className="flex items-center justify-between">
-            <Label className="text-xs font-semibold text-foreground">Provider</Label>
+            <Label className="text-xs font-semibold text-foreground">{t('provider')}</Label>
             {filters.providers.length > 0 && (
               <button
                 type="button"
                 onClick={() => set('providers', [])}
                 className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
               >
-                Clear
+                {t('clear')}
               </button>
             )}
           </div>
@@ -289,14 +275,14 @@ function FilterPanel({
 
       <fieldset className="space-y-2.5 py-4 border-t border-border">
         <div className="flex items-center justify-between">
-          <legend className="text-xs font-semibold text-foreground">District</legend>
+          <legend className="text-xs font-semibold text-foreground">{t('district')}</legend>
           {filters.districts.length > 0 && (
             <button
               type="button"
               onClick={() => set('districts', [])}
               className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
             >
-              Clear ({filters.districts.length})
+              {t('clearCount', { count: filters.districts.length })}
             </button>
           )}
         </div>
@@ -322,7 +308,7 @@ function FilterPanel({
 
       <div className="space-y-2 py-4 border-t border-border">
         <Label htmlFor="filter-deposit" className="text-xs font-semibold text-foreground">
-          Max deposit
+          {t('maxDeposit')}
         </Label>
         <div className="flex items-center gap-2">
           <Input
@@ -333,28 +319,28 @@ function FilterPanel({
             onChange={(e) =>
               set('maxDepositMonths', e.target.value === '' ? '' : Number(e.target.value))
             }
-            placeholder="e.g. 2"
+            placeholder={t('depositPlaceholder')}
             className="h-8 rounded-lg text-sm"
           />
-          <span className="shrink-0 text-xs text-muted-foreground">months</span>
+          <span className="shrink-0 text-xs text-muted-foreground">{t('monthsShort')}</span>
         </div>
       </div>
 
       <fieldset className="space-y-2.5 py-4 border-t border-border">
-        <legend className="text-xs font-semibold text-foreground mb-2.5">Requirements</legend>
+        <legend className="text-xs font-semibold text-foreground mb-2.5">{t('requirements')}</legend>
         {(
           [
-            ['pets', 'Pets allowed'],
-            ['couples', 'Couples allowed'],
-            ['furnished', 'Furnished'],
+            ['pets', 'petsAllowed'],
+            ['couples', 'couplesAllowed'],
+            ['furnished', 'furnished'],
           ] as const
-        ).map(([key, label]) => (
+        ).map(([key, labelKey]) => (
           <label key={key} className="flex cursor-pointer items-center gap-2">
             <Checkbox
               checked={filters[key]}
               onCheckedChange={(v) => set(key, !!v)}
             />
-            <span className="text-sm text-foreground">{label}</span>
+            <span className="text-sm text-foreground">{t(labelKey)}</span>
           </label>
         ))}
       </fieldset>
@@ -363,9 +349,36 @@ function FilterPanel({
 }
 
 export default function DormsDirectory({ dorms, availability }: Props) {
+  const t = useTranslations('dorms')
+  const tAvail = useTranslations('availability')
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+
+  const quickFilters: QuickFilter[] = [
+    {
+      id: 'available',
+      label: t('presetsAvailable'),
+      isActive: (f) => f.availableOnly,
+      toggle: (f) => ({
+        ...f,
+        availableOnly: !f.availableOnly,
+        sort: !f.availableOnly ? 'available_first' : f.sort === 'available_first' ? 'price_asc' : f.sort,
+      }),
+    },
+    {
+      id: 'budget500',
+      label: t('presetsUnder500'),
+      isActive: (f) => f.maxPrice === 500,
+      toggle: (f) => ({ ...f, maxPrice: f.maxPrice === 500 ? 1500 : 500 }),
+    },
+    {
+      id: 'couples',
+      label: t('presetsCouples'),
+      isActive: (f) => f.couples,
+      toggle: (f) => ({ ...f, couples: !f.couples }),
+    },
+  ]
 
   const filters = useMemo(
     () => parseFiltersFromParams(Object.fromEntries(searchParams.entries())),
@@ -421,17 +434,16 @@ export default function DormsDirectory({ dorms, availability }: Props) {
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Vienna · {dorms.length} listings
+                {t('viennaListings', { count: dorms.length })}
                 {availableCount > 0 && (
-                  <span className="text-brand"> · {availableCount} available now</span>
+                  <span className="text-brand">{t('availableCount', { count: availableCount })}</span>
                 )}
               </p>
               <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-                Browse student dorms
+                {t('title')}
               </h1>
               <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                Filter by budget, district, and availability across every provider we track.
-                Share your search — filters stay in the URL.
+                {t('subtitle')} {t('shareSearch')}
               </p>
             </div>
             <Button
@@ -442,7 +454,7 @@ export default function DormsDirectory({ dorms, availability }: Props) {
               render={<Link href={alertHref} />}
             >
               <Bell className="size-3.5" aria-hidden="true" />
-              Set alert for this search
+              {t('setAlertForSearch')}
             </Button>
           </div>
         </div>
@@ -452,11 +464,9 @@ export default function DormsDirectory({ dorms, availability }: Props) {
         {filters.moveIn && (
           <div className="mb-5 flex flex-col gap-2 rounded-2xl border border-border/80 bg-surface-soft px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-muted-foreground">
-              Move-in by{' '}
-              <span className="font-medium text-foreground">
-                {format(parseISO(filters.moveIn), 'd MMMM yyyy')}
-              </span>
-              {' '}— intake-date filtering isn&apos;t live yet. Set an alert and we&apos;ll email you when rooms open.
+              {t('moveInBanner', {
+                date: format(parseISO(filters.moveIn!), 'd MMMM yyyy'),
+              })}
             </p>
             <Button
               size="sm"
@@ -464,13 +474,13 @@ export default function DormsDirectory({ dorms, availability }: Props) {
               className="h-8 shrink-0 rounded-full px-4 text-xs"
               render={<Link href={alertHref} />}
             >
-              Create alert
+              {t('createAlert')}
             </Button>
           </div>
         )}
 
         <div className="flex gap-8 items-start">
-          <aside aria-label="Dorm filters" className="hidden md:block w-[260px] shrink-0">
+          <aside aria-label={t('filtersAria')} className="hidden md:block w-[260px] shrink-0">
             <div className="card-elevated sticky top-[calc(3.75rem+1.5rem)] rounded-2xl bg-surface px-5 pt-4 pb-5">
               <FilterPanel {...filterProps} />
             </div>
@@ -480,7 +490,7 @@ export default function DormsDirectory({ dorms, availability }: Props) {
             <div className="mb-5 space-y-3">
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  {QUICK_FILTERS.map((quick) => {
+                  {quickFilters.map((quick) => {
                     const isActive = quick.isActive(filters)
                     return (
                       <button
@@ -501,7 +511,7 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/70">
-                    Near
+                    {t('near')}
                   </span>
                   {DISTRICT_PRESETS.map((preset) => {
                     const isActive = districtsMatch(filters.districts, preset.districts)
@@ -522,7 +532,7 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                             : 'bg-surface text-muted-foreground ring-1 ring-border hover:text-foreground',
                         )}
                       >
-                        {preset.label}
+                        {t(PRESET_LABEL_KEYS[preset.id as keyof typeof PRESET_LABEL_KEYS])}
                       </button>
                     )
                   })}
@@ -536,8 +546,8 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                     type="search"
                     value={filters.search}
                     onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                    placeholder="Search name, provider, address…"
-                    aria-label="Search dorms"
+                    placeholder={t('searchPlaceholder')}
+                    aria-label={t('searchAria')}
                     className="h-10 rounded-full border-border/80 bg-surface pl-9 pr-9 text-sm shadow-sm"
                   />
                   {filters.search && (
@@ -545,7 +555,7 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                       type="button"
                       onClick={() => setFilters({ ...filters, search: '' })}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                      aria-label="Clear search"
+                      aria-label={t('clearSearch')}
                     >
                       <X className="size-3.5" />
                     </button>
@@ -558,14 +568,14 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                     onValueChange={(v) => setFilters({ ...filters, sort: v as SortKey })}
                   >
                     <SelectTrigger className="h-10 flex-1 rounded-full text-sm sm:min-w-[168px] sm:flex-none">
-                      <SelectValue placeholder="Sort…" />
+                      <SelectValue placeholder={t('sortPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="available_first">Available first</SelectItem>
-                      <SelectItem value="price_asc">Price: low → high</SelectItem>
-                      <SelectItem value="price_desc">Price: high → low</SelectItem>
-                      <SelectItem value="district_asc">By district</SelectItem>
-                      <SelectItem value="created_desc">Recently added</SelectItem>
+                      <SelectItem value="available_first">{t('availableFirst')}</SelectItem>
+                      <SelectItem value="price_asc">{t('sortPriceLow')}</SelectItem>
+                      <SelectItem value="price_desc">{t('sortPriceHigh')}</SelectItem>
+                      <SelectItem value="district_asc">{t('sortDistrict')}</SelectItem>
+                      <SelectItem value="created_desc">{t('sortRecent')}</SelectItem>
                     </SelectContent>
                   </Select>
 
@@ -580,7 +590,7 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                       }
                     >
                       <SlidersHorizontal className="size-3.5" />
-                      <span className="sr-only sm:not-sr-only">Filters</span>
+                      <span className="sr-only sm:not-sr-only">{t('mobileFilters')}</span>
                       {countActiveFilters(filters) > 0 && (
                         <span className="grid size-4 place-items-center rounded-full bg-brand text-[10px] font-semibold text-white">
                           {countActiveFilters(filters)}
@@ -589,10 +599,10 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                     </SheetTrigger>
                     <SheetContent side="bottom" className="rounded-t-3xl px-5 pb-0 pt-5">
                       <SheetHeader className="mb-1 flex-row items-center justify-between p-0">
-                        <SheetTitle className="text-base">Filter dorms</SheetTitle>
+                        <SheetTitle className="text-base">{t('filterDorms')}</SheetTitle>
                         <SheetClose
                           render={
-                            <Button variant="ghost" size="icon-sm" className="rounded-full" aria-label="Close filters" />
+                            <Button variant="ghost" size="icon-sm" className="rounded-full" aria-label={t('closeFilters')} />
                           }
                         >
                           <X className="size-4" />
@@ -608,8 +618,10 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                           }
                         >
                           {active
-                            ? `Show ${filtered.length} dorm${filtered.length !== 1 ? 's' : ''}`
-                            : 'Browse all dorms'}
+                            ? filtered.length === 1
+                              ? t('showCount', { count: filtered.length })
+                              : t('showCountPlural', { count: filtered.length })
+                            : t('browseAll')}
                         </SheetClose>
                       </div>
                     </SheetContent>
@@ -619,13 +631,12 @@ export default function DormsDirectory({ dorms, availability }: Props) {
 
               <p className="text-sm text-muted-foreground">
                 {active ? (
-                  <>
-                    Showing{' '}
-                    <span className="font-medium text-foreground">{filtered.length}</span>
-                    {' '}of {dorms.length} dorms
-                  </>
+                  t('showingOf', { filtered: filtered.length, total: dorms.length })
                 ) : (
-                  <>All {dorms.length} dorms · sorted by {filters.sort === 'price_asc' ? 'price' : 'your selection'}</>
+                  t('allSorted', {
+                    total: dorms.length,
+                    sort: filters.sort === 'price_asc' ? t('sortPrice') : t('sortSelection'),
+                  })
                 )}
               </p>
 
@@ -639,8 +650,8 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                 <div className="mb-4 grid size-14 place-items-center rounded-2xl bg-muted">
                   <Search className="size-6 text-muted-foreground/50" />
                 </div>
-                <p className="text-base font-medium text-foreground">No dorms listed yet</p>
-                <p className="mt-1 text-sm text-muted-foreground">Check back soon — we&apos;re adding new listings.</p>
+                <p className="text-base font-medium text-foreground">{t('noListingsYet')}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{t('noListingsHint')}</p>
               </div>
             )}
 
@@ -649,16 +660,16 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                 <div className="mb-4 grid size-14 place-items-center rounded-2xl bg-muted">
                   <SlidersHorizontal className="size-6 text-muted-foreground/50" />
                 </div>
-                <p className="text-base font-medium text-foreground">No dorms match your filters</p>
+                <p className="text-base font-medium text-foreground">{t('noResults')}</p>
                 <p className="mt-1 mb-5 max-w-sm text-sm text-muted-foreground">
-                  Try removing a filter or set an alert — we&apos;ll notify you when something opens.
+                  {t('noMatchExtended')}
                 </p>
                 <div className="flex flex-wrap justify-center gap-2">
                   <Button onClick={resetFilters} variant="outline" className="h-10 rounded-full px-6 text-sm">
-                    Reset filters
+                    {t('resetFilters')}
                   </Button>
                   <Button nativeButton={false} className="h-10 rounded-full px-6 text-sm" render={<Link href={alertHref} />}>
-                    Set alert instead
+                    {t('setAlertInstead')}
                   </Button>
                 </div>
               </div>
@@ -671,7 +682,10 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                     key={dorm.id}
                     dorm={dorm}
                     availability={
-                      availability[dorm.id] ?? { status: 'unknown', label: 'Status unknown' }
+                      availability[dorm.id] ?? {
+                        status: 'unknown',
+                        label: tAvail('unknown'),
+                      }
                     }
                     variant="full"
                   />

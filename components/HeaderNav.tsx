@@ -1,21 +1,22 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { Link, usePathname } from '@/i18n/navigation'
 import { cn } from '@/lib/utils'
 
 const NAV = [
-  { href: '/dorms', label: 'Browse dorms' },
-  { href: '/dashboard/alerts', label: 'Alerts' },
-  { href: '/how-it-works', label: 'How it works' },
-] as const
+  { href: '/dorms' as const, key: 'browseDorms' as const },
+  { href: '/dashboard/alerts' as const, key: 'alerts' as const },
+  { href: '/how-it-works' as const, key: 'howItWorks' as const },
+]
 
 export default function HeaderNav() {
+  const t = useTranslations('nav')
   const pathname = usePathname()
 
   return (
-    <nav aria-label="Main navigation" className="hidden items-center gap-1 md:flex">
-      {NAV.map(({ href, label }) => {
+    <nav aria-label={t('mainNav')} className="hidden items-center gap-1 md:flex">
+      {NAV.map(({ href, key }) => {
         const active = pathname === href || pathname.startsWith(`${href}/`)
         return (
           <Link
@@ -29,7 +30,7 @@ export default function HeaderNav() {
                 : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground',
             )}
           >
-            {label}
+            {t(key)}
           </Link>
         )
       })}
