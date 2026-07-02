@@ -1,5 +1,5 @@
+import Image from 'next/image'
 import Link from 'next/link'
-import DormPhoto from '@/components/DormPhoto'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, Bell, ExternalLink } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
@@ -87,17 +87,23 @@ export default async function DormDetailPage({
         </Link>
 
         {/* Hero image */}
-        <div className="card-elevated relative mb-6 overflow-hidden rounded-2xl">
-          <DormPhoto
-            imageUrl={dorm.image_url}
-            name={dorm.name}
-            provider={dorm.provider}
-            seed={dorm.slug}
-            priority
-            sizes="(max-width: 768px) 100vw, 768px"
-            frameClassName="aspect-video"
-          />
-          <div className="absolute left-3 top-3 z-[5]">
+        <div className="card-elevated relative mb-6 aspect-video w-full overflow-hidden rounded-2xl bg-brand-soft">
+          {dorm.image_url ? (
+            <Image
+              src={dorm.image_url}
+              alt={`${dorm.name} dormitory`}
+              fill
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="object-cover"
+              priority
+            />
+          ) : (
+            <div className="flex h-full w-full flex-col items-center justify-center gap-2">
+              <span className="text-4xl opacity-25">🏠</span>
+              <span className="text-sm font-medium text-muted-foreground">{dorm.provider}</span>
+            </div>
+          )}
+          <div className="absolute left-3 top-3">
             <AvailabilityBadge availability={availability} />
           </div>
         </div>
