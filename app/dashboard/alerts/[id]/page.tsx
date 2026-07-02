@@ -13,7 +13,7 @@ export default async function EditAlertPage({
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect(`/login?redirect=/dashboard/alerts/${id}`)
+  if (!user) redirect(`/login?redirect=${encodeURIComponent(`/dashboard/alerts/${id}`)}`)
 
   const { data: alert } = await supabase
     .from('user_alerts')
@@ -38,16 +38,23 @@ export default async function EditAlertPage({
 
   return (
     <main className="min-h-screen bg-background">
-      <div className="mx-auto max-w-2xl px-4 py-8 md:px-8">
-        <Link
-          href="/dashboard/alerts"
-          className="mb-8 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="size-3.5" />
-          Back to alerts
-        </Link>
+      <div className="hero-glow border-b border-border/40">
+        <div className="mx-auto max-w-2xl px-4 py-8 md:px-8 md:py-10">
+          <Link
+            href="/dashboard/alerts"
+            className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="size-3.5" />
+            Back to alerts
+          </Link>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Edit alert</h1>
+          <p className="mt-2 max-w-md text-sm text-muted-foreground">
+            Update your criteria — changes apply to future availability notifications.
+          </p>
+        </div>
+      </div>
 
-        <h1 className="mb-6 text-xl font-medium text-foreground">Edit alert</h1>
+      <div className="mx-auto max-w-2xl px-4 py-6 pb-28 md:px-8 md:py-8 md:pb-8">
         <AlertForm mode="edit" alertId={id} defaultValues={defaultValues} />
       </div>
     </main>

@@ -16,8 +16,8 @@ export default function ScanningPill() {
   }, [])
 
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3.5 py-1.5 text-xs text-muted-foreground shadow-sm">
-      <span className="relative flex size-2">
+    <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-surface/80 px-3.5 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur-sm">
+      <span className="relative flex size-2" aria-hidden="true">
         <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500/60" />
         <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
       </span>
@@ -28,7 +28,7 @@ export default function ScanningPill() {
       >
         {DISTRICTS[index]}
       </span>{' '}
-      right now
+      every 15 min
     </span>
   )
 }

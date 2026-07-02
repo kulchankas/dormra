@@ -8,7 +8,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 const poppins = Poppins({
   variable: '--font-poppins',
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
+  weight: ['400', '500', '600', '700'],
   display: 'swap',
 })
 
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#C2401E',
+  themeColor: '#B8381A',
   width: 'device-width',
   initialScale: 1,
 }

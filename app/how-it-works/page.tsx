@@ -25,7 +25,7 @@ const STEPS = [
     n: '03',
     icon: Mail,
     title: 'Get notified',
-    desc: 'Email or Telegram the moment a matching room opens up — apply before it disappears.',
+    desc: 'Email alert the moment a matching room opens up.',
   },
 ]
 
@@ -62,12 +62,12 @@ export default function HowItWorksPage() {
   return (
     <main className="min-h-screen bg-background">
       {/* Hero */}
-      <section className="bg-surface">
+      <section className="hero-glow">
         <div className="mx-auto max-w-3xl px-6 pb-16 pt-14 text-center md:pt-20">
-          <span className="inline-flex rounded-full bg-brand-soft px-3 py-1 text-xs font-medium text-brand">
+          <span className="inline-flex rounded-full border border-border/60 bg-surface/80 px-3 py-1 text-xs font-medium text-brand backdrop-blur-sm">
             How Dormra works
           </span>
-          <h1 className="mt-4 text-3xl font-medium leading-tight text-foreground md:text-4xl">
+          <h1 className="mt-4 text-3xl font-bold leading-tight tracking-tight text-foreground md:text-4xl">
             One search. Every Vienna student dorm.
           </h1>
           <p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-muted-foreground">
@@ -93,7 +93,7 @@ export default function HowItWorksPage() {
           {STEPS.map(({ n, icon: Icon, title, desc }) => (
             <article
               key={n}
-              className="rounded-2xl border border-border bg-surface p-6 transition-colors hover:border-border-strong"
+              className="card-elevated rounded-2xl bg-surface p-6 transition-shadow hover:shadow-[var(--shadow-card-hover)]"
             >
               <div className="mb-4 flex items-center justify-between">
                 <span className="grid size-10 place-items-center rounded-xl bg-brand-soft text-brand">
@@ -113,7 +113,7 @@ export default function HowItWorksPage() {
       </section>
 
       {/* FAQ */}
-      <section className="bg-surface">
+      <section className="bg-surface-soft/60">
         <div className="mx-auto max-w-2xl px-6 py-16">
           <h2 className="mb-6 text-center text-2xl font-medium text-foreground">
             Frequently asked

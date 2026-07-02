@@ -2,8 +2,7 @@ import { cn } from '@/lib/utils'
 import { DISTRICT_NAMES } from '@/lib/helpers'
 
 /**
- * 5-column numbered grid of Vienna's 23 districts. Shared by the dorms filter
- * and the alert form.
+ * Compact numbered grid of Vienna's 23 districts for the alert form.
  */
 export default function DistrictGrid({
   selected,
@@ -31,7 +30,8 @@ export default function DistrictGrid({
           </button>
         )}
       </div>
-      <div className="grid grid-cols-5 gap-1">
+      <p className="mb-2 text-xs text-muted-foreground">Leave empty to match any district.</p>
+      <div className="grid grid-cols-5 gap-1 sm:grid-cols-6">
         {Object.keys(DISTRICT_NAMES).map((k) => {
           const n = Number(k)
           const isSelected = selected.includes(n)
@@ -54,7 +54,7 @@ export default function DistrictGrid({
         })}
       </div>
       {selected.length > 0 && (
-        <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">
+        <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
           {selected.map((d) => `${d}. ${DISTRICT_NAMES[d]}`).join(' · ')}
         </p>
       )}

@@ -1,11 +1,8 @@
-import type { Dorm } from './helpers'
+import { dormMatchesAlert, type AlertCriteria } from './alert-criteria'
+import type { Dorm } from './types/dorm'
 
-/**
- * The subset of alert criteria that can be matched against dorm data.
- * `move_in_before` is intentionally excluded — dorms carry no availability
- * date, so it can't be matched here.
- */
-export type AlertCriteria = {
+/** UI-facing criteria for live match previews (excludes move_in_before — not matched yet). */
+export type UIMatchCriteria = {
   price_max: number | null
   districts: number[] | null
   deposit_max: number | null
@@ -13,26 +10,35 @@ export type AlertCriteria = {
   couples: boolean
 }
 
-export function dormMatchesAlert(dorm: Dorm, a: AlertCriteria): boolean {
-  // Budget: a room must be reachable within the max rent (compare on price_min).
-  if (a.price_max != null && dorm.price_min != null && dorm.price_min > a.price_max) {
-    return false
+function toAlertCriteria(criteria: UIMatchCriteria): AlertCriteria {
+  return {
+    price_max: criteria.price_max,
+    districts: criteria.districts && criteria.districts.length > 0 ? criteria.districts : null,
+    deposit_max: criteria.deposit_max,
+    pets_required: criteria.pets_required,
+    couples: criteria.couples,
   }
-  // Districts: if any selected, the dorm must be in one of them.
-  if (a.districts && a.districts.length > 0) {
-    if (dorm.district == null || !a.districts.includes(dorm.district)) return false
-  }
-  // Deposit cap (€): only filter when the dorm exposes a euro deposit.
-  if (a.deposit_max != null && dorm.deposit_eur != null && dorm.deposit_eur > a.deposit_max) {
-    return false
-  }
-  if (a.pets_required && dorm.pets !== true) return false
-  if (a.couples && dorm.couples !== true) return false
-  return true
 }
 
-export function countMatches(dorms: Dorm[], a: AlertCriteria): number {
+export function countMatches(dorms: Dorm[], criteria: UIMatchCriteria): number {
+  const alert = toAlertCriteria(criteria)
   let n = 0
-  for (const d of dorms) if (dormMatchesAlert(d, a)) n++
+  for (const dorm of dorms) {
+    if (dormMatchesAlert(dorm, alert)) n++
+  }
   return n
+}
+
+/** Build a shareable /dorms URL pre-filtered to this alert's criteria. */
+export function alertToDormsHref(criteria: UIMatchCriteria): string {
+  const params = new URLSearchParams()
+  if (criteria.price_max != null) params.set('maxPrice', String(criteria.price_max))
+  if (criteria.districts && criteria.districts.length > 0) {
+    params.set('districts', criteria.districts.join(','))
+  }
+  if (criteria.deposit_max != null) params.set('maxDeposit', String(criteria.deposit_max))
+  if (criteria.pets_required) params.set('pets', '1')
+  if (criteria.couples) params.set('couples', '1')
+  const qs = params.toString()
+  return qs ? `/dorms?${qs}` : '/dorms'
 }

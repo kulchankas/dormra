@@ -10,8 +10,6 @@ import UniversityLogos from '@/components/UniversityLogos'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 
-// ─── How it works ─────────────────────────────────────────────────────────────
-
 const HOW_IT_WORKS = [
   {
     icon: Search,
@@ -29,17 +27,15 @@ const HOW_IT_WORKS = [
     icon: Mail,
     step: '03',
     title: 'Get notified',
-    desc: 'Email or Telegram the moment a matching room opens up.',
+    desc: 'Email alert the moment a matching room opens up.',
   },
 ] as const
 
 const PROVIDERS = ['OeAD', 'STUWO', 'home4students', 'ÖJAB', 'Akademikerhilfe', 'Viennabase']
 
-// ─── Skeletons ────────────────────────────────────────────────────────────────
-
 function DormPreviewSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+    <div className="card-elevated overflow-hidden rounded-2xl bg-surface">
       <Skeleton className="h-[160px] w-full" />
       <div className="space-y-2 p-4">
         <Skeleton className="h-3 w-1/3 rounded-full" />
@@ -50,8 +46,6 @@ function DormPreviewSkeleton() {
     </div>
   )
 }
-
-// ─── Dorms preview RSC ────────────────────────────────────────────────────────
 
 async function DormsPreview() {
   const supabase = await createClient()
@@ -87,50 +81,51 @@ async function DormsPreview() {
   )
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
 export default function HomePage() {
   return (
     <main>
-      {/* ── Hero ── */}
       <section
-        className="relative w-full overflow-hidden bg-background pt-12 pb-10 md:pt-20 md:pb-14"
+        className="hero-glow w-full pt-12 pb-10 md:pt-20 md:pb-14"
         aria-label="Search student dorms in Vienna"
       >
-        <span className="hero-glow" aria-hidden="true" />
-        <div className="relative mx-auto flex max-w-[680px] flex-col items-center px-6 text-center">
-          {/* Eyebrow */}
-          <span className="mb-4 inline-flex items-center rounded-full bg-brand-soft px-3 py-1 text-xs font-medium text-brand">
+        <div className="mx-auto flex max-w-[680px] flex-col items-center px-6 text-center">
+          <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-border/60 bg-surface/80 px-3 py-1 text-xs font-medium text-brand backdrop-blur-sm">
             Vienna student housing
+            <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Beta
+            </span>
           </span>
 
-          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-foreground md:text-[40px]">
+          <h1 className="text-[28px] font-bold leading-[1.15] tracking-tight text-foreground md:text-[42px]">
             Every student dorm in Vienna.
             <br className="hidden sm:block" />
             <span className="text-brand"> One search.</span>
           </h1>
-          <p className="mt-3 max-w-md text-[15px] leading-relaxed text-muted-foreground">
+          <p className="mt-4 max-w-md text-[15px] leading-relaxed text-muted-foreground">
             Stop refreshing 8 different websites. Dormra tracks availability across all providers — and alerts you the moment a room opens.
           </p>
 
-          <div className="mt-7 flex w-full justify-center">
+          <div className="mt-8 flex w-full justify-center">
             <HeroSearch />
           </div>
 
-          {/* Provider trust bar */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
-            <span className="text-[11px] text-muted-foreground/60">Tracking</span>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-2">
+            <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
+              Tracking
+            </span>
             {PROVIDERS.map((p) => (
-              <span key={p} className="text-[11px] font-medium text-muted-foreground">
+              <span
+                key={p}
+                className="rounded-full bg-surface/70 px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground ring-1 ring-border/50"
+              >
                 {p}
               </span>
             ))}
-            <span className="text-[11px] text-muted-foreground/60">& more</span>
+            <span className="text-[11px] text-muted-foreground/70">& more</span>
           </div>
         </div>
       </section>
 
-      {/* ── Trusted by (full-bleed conveyor) ── */}
       <section className="w-full bg-background pb-4" aria-label="Trusted by students from Vienna universities">
         <p className="mb-6 px-6 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/60">
           Trusted by students from
@@ -138,28 +133,26 @@ export default function HomePage() {
         <UniversityLogos />
       </section>
 
-      {/* ── Stats strip ── */}
-      <div className="w-full border-y border-border bg-surface">
-        <div className="mx-auto max-w-[1100px] px-6">
-          <div className="grid grid-cols-3 divide-x divide-border">
+      <div className="w-full bg-surface-soft/80">
+        <div className="mx-auto max-w-[1100px] px-6 py-5">
+          <div className="grid grid-cols-3 gap-4 md:gap-8">
             {[
-              { value: '70+', label: 'dorm buildings tracked' },
+              { value: '70+', label: 'dorm buildings' },
               { value: '8+', label: 'providers covered' },
               { value: '15 min', label: 'refresh interval' },
             ].map(({ value, label }) => (
-              <div key={label} className="py-5 text-center">
-                <p className="text-xl font-semibold text-brand md:text-2xl">{value}</p>
+              <div key={label} className="text-center">
+                <p className="text-xl font-bold tracking-tight text-foreground md:text-2xl">{value}</p>
                 <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
               </div>
             ))}
           </div>
-          <div className="flex justify-center pb-5">
+          <div className="mt-4 flex justify-center">
             <ScanningPill />
           </div>
         </div>
       </div>
 
-      {/* ── How it works ── */}
       <section className="w-full bg-background" aria-label="How Dormra works">
         <div className="mx-auto max-w-[1100px] px-6 py-12">
           <div className="mb-6 text-center">
@@ -168,14 +161,14 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {HOW_IT_WORKS.map(({ icon: Icon, step, title, desc }) => (
-              <div key={step} className="relative rounded-2xl border border-border bg-surface p-5 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
+              <div key={step} className="card-elevated rounded-2xl bg-surface p-5 transition-shadow">
                 <div className="mb-4 flex items-center justify-between">
                   <div className="grid size-10 place-items-center rounded-xl bg-brand-soft">
                     <Icon className="size-5 text-brand" />
                   </div>
-                  <span className="text-[11px] font-semibold tracking-widest text-brand/60">{step}</span>
+                  <span className="text-[11px] font-semibold tracking-widest text-brand/50">{step}</span>
                 </div>
-                <p className="mb-1 text-[15px] font-medium text-foreground">{title}</p>
+                <p className="mb-1 text-[15px] font-semibold text-foreground">{title}</p>
                 <p className="text-[13px] leading-relaxed text-muted-foreground">{desc}</p>
               </div>
             ))}
@@ -194,8 +187,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Dorms preview ── */}
-      <section className="w-full border-t border-border bg-surface pb-12 pt-8" aria-label="Dorms in Vienna">
+      <section className="w-full bg-surface pb-12 pt-10" aria-label="Dorms in Vienna">
         <div className="mx-auto max-w-[1100px] px-6">
           <div className="mb-5 flex items-end justify-between">
             <div>
@@ -222,7 +214,7 @@ export default function HomePage() {
             <DormsPreview />
           </Suspense>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Button
               size="lg"
               nativeButton={false}
@@ -231,24 +223,32 @@ export default function HomePage() {
             >
               Browse all dorms
             </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              nativeButton={false}
+              className="h-11 rounded-full px-8 text-sm"
+              render={<Link href="/signup?redirect=/dashboard/alerts/new" />}
+            >
+              Set up a free alert
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* ── Alert CTA ── */}
-      <section className="w-full bg-surface" aria-label="Set a dorm alert">
+      <section className="w-full bg-background" aria-label="Set a dorm alert">
         <div className="mx-auto max-w-[1100px] px-6 pb-12">
-          <div className="overflow-hidden rounded-3xl border border-brand/15 bg-gradient-to-br from-brand-soft to-surface px-6 py-10 text-center md:py-14">
+          <div className="card-elevated overflow-hidden rounded-3xl border border-brand/15 bg-gradient-to-br from-brand-soft to-surface px-6 py-10 text-center md:py-14">
             <div className="mx-auto max-w-xl">
               <div className="mb-4 inline-flex size-11 items-center justify-center rounded-2xl bg-brand text-white">
                 <Bell className="size-5" />
               </div>
-              <h2 className="text-2xl font-semibold text-foreground md:text-[28px]">
+              <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-[28px]">
                 Never miss a room again
               </h2>
               <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
                 Set one alert with your budget and districts. Dormra checks every provider every
-                15 minutes and pings you the moment a match opens.
+                15 minutes and emails you the moment a match opens.
               </p>
               <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                 <Button
@@ -275,12 +275,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className="w-full border-t border-border bg-background">
-        <div className="mx-auto flex max-w-[1100px] items-center justify-between px-6 py-5">
+      <footer className="w-full bg-background">
+        <div className="mx-auto flex max-w-[1100px] flex-col items-start justify-between gap-4 px-6 py-8 sm:flex-row sm:items-center">
           <div>
-            <Link href="/" className="text-sm font-semibold text-brand">Dormra</Link>
-            <p className="mt-0.5 text-xs text-muted-foreground">Vienna student housing · 2026</p>
+            <Link href="/" className="text-sm font-bold text-brand">Dormra</Link>
+            <p className="mt-1 text-xs text-muted-foreground">Vienna student housing · 2026</p>
           </div>
           <nav className="flex items-center gap-4" aria-label="Footer links">
             <Link href="/how-it-works" className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline transition-colors">

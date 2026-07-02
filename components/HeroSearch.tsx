@@ -25,8 +25,18 @@ export default function HeroSearch() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   function handleSearch() {
-    router.push('/dorms')
+    const params = new URLSearchParams()
+    if (budget) params.set('maxPrice', budget)
+    if (selectedDate) params.set('moveIn', format(selectedDate, 'yyyy-MM-dd'))
+    const qs = params.toString()
+    router.push(qs ? `/dorms?${qs}` : '/dorms')
   }
+
+  const mobileSummary = [
+    'Vienna',
+    selectedDate ? format(selectedDate, 'd MMM') : 'Any time',
+    budget ? `≤ €${budget}` : 'Any budget',
+  ].join(' · ')
 
   return (
     <>
@@ -34,7 +44,7 @@ export default function HeroSearch() {
       <div
         role="search"
         aria-label="Search dorms"
-        className="hidden md:flex items-center w-full max-w-[580px] rounded-pill bg-surface border border-border shadow-[0_0_0_5px_var(--color-brand-soft)] transition-shadow hover:shadow-[0_0_0_5px_var(--color-border)] p-1.5"
+        className="search-elevated hidden md:flex items-center w-full max-w-[580px] rounded-pill bg-surface border border-border/80 p-1.5 transition-shadow hover:shadow-[var(--shadow-card-hover)]"
       >
         {/* Where */}
         <div className="flex-1 px-4 py-2 rounded-full hover:bg-muted/50 transition-colors cursor-default">
@@ -111,7 +121,7 @@ export default function HeroSearch() {
       {/* ── Mobile: collapsed button ── */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="md:hidden w-full max-w-[400px] flex items-center gap-3 bg-surface border border-border rounded-pill px-4 py-3 shadow-[0_0_0_4px_var(--color-brand-soft)] hover:shadow-[0_0_0_4px_var(--color-border)] transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="search-elevated md:hidden w-full max-w-[400px] flex items-center gap-3 bg-surface border border-border/80 rounded-pill px-4 py-3 transition-shadow hover:shadow-[var(--shadow-card-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         aria-label="Search dorms"
       >
         <span className="grid place-items-center size-8 rounded-full bg-brand text-white shrink-0">
@@ -119,7 +129,7 @@ export default function HeroSearch() {
         </span>
         <div className="flex-1 text-left">
           <p className="text-sm font-medium text-foreground">Search dorms</p>
-          <p className="text-xs text-muted-foreground">Vienna · Any time · Any budget</p>
+          <p className="text-xs text-muted-foreground">{mobileSummary}</p>
         </div>
       </button>
 
@@ -197,6 +207,8 @@ export default function HeroSearch() {
                     type="text"
                     inputMode="numeric"
                     pattern="[0-9]*"
+                    value={budget}
+                    onChange={e => setBudget(e.target.value.replace(/\D/g, ''))}
                     placeholder="Any amount"
                     className="h-5 border-0 p-0 text-sm font-medium shadow-none focus-visible:ring-0 bg-transparent"
                   />

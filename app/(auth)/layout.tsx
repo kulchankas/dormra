@@ -6,11 +6,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div className="min-h-screen w-full md:grid md:grid-cols-2">
       {/* ── Brand panel ── */}
       <aside
-        className="relative hidden flex-col justify-between overflow-hidden p-10 text-brand-foreground md:flex"
-        style={{
-          background:
-            'linear-gradient(135deg, #FF8A66 0%, #C2401E 55%, #8C2A12 100%)',
-        }}
+        className="relative hidden flex-col justify-between overflow-hidden bg-brand p-10 text-brand-foreground md:flex"
         aria-hidden="true"
       >
         {/* Decorative orbs */}
@@ -46,12 +42,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </aside>
 
       {/* ── Mobile brand banner ── */}
-      <div
-        className="md:hidden"
-        style={{
-          background: 'linear-gradient(135deg, #FF8A66 0%, #C2401E 100%)',
-        }}
-      >
+      <div className="bg-brand md:hidden">
         <div className="flex items-center justify-between px-5 py-4 text-brand-foreground">
           <Link href="/" className="inline-flex items-center gap-2 text-base font-medium">
             <span className="grid size-7 place-items-center rounded-md bg-white/15">
@@ -66,8 +57,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       {/* ── Form panel ── */}
-      <main className="flex flex-1 items-center justify-center px-5 py-10 md:px-10 md:py-16">
-        <div className="w-full max-w-sm">{children}</div>
+      <main className="flex flex-1 items-center justify-center bg-background px-5 py-10 md:px-10 md:py-16">
+        <div className="card-elevated w-full max-w-sm rounded-2xl bg-surface p-6 md:p-8">{children}</div>
       </main>
     </div>
   )

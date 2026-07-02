@@ -1,7 +1,10 @@
 import type { NextRequest } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { scrapeHome4Students } from '@/scrapers/home4students'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getScraperForProvider, usesBrowser } from '@/scrapers'
+import { launchScraperBrowser } from '@/scrapers/browser'
 import { processSnapshot } from '@/lib/diff'
+
+export const maxDuration = 300
 
 const DELAY_MS = 500
 
@@ -10,7 +13,6 @@ function delay(ms: number) {
 }
 
 export async function GET(request: NextRequest) {
-  // Auth guard — must match CRON_SECRET env var
   const expected = `Bearer ${process.env.CRON_SECRET}`
   if (request.headers.get('authorization') !== expected) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
@@ -19,45 +21,83 @@ export async function GET(request: NextRequest) {
   const start = Date.now()
   let scraped = 0
   let errors = 0
+  let skipped = 0
+  const byProvider: Record<string, { scraped: number; errors: number; skipped: number }> = {}
 
-  type DormRow = { id: string; slug: string; scrape_url: string | null }
-  // Fetch all home4students dorms that have a scrape_url
-  const { data: dorms, error: fetchError } = (await supabase
+  const admin = createAdminClient()
+
+  const { data: dorms, error: fetchError } = await admin
     .from('dorms')
-    .select('id, slug, scrape_url')
-    .eq('provider', 'home4students')
-    .not('scrape_url', 'is', null)) as { data: DormRow[] | null; error: { message: string } | null }
+    .select('id, slug, scrape_url, provider')
+    .eq('active', true)
+    .not('scrape_url', 'is', null)
 
   if (fetchError || !dorms) {
     console.error('[CRON] Failed to fetch dorms:', fetchError?.message)
     return Response.json({ ok: false, error: fetchError?.message }, { status: 500 })
   }
 
+  // Group by provider so browser scrapers launch once per provider batch.
+  const byProviderDorms = new Map<string, typeof dorms>()
   for (const dorm of dorms) {
-    try {
-      const result = await scrapeHome4Students(dorm.slug, dorm.scrape_url as string)
-      await processSnapshot(dorm.id, result)
+    const key = dorm.provider.toLowerCase()
+    const list = byProviderDorms.get(key) ?? []
+    list.push(dorm)
+    byProviderDorms.set(key, list)
+  }
 
-      if (!result.scrapeOk) {
-        console.warn(`[CRON] Scrape soft-failed for ${dorm.slug}: ${result.errorMsg}`)
-        errors++
-      } else {
-        scraped++
-      }
-    } catch (err) {
-      // Hard errors (e.g. processSnapshot DB failure) — log and continue
-      console.error(`[CRON] Unhandled error for ${dorm.slug}:`, err)
-      errors++
+  for (const [providerKey, providerDorms] of byProviderDorms) {
+    const scraper = getScraperForProvider(providerKey)
+    byProvider[providerKey] = { scraped: 0, errors: 0, skipped: 0 }
+
+    if (!scraper) {
+      console.warn(
+        `[CRON] No scraper registered for provider "${providerDorms[0]?.provider}" — skipping ${providerDorms.length} dorm(s)`,
+      )
+      skipped += providerDorms.length
+      byProvider[providerKey].skipped = providerDorms.length
+      continue
     }
 
-    // Be polite between requests
-    await delay(DELAY_MS)
+    const browser = usesBrowser(providerKey) ? await launchScraperBrowser() : null
+
+    try {
+      for (const dorm of providerDorms) {
+        try {
+          const result = await scraper.scrape(
+            dorm.slug,
+            dorm.scrape_url as string,
+            browser ?? undefined,
+          )
+          await processSnapshot(dorm.id, result)
+
+          if (!result.scrapeOk) {
+            console.warn(`[CRON] Scrape soft-failed for ${dorm.slug}: ${result.errorMsg}`)
+            errors++
+            byProvider[providerKey].errors++
+          } else {
+            scraped++
+            byProvider[providerKey].scraped++
+          }
+        } catch (err) {
+          console.error(`[CRON] Unhandled error for ${dorm.slug}:`, err)
+          errors++
+          byProvider[providerKey].errors++
+        }
+
+        await delay(DELAY_MS)
+      }
+    } finally {
+      await browser?.close()
+    }
   }
 
   return Response.json({
     ok: true,
     scraped,
     errors,
+    skipped,
+    byProvider,
     duration_ms: Date.now() - start,
   })
 }

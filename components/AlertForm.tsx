@@ -15,8 +15,6 @@ import DistrictGrid from '@/components/DistrictGrid'
 import AlertMatchPreview from '@/components/AlertMatchPreview'
 import { createAlert, updateAlert, type AlertPayload } from '@/app/dashboard/alerts/actions'
 
-// ─── Schema ───────────────────────────────────────────────────────────────────
-
 const schema = z.object({
   price_max: z.string().optional(),
   deposit_max: z.string().optional(),
@@ -37,8 +35,6 @@ interface Props {
   defaultValues?: AlertPayload
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 export default function AlertForm({ mode, alertId, defaultValues }: Props) {
   const [isPending, startTransition] = useTransition()
 
@@ -57,7 +53,6 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
     },
   })
 
-  const notifyTelegram = useWatch({ control: form.control, name: 'notify_telegram' })
   const priceMax = useWatch({ control: form.control, name: 'price_max' })
   const depositMax = useWatch({ control: form.control, name: 'deposit_max' })
   const selectedDistricts = useWatch({ control: form.control, name: 'districts' })
@@ -81,12 +76,17 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
       pets_required: values.pets_required,
       couples: values.couples,
       notify_email: values.notify_email,
-      notify_telegram: values.notify_telegram,
-      telegram_chat_id: values.notify_telegram ? (values.telegram_chat_id || null) : null,
+      notify_telegram: false,
+      telegram_chat_id: null,
     }
   }
 
   function onSubmit(values: FormValues) {
+    if (!values.notify_email) {
+      toast.error('Email notifications must stay on — Telegram is not available yet.')
+      return
+    }
+
     startTransition(async () => {
       const payload = buildPayload(values)
       const result = mode === 'edit' && alertId
@@ -101,12 +101,11 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+      <form id="alert-form" onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
 
         <AlertMatchPreview criteria={criteria} />
 
-        {/* ── Budget ── */}
-        <section className="rounded-2xl border border-border bg-surface p-5">
+        <section className="card-elevated rounded-2xl bg-surface p-5">
           <h2 className="mb-4 text-sm font-semibold text-foreground">Budget</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField
@@ -118,10 +117,13 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
                     Max rent per month (€)
                   </FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">€</span>
-                      <Input type="number" min={0} placeholder="600" className="h-9 pl-6" {...field} />
-                    </div>
+                    <Input
+                      type="number"
+                      min={0}
+                      placeholder="e.g. 600"
+                      className="h-9"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -133,13 +135,17 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-xs text-muted-foreground">
-                    Max deposit (€)
+                    Max deposit (months)
                   </FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">€</span>
-                      <Input type="number" min={0} placeholder="1200" className="h-9 pl-6" {...field} />
-                    </div>
+                    <Input
+                      type="number"
+                      min={0}
+                      step={1}
+                      placeholder="e.g. 2"
+                      className="h-9"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -148,22 +154,21 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
           </div>
         </section>
 
-        {/* ── Districts ── */}
-        <section className="rounded-2xl border border-border bg-surface p-5">
-          <p className="mb-3 text-xs text-muted-foreground">
-            Pick districts, or leave empty to match anywhere in Vienna.
-          </p>
+        <section className="card-elevated rounded-2xl bg-surface p-5">
           <FormField
             control={form.control}
             name="districts"
             render={({ field }) => (
-              <DistrictGrid label="Districts" selected={field.value} onChange={field.onChange} />
+              <DistrictGrid
+                selected={field.value}
+                onChange={field.onChange}
+                label="Districts"
+              />
             )}
           />
         </section>
 
-        {/* ── Move-in date ── */}
-        <section className="rounded-2xl border border-border bg-surface p-5">
+        <section className="card-elevated rounded-2xl bg-surface p-5">
           <h2 className="mb-4 text-sm font-semibold text-foreground">Move-in date</h2>
           <FormField
             control={form.control}
@@ -176,14 +181,16 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
                 <FormControl>
                   <Input type="date" className="h-9 w-48" {...field} />
                 </FormControl>
+                <p className="text-[11px] text-muted-foreground">
+                  Saved for your reference — move-in filtering is coming soon.
+                </p>
                 <FormMessage />
               </FormItem>
             )}
           />
         </section>
 
-        {/* ── Requirements ── */}
-        <section className="rounded-2xl border border-border bg-surface p-5">
+        <section className="card-elevated rounded-2xl bg-surface p-5">
           <h2 className="mb-4 text-sm font-semibold text-foreground">Requirements</h2>
           <div className="flex flex-col gap-4">
             <FormField
@@ -195,10 +202,7 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
                     <p className="text-sm text-foreground">Pets allowed</p>
                     <p className="text-xs text-muted-foreground">Only show rooms that allow pets</p>
                   </div>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
                 </label>
               )}
             />
@@ -212,18 +216,14 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
                     <p className="text-sm text-foreground">Couples allowed</p>
                     <p className="text-xs text-muted-foreground">Only show rooms that accept couples</p>
                   </div>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
                 </label>
               )}
             />
           </div>
         </section>
 
-        {/* ── Notifications ── */}
-        <section className="rounded-2xl border border-border bg-surface p-5">
+        <section className="card-elevated rounded-2xl bg-surface p-5">
           <h2 className="mb-4 text-sm font-semibold text-foreground">Notifications</h2>
           <div className="flex flex-col gap-4">
             <FormField
@@ -235,51 +235,18 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
                     <p className="text-sm text-foreground">Email</p>
                     <p className="text-xs text-muted-foreground">Get notified by email</p>
                   </div>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
                 </label>
               )}
             />
             <div className="h-px bg-border" />
-            <FormField
-              control={form.control}
-              name="notify_telegram"
-              render={({ field }) => (
-                <label className="flex cursor-pointer items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm text-foreground">Telegram</p>
-                    <p className="text-xs text-muted-foreground">Instant message via Telegram bot</p>
-                  </div>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </label>
-              )}
-            />
-            {notifyTelegram && (
-              <FormField
-                control={form.control}
-                name="telegram_chat_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs text-muted-foreground">
-                      Telegram chat ID
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g. 123456789"
-                        className="h-9"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+            <div className="flex items-center justify-between gap-3 opacity-60">
+              <div>
+                <p className="text-sm text-foreground">Telegram</p>
+                <p className="text-xs text-muted-foreground">Coming soon — email alerts are active now</p>
+              </div>
+              <Switch checked={false} disabled aria-label="Telegram notifications coming soon" />
+            </div>
           </div>
         </section>
 
@@ -287,12 +254,25 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
           type="submit"
           size="lg"
           disabled={isPending}
-          className="h-11 rounded-2xl text-sm"
+          className="hidden h-11 w-full rounded-full text-sm md:inline-flex"
         >
           {isPending && <Loader2 className="size-4 animate-spin" />}
           {mode === 'create' ? 'Create alert' : 'Save changes'}
         </Button>
       </form>
+
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 p-4 backdrop-blur-sm md:hidden">
+        <Button
+          type="submit"
+          form="alert-form"
+          size="lg"
+          disabled={isPending}
+          className="h-12 w-full rounded-full text-sm"
+        >
+          {isPending && <Loader2 className="size-4 animate-spin" />}
+          {mode === 'create' ? 'Create alert' : 'Save changes'}
+        </Button>
+      </div>
     </Form>
   )
 }
