@@ -119,6 +119,9 @@ const UNIVERSITIES: Uni[] = [
   },
 ]
 
+/** Repeat each half enough times to cover ultrawide viewports without gaps. */
+const REPEATS_PER_HALF = 4
+
 // ── Detect dropped-in logo files at render time (server component) ──────────
 const LOGO_DIR = path.join(process.cwd(), 'public', 'logos')
 const EXTENSIONS = ['svg', 'png', 'webp', 'jpg', 'jpeg']
@@ -157,32 +160,31 @@ function LogoMark({ uni }: { uni: Uni }) {
   )
 }
 
-function LogoGroup({ clone = false }: { clone?: boolean }) {
-  return (
-    <ul
-      aria-hidden={clone || undefined}
-      data-marquee-clone={clone ? '' : undefined}
-      className="flex shrink-0 items-center gap-x-9 pr-9 md:gap-x-12 md:pr-12"
-    >
-      {UNIVERSITIES.map((uni) => (
-        <li
-          key={uni.slug}
-          title={uni.name}
-          className="flex items-center gap-2.5 whitespace-nowrap text-muted-foreground/70 transition-all duration-200 hover:text-foreground hover:opacity-100"
-        >
-          <LogoMark uni={uni} />
-        </li>
-      ))}
-    </ul>
-  )
+function buildHalfStrip() {
+  return Array.from({ length: REPEATS_PER_HALF }, () => UNIVERSITIES).flat()
 }
 
 export default function UniversityLogos() {
+  const halfStrip = buildHalfStrip()
+  const trackItems = [...halfStrip, ...halfStrip]
+
   return (
     <div className="marquee-mask relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
-      <div className="marquee-track">
-        <LogoGroup />
-        <LogoGroup clone />
+      <div className="marquee-track gap-x-9 md:gap-x-12">
+        {trackItems.map((uni, index) => {
+          const isClone = index >= halfStrip.length
+          return (
+            <div
+              key={`${uni.slug}-${index}`}
+              data-marquee-clone={isClone ? '' : undefined}
+              aria-hidden={isClone || undefined}
+              title={uni.name}
+              className="flex shrink-0 items-center gap-2.5 whitespace-nowrap text-muted-foreground/70 transition-all duration-200 hover:text-foreground hover:opacity-100"
+            >
+              <LogoMark uni={uni} />
+            </div>
+          )
+        })}
       </div>
     </div>
   )
