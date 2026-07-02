@@ -1,57 +1,158 @@
 # Launch checklist
 
-One-page ordered checklist for going live. Full details: [`MANUAL_TASKS.md`](./MANUAL_TASKS.md).
+**Your action list** — ordered by urgency. Maps to [`STRATEGY.md`](./STRATEGY.md) Phase 1 (prove the loop).
+
+Full operator steps (SQL, curl, DNS): [`MANUAL_TASKS.md`](./MANUAL_TASKS.md)  
+Day-to-day monitoring: [`MONITORING.md`](./MONITORING.md)
 
 ---
 
-## Before merge
+## Do now — unblock live cron & auth
 
-- [x] **i18n** — merged (German/Russian UI, localized emails)
-- [x] **Audit + admin** — merged (`/admin`, security fixes, ops docs)
+Nothing else in Phase 1 counts until the scrape loop runs in production.
+
+### 1. Confirm deploy from PR #33
+
+- [x] **PR #33 merged** — proxy fix for `/api/*`, `/auth/*`, metadata routes
+- [ ] Wait for Vercel production deploy, then verify (step 2)
+
+**Why:** Production was returning **404** for `/api/cron/scrape` and `/auth/callback`. cron-job.org disabled the job after repeated failures.
+
+### 2. Verify the scrape endpoint
+
+```bash
+curl -H "Authorization: Bearer YOUR_CRON_SECRET" https://dormra.eu/api/cron/scrape
+```
+
+| Response | Action |
+|----------|--------|
+| `{ "ok": true, ... }` | Working — continue |
+| **401** | `CRON_SECRET` mismatch — align Vercel and cron-job.org |
+| **404** | Deploy not finished or PR #33 not merged |
+| **500** | Check Vercel logs; likely missing `SUPABASE_SERVICE_ROLE_KEY` |
+
+### 3. Re-enable cron-job.org
+
+Disabled jobs stay off until you turn them back on.
+
+- [ ] Open [cron-job.org](https://console.cron-job.org/) → **enable** the job
+- [ ] URL: `GET https://dormra.eu/api/cron/scrape`
+- [ ] Schedule: every 15 min (`*/15 * * * *`)
+- [ ] Header: `Authorization: Bearer <same CRON_SECRET as Vercel>`
+- [ ] Confirm execution history shows **HTTP 200**
+
+### 4. Fix Supabase auth URLs
+
+In Supabase → **Authentication** → **URL Configuration**:
+
+- [ ] **Site URL:** `https://dormra.eu` (not `localhost:3000`)
+- [ ] **Redirect URLs:** `https://dormra.eu/auth/callback`, `http://localhost:3000/auth/callback`
+
+Without this, password reset and Google OAuth redirect to localhost.
+
+### 5. Google OAuth (if using “Continue with Google”)
+
+- [ ] Google Cloud → OAuth redirect URI: `https://vmnnvtifpknakerduioq.supabase.co/auth/v1/callback`
+- [ ] Supabase → Authentication → Providers → Google: enable + paste Client ID/Secret
+
+Details: [`MANUAL_TASKS.md`](./MANUAL_TASKS.md) §5b
 
 ---
 
-## After merge — Supabase (blockers)
+## Already done — skip unless something broke
 
-- [ ] **Enable RLS** — run `supabase/migrations/20260605120000_enable_rls.sql` in production SQL Editor
-- [ ] **Apply new migrations** (in order):
-  1. `20260701120000_user_alerts_locale.sql`
-  2. `20260701130000_snapshot_rpc_and_retention.sql`
-  3. `20260701140000_alert_log_dedup.sql`
-- [ ] **Auth redirect URLs** — add `https://dormra.eu/auth/callback` and localhost variants
-- [ ] **Verify RLS** — anon key must not return other users' alerts (see MANUAL_TASKS §1.1)
+### Code merged to `main`
+
+- [x] i18n (DE/RU UI, localized emails, hreflang)
+- [x] Audit + admin dashboard (`/admin`, cron fail-closed, alert validation, snapshot RPC, email dedup)
+- [x] UX polish (dorms error fallback, mobile admin, `RESEND_FROM` env support)
+- [x] `feature/wire-email-engine` — **fully absorbed into `main`** (branch has 0 unique commits; safe to ignore)
+- [x] Auth hardening + RLS migration **in code** (see Supabase section below)
+- [x] Per-dorm “Alert me” button on `/dorms/[slug]` and directory
+- [x] 3 live scrapers: OeAD (26 dorms), home4students (11), STUWO
+
+### Vercel env (you confirmed)
+
+- [x] `ADMIN_EMAILS=kulchankas@gmail.com`
+- [x] `CRON_SECRET`, Supabase keys, `RESEND_API_KEY`
+
+### Supabase (applied via SQL Editor)
+
+- [x] RLS enabled on public tables
+- [x] Migrations: `user_alerts_locale`, `snapshot_rpc_and_retention`, `alert_log_dedup`
+
+- [ ] **Verify RLS** — anon key must not return other users' alerts ([`MANUAL_TASKS.md`](./MANUAL_TASKS.md) §1.1 smoke test)
 
 ---
 
-## After merge — Vercel (blockers)
+## After cron runs — confirm the loop
 
-- [ ] Set env vars: `NEXT_PUBLIC_SUPABASE_*`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `RESEND_API_KEY`, `NEXT_PUBLIC_SITE_URL=https://dormra.eu`
-- [ ] **Redeploy** production after env changes
+### 6. Admin dashboard smoke test
+
+- [ ] Log in as `kulchankas@gmail.com`
+- [ ] Open https://dormra.eu/admin
+- [ ] **Dorm health** — last scrape times update every ~15 min
+- [ ] **Email log** — entries appear when availability transitions fire alerts
+
+### 7. Resend production sender
+
+- [ ] [Resend](https://resend.com/domains) → verify `dormra.eu` (DNS SPF/DKIM)
+- [ ] Vercel: `RESEND_FROM=Dormra <alerts@dormra.eu>`
+- [ ] Redeploy
+
+### 8. End-user smoke test
+
+- [ ] Homepage → `/dorms` search (budget filter works)
+- [ ] Sign up / log in
+- [ ] Create alert on dashboard
+- [ ] Password reset email → link lands on `dormra.eu`
+- [ ] Google sign-in (if enabled)
+
+Details: [`MANUAL_TASKS.md`](./MANUAL_TASKS.md) §6
+
+### 9. Rotate Resend key (if ever exposed)
+
+- [ ] Generate new key in Resend dashboard
+- [ ] Update `RESEND_API_KEY` in Vercel → redeploy
+- [ ] Revoke old key
 
 ---
 
-## After merge — cron-job.org (blockers)
+## Phase 1 product gaps — after ops are green
 
-- [ ] Create job: `GET https://dormra.eu/api/cron/scrape` every 15 min
-- [ ] Header: `Authorization: Bearer <CRON_SECRET>` (same value as Vercel)
-- [ ] Confirm first run returns `{ "ok": true, ... }`
+These are the remaining **Phase 1 strategy** items. See [`STRATEGY.md`](./STRATEGY.md) for rationale.
+
+| Item | Status | Next step |
+|------|--------|-----------|
+| Live cron for 7 days | ❌ Blocked | Complete steps 1–3 above |
+| `/api/test-alert` E2E test route | ❌ Not built | Add dev-only route to fire a real alert against prod Supabase |
+| Hero `moveIn` filter | ⚠️ Partial | Search navigates to `/dorms?moveIn=…` but **does not filter** — banner says “not live yet” |
+| home4students shared-URL attribution | ⚠️ Partial | Fetch dedup done; `h4s-doebling-front` / `h4s-doebling-back` share address keywords — verify in admin after cron runs |
+| Zero false/missed alerts (1 week) | ❌ Not measured | Watch admin Dorm health + Email log after cron restored |
 
 ---
 
-## Recommended before announcing
+## Phase 2+ — not now
 
-- [ ] **Admin access** — set `ADMIN_EMAILS=your@email.com` in Vercel, redeploy, verify `/admin`
-- [ ] **Resend domain** — verify `dormra.eu`, update `lib/email.ts` from address to `alerts@dormra.eu`
-- [ ] **Smoke tests** — homepage, `/de/dorms`, signup, alert create, password reset, cron (MANUAL_TASKS §6)
-- [ ] **Optional:** regenerate `lib/database.types.ts` via Supabase CLI
+Hold until Phase 1 success metric is met (one real student, one correct alert, one week of clean cron).
+
+| Phase | Goal | Status |
+|-------|------|--------|
+| **2 — Widen moat** | 3 → 9 scrapers; any Vienna dorm searchable | 3/9 scrapers live |
+| **3 — Acquisition** | Telegram, SEO, community; no Stripe yet | Telegram UI only; SEO not started |
+| **4 — Expansion** | Graz after Vienna flywheel works | Not started |
+
+Full roadmap: [`STRATEGY.md`](./STRATEGY.md)
 
 ---
 
 ## Post-launch monitoring
 
-- [ ] Vercel logs — watch `/api/cron/scrape` for 401/500
-- [ ] Supabase — DB size (`availability_snapshots` ~5k rows/day; 30-day prune runs in cron)
-- [ ] Uptime ping on `https://dormra.eu`
+- [ ] cron-job.org — execution history (200, not 404/401)
+- [ ] Vercel logs — filter `path:/api/cron/scrape`
+- [ ] `/admin` → Dorm health + Email log
+- [ ] Supabase — `availability_snapshots` growth (~5k rows/day; 30-day prune in cron)
+- [ ] Resend — delivery status vs admin Email log
 
 ---
 
@@ -59,6 +160,8 @@ One-page ordered checklist for going live. Full details: [`MANUAL_TASKS.md`](./M
 
 | Doc | Purpose |
 |-----|---------|
-| [`MANUAL_TASKS.md`](./MANUAL_TASKS.md) | Step-by-step with SQL, curl, DNS |
-| [`PROJECT_AUDIT.md`](./PROJECT_AUDIT.md) | Code roadmap and status |
+| [`STRATEGY.md`](./STRATEGY.md) | Business thesis + phases vs current status |
+| [`MANUAL_TASKS.md`](./MANUAL_TASKS.md) | Step-by-step SQL, curl, DNS |
+| [`MONITORING.md`](./MONITORING.md) | Where to watch cron, emails, DB |
+| [`PROJECT_AUDIT.md`](./PROJECT_AUDIT.md) | Code audit items (mostly ✅) |
 | [`../README.md`](../README.md) | Local dev setup |
