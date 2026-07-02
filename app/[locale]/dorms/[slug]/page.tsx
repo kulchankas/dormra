@@ -1,6 +1,6 @@
 import DormImage from '@/components/DormImage'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, Bell, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Bell, Bookmark, ExternalLink } from 'lucide-react'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
 import { buildPageMetadata } from '@/lib/i18n-metadata'
@@ -10,6 +10,7 @@ import { getAvailabilityStatusBulk } from '@/lib/availability'
 import { localizeAvailability } from '@/lib/i18n-availability'
 import AvailabilityBadge from '@/components/AvailabilityBadge'
 import DormLocationMap from '@/components/DormLocationMap'
+import SaveDormButton from '@/components/SaveDormButton'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Link } from '@/i18n/navigation'
@@ -50,6 +51,18 @@ export default async function DormDetailPage({ params }: PageProps) {
   const supabase = await createClient()
   const { data: dorm } = await supabase.from('dorms').select('*').eq('slug', slug).eq('active', true).single()
   if (!dorm) notFound()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  let isSaved = false
+  if (user) {
+    const { data: trackerRow } = await supabase
+      .from('tracker')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('dorm_id', dorm.id)
+      .maybeSingle()
+    isSaved = !!trackerRow
+  }
 
   const availabilityMap = await getAvailabilityStatusBulk([dorm.id], supabase)
   const rawAvailability = availabilityMap.get(dorm.id) ?? { status: 'unknown' as const, label: 'Status unknown' }
@@ -110,6 +123,19 @@ export default async function DormDetailPage({ params }: PageProps) {
           )}
           <div className="absolute left-3 top-3">
             <AvailabilityBadge availability={availability} />
+          </div>
+          <div className="absolute right-3 top-3">
+            {user ? (
+              <SaveDormButton dormId={dorm.id} dormName={dorm.name} initialSaved={isSaved} />
+            ) : (
+              <Link
+                href={{ pathname: '/login', query: { redirect: `/dorms/${dorm.slug}` } }}
+                aria-label={t('loginToSaveAria')}
+                className="grid size-9 place-items-center rounded-full bg-white/90 text-foreground backdrop-blur-sm transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2"
+              >
+                <Bookmark className="size-4" aria-hidden="true" />
+              </Link>
+            )}
           </div>
         </div>
 
