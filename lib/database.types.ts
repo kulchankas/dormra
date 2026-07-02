@@ -162,6 +162,30 @@ export interface Database {
         }
         Relationships: []
       }
+      dorm_images: {
+        Row: {
+          id: string
+          dorm_id: string
+          url: string
+          sort_order: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          dorm_id: string
+          url: string
+          sort_order?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          dorm_id?: string
+          url?: string
+          sort_order?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
       tracker: {
         Row: {
           id: string
