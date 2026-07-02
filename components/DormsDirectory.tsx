@@ -1,8 +1,10 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
-import { Search, SlidersHorizontal, X } from 'lucide-react'
+import { useMemo } from 'react'
+import Link from 'next/link'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { format, parseISO } from 'date-fns'
+import { Bell, Search, SlidersHorizontal, X } from 'lucide-react'
 import {
   DISTRICT_NAMES,
   type AvailabilityStatus,
@@ -13,6 +15,7 @@ import {
   applyFilters,
   countActiveFilters,
   filtersToSearchParams,
+  parseFiltersFromParams,
   type FilterState,
   type SortKey,
 } from '@/lib/dorm-filters'
@@ -42,8 +45,39 @@ import { cn } from '@/lib/utils'
 interface Props {
   dorms: Dorm[]
   availability: Record<string, AvailabilityStatus>
-  initialFilters: FilterState
 }
+
+type QuickFilter = {
+  id: string
+  label: string
+  isActive: (filters: FilterState) => boolean
+  toggle: (filters: FilterState) => FilterState
+}
+
+const QUICK_FILTERS: QuickFilter[] = [
+  {
+    id: 'available',
+    label: 'Available now',
+    isActive: (f) => f.availableOnly,
+    toggle: (f) => ({
+      ...f,
+      availableOnly: !f.availableOnly,
+      sort: !f.availableOnly ? 'available_first' : f.sort === 'available_first' ? 'price_asc' : f.sort,
+    }),
+  },
+  {
+    id: 'budget500',
+    label: 'Under €500',
+    isActive: (f) => f.maxPrice === 500,
+    toggle: (f) => ({ ...f, maxPrice: f.maxPrice === 500 ? 1500 : 500 }),
+  },
+  {
+    id: 'couples',
+    label: 'Couples OK',
+    isActive: (f) => f.couples,
+    toggle: (f) => ({ ...f, couples: !f.couples }),
+  },
+]
 
 function FilterChips({
   filters,
@@ -54,11 +88,25 @@ function FilterChips({
 }) {
   const chips: { key: string; label: string; onRemove: () => void }[] = []
 
+  if (filters.search) {
+    chips.push({
+      key: 'search',
+      label: `"${filters.search}"`,
+      onRemove: () => onChange({ ...filters, search: '' }),
+    })
+  }
   if (filters.maxPrice < 1500) {
     chips.push({
       key: 'price',
       label: `≤ €${filters.maxPrice}/mo`,
       onRemove: () => onChange({ ...filters, maxPrice: 1500 }),
+    })
+  }
+  if (filters.availableOnly) {
+    chips.push({
+      key: 'available',
+      label: 'Available now',
+      onRemove: () => onChange({ ...filters, availableOnly: false }),
     })
   }
   if (filters.maxDepositMonths !== '') {
@@ -89,7 +137,7 @@ function FilterChips({
   if (chips.length === 0) return null
 
   return (
-    <div className="mb-4 flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       {chips.map((chip) => (
         <span
           key={chip.key}
@@ -97,6 +145,7 @@ function FilterChips({
         >
           {chip.label}
           <button
+            type="button"
             onClick={chip.onRemove}
             className="ml-0.5 rounded-full text-brand/50 hover:text-brand transition-colors"
             aria-label={`Remove ${chip.label} filter`}
@@ -147,12 +196,29 @@ function FilterPanel({
         <h2 className="text-sm font-semibold text-foreground">Filters</h2>
         {showReset && (
           <button
+            type="button"
             onClick={onReset}
             className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline transition-colors focus-visible:underline focus-visible:outline-none"
           >
             Reset all
           </button>
         )}
+      </div>
+
+      <div className="space-y-2.5 py-4 border-t border-border">
+        <label className="flex cursor-pointer items-center gap-2.5">
+          <Checkbox
+            checked={filters.availableOnly}
+            onCheckedChange={(v) =>
+              onChange({
+                ...filters,
+                availableOnly: !!v,
+                sort: v ? 'available_first' : filters.sort === 'available_first' ? 'price_asc' : filters.sort,
+              })
+            }
+          />
+          <span className="text-sm text-foreground">Available now only</span>
+        </label>
       </div>
 
       <div className="space-y-3 py-4 border-t border-border">
@@ -174,7 +240,7 @@ function FilterPanel({
         />
         <div className="flex justify-between text-[11px] text-muted-foreground">
           <span>€200</span>
-          <span>€1,500+</span>
+          <span>Any (€1,500+)</span>
         </div>
       </div>
 
@@ -184,6 +250,7 @@ function FilterPanel({
             <Label className="text-xs font-semibold text-foreground">Provider</Label>
             {filters.providers.length > 0 && (
               <button
+                type="button"
                 onClick={() => set('providers', [])}
                 className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
               >
@@ -211,6 +278,7 @@ function FilterPanel({
           <legend className="text-xs font-semibold text-foreground">District</legend>
           {filters.districts.length > 0 && (
             <button
+              type="button"
               onClick={() => set('districts', [])}
               className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
             >
@@ -280,13 +348,17 @@ function FilterPanel({
   )
 }
 
-export default function DormsDirectory({ dorms, availability, initialFilters }: Props) {
+export default function DormsDirectory({ dorms, availability }: Props) {
   const router = useRouter()
   const pathname = usePathname()
-  const [filters, setFiltersState] = useState<FilterState>(initialFilters)
+  const searchParams = useSearchParams()
+
+  const filters = useMemo(
+    () => parseFiltersFromParams(Object.fromEntries(searchParams.entries())),
+    [searchParams],
+  )
 
   function setFilters(next: FilterState) {
-    setFiltersState(next)
     const qs = filtersToSearchParams(next).toString()
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
   }
@@ -296,9 +368,18 @@ export default function DormsDirectory({ dorms, availability, initialFilters }: 
     [dorms],
   )
 
-  const filtered = useMemo(() => applyFilters(dorms, filters), [dorms, filters])
+  const filtered = useMemo(
+    () => applyFilters(dorms, filters, availability),
+    [dorms, filters, availability],
+  )
 
-  const active = countActiveFilters(filters) > 0 || filters.search !== ''
+  const availableCount = useMemo(
+    () => dorms.filter((d) => availability[d.id]?.status === 'available').length,
+    [dorms, availability],
+  )
+
+  const active =
+    countActiveFilters(filters) > 0 || filters.search !== '' || filters.moveIn != null
   const resetFilters = () => setFilters(DEFAULT_FILTERS)
 
   const filterProps = {
@@ -309,9 +390,71 @@ export default function DormsDirectory({ dorms, availability, initialFilters }: 
     availableProviders,
   }
 
+  const alertHref = (() => {
+    const params = new URLSearchParams()
+    if (filters.maxPrice < 1500) params.set('maxPrice', String(filters.maxPrice))
+    if (filters.districts.length > 0) params.set('districts', filters.districts.join(','))
+    if (filters.couples) params.set('couples', '1')
+    if (filters.pets) params.set('pets', '1')
+    const qs = params.toString()
+    return qs ? `/dashboard/alerts/new?${qs}` : '/dashboard/alerts/new'
+  })()
+
   return (
     <main className="min-h-screen bg-background">
+      <div className="hero-glow border-b border-border/40">
+        <div className="mx-auto max-w-7xl px-4 py-8 md:px-8 md:py-10">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Vienna · {dorms.length} listings
+                {availableCount > 0 && (
+                  <span className="text-brand"> · {availableCount} available now</span>
+                )}
+              </p>
+              <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+                Browse student dorms
+              </h1>
+              <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                Filter by budget, district, and availability across every provider we track.
+                Share your search — filters stay in the URL.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              nativeButton={false}
+              className="h-10 shrink-0 gap-2 rounded-full px-4 text-sm"
+              render={<Link href={alertHref} />}
+            >
+              <Bell className="size-3.5" aria-hidden="true" />
+              Set alert for this search
+            </Button>
+          </div>
+        </div>
+      </div>
+
       <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
+        {filters.moveIn && (
+          <div className="mb-5 flex flex-col gap-2 rounded-2xl border border-border/80 bg-surface-soft px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-muted-foreground">
+              Move-in by{' '}
+              <span className="font-medium text-foreground">
+                {format(parseISO(filters.moveIn), 'd MMMM yyyy')}
+              </span>
+              {' '}— intake-date filtering isn&apos;t live yet. Set an alert and we&apos;ll email you when rooms open.
+            </p>
+            <Button
+              size="sm"
+              nativeButton={false}
+              className="h-8 shrink-0 rounded-full px-4 text-xs"
+              render={<Link href={alertHref} />}
+            >
+              Create alert
+            </Button>
+          </div>
+        )}
+
         <div className="flex gap-8 items-start">
           <aside aria-label="Dorm filters" className="hidden md:block w-[260px] shrink-0">
             <div className="card-elevated sticky top-[calc(3.75rem+1.5rem)] rounded-2xl bg-surface px-5 pt-4 pb-5">
@@ -320,82 +463,42 @@ export default function DormsDirectory({ dorms, availability, initialFilters }: 
           </aside>
 
           <div className="flex-1 min-w-0">
-            <div className="mb-5">
-              <div className="flex items-center gap-3 mb-3">
-                <h1 className="flex-1 text-2xl font-bold tracking-tight text-foreground leading-tight">
-                  {active ? (
-                    <span>
-                      <span className="text-brand">{filtered.length}</span>
-                      <span className="text-muted-foreground font-normal"> of {dorms.length} dorms</span>
-                    </span>
-                  ) : (
-                    <span>
-                      <span className="text-brand">{dorms.length}</span>
-                      <span className="font-normal text-foreground"> dorms in Vienna</span>
-                    </span>
-                  )}
-                </h1>
-
-                <Sheet>
-                  <SheetTrigger
-                    render={
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-9 gap-2 rounded-full px-3.5 md:hidden"
-                      />
-                    }
-                  >
-                    <SlidersHorizontal className="size-3.5" />
-                    Filters
-                    {countActiveFilters(filters) > 0 && (
-                      <span className="grid size-4 place-items-center rounded-full bg-brand text-[10px] font-semibold text-white">
-                        {countActiveFilters(filters)}
-                      </span>
-                    )}
-                  </SheetTrigger>
-                  <SheetContent side="bottom" className="rounded-t-3xl px-5 pb-0 pt-5">
-                    <SheetHeader className="mb-1 flex-row items-center justify-between p-0">
-                      <SheetTitle className="text-base">Filter dorms</SheetTitle>
-                      <SheetClose
-                        render={
-                          <Button variant="ghost" size="icon-sm" className="rounded-full" aria-label="Close filters" />
-                        }
-                      >
-                        <X className="size-4" />
-                      </SheetClose>
-                    </SheetHeader>
-                    <div className="overflow-y-auto max-h-[70vh] pb-2">
-                      <FilterPanel {...filterProps} />
-                    </div>
-                    <div className="sticky bottom-0 bg-surface/95 backdrop-blur-sm border-t border-border py-3">
-                      <SheetClose
-                        render={
-                          <Button size="lg" className="h-11 w-full rounded-full text-sm" />
-                        }
-                      >
-                        {active
-                          ? `Show ${filtered.length} dorm${filtered.length !== 1 ? 's' : ''}`
-                          : 'Browse all dorms'}
-                      </SheetClose>
-                    </div>
-                  </SheetContent>
-                </Sheet>
+            <div className="mb-5 space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                {QUICK_FILTERS.map((quick) => {
+                  const isActive = quick.isActive(filters)
+                  return (
+                    <button
+                      key={quick.id}
+                      type="button"
+                      onClick={() => setFilters(quick.toggle(filters))}
+                      className={cn(
+                        'rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                        isActive
+                          ? 'bg-brand text-white shadow-sm'
+                          : 'bg-surface text-muted-foreground ring-1 ring-border hover:text-foreground',
+                      )}
+                    >
+                      {quick.label}
+                    </button>
+                  )
+                })}
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
                   <Input
-                    type="text"
+                    type="search"
                     value={filters.search}
                     onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                    placeholder="Search by name, provider…"
+                    placeholder="Search name, provider, address…"
                     aria-label="Search dorms"
-                    className="h-9 rounded-full border-border/80 bg-surface pl-8 pr-4 text-sm shadow-sm"
+                    className="h-10 rounded-full border-border/80 bg-surface pl-9 pr-9 text-sm shadow-sm"
                   />
                   {filters.search && (
                     <button
+                      type="button"
                       onClick={() => setFilters({ ...filters, search: '' })}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                       aria-label="Clear search"
@@ -405,26 +508,85 @@ export default function DormsDirectory({ dorms, availability, initialFilters }: 
                   )}
                 </div>
 
-                <Select
-                  value={filters.sort}
-                  onValueChange={(v) => setFilters({ ...filters, sort: v as SortKey })}
-                >
-                  <SelectTrigger className="h-9 w-auto min-w-[160px] rounded-full text-sm">
-                    <SelectValue placeholder="Sort…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="price_asc">Price: low → high</SelectItem>
-                    <SelectItem value="price_desc">Price: high → low</SelectItem>
-                    <SelectItem value="district_asc">By district</SelectItem>
-                    <SelectItem value="created_desc">Recently added</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-2">
+                  <Select
+                    value={filters.sort}
+                    onValueChange={(v) => setFilters({ ...filters, sort: v as SortKey })}
+                  >
+                    <SelectTrigger className="h-10 flex-1 rounded-full text-sm sm:min-w-[168px] sm:flex-none">
+                      <SelectValue placeholder="Sort…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="available_first">Available first</SelectItem>
+                      <SelectItem value="price_asc">Price: low → high</SelectItem>
+                      <SelectItem value="price_desc">Price: high → low</SelectItem>
+                      <SelectItem value="district_asc">By district</SelectItem>
+                      <SelectItem value="created_desc">Recently added</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Sheet>
+                    <SheetTrigger
+                      render={
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-10 gap-2 rounded-full px-3.5 md:hidden"
+                        />
+                      }
+                    >
+                      <SlidersHorizontal className="size-3.5" />
+                      <span className="sr-only sm:not-sr-only">Filters</span>
+                      {countActiveFilters(filters) > 0 && (
+                        <span className="grid size-4 place-items-center rounded-full bg-brand text-[10px] font-semibold text-white">
+                          {countActiveFilters(filters)}
+                        </span>
+                      )}
+                    </SheetTrigger>
+                    <SheetContent side="bottom" className="rounded-t-3xl px-5 pb-0 pt-5">
+                      <SheetHeader className="mb-1 flex-row items-center justify-between p-0">
+                        <SheetTitle className="text-base">Filter dorms</SheetTitle>
+                        <SheetClose
+                          render={
+                            <Button variant="ghost" size="icon-sm" className="rounded-full" aria-label="Close filters" />
+                          }
+                        >
+                          <X className="size-4" />
+                        </SheetClose>
+                      </SheetHeader>
+                      <div className="overflow-y-auto max-h-[70vh] pb-2">
+                        <FilterPanel {...filterProps} />
+                      </div>
+                      <div className="sticky bottom-0 bg-surface/95 backdrop-blur-sm border-t border-border py-3">
+                        <SheetClose
+                          render={
+                            <Button size="lg" className="h-11 w-full rounded-full text-sm" />
+                          }
+                        >
+                          {active
+                            ? `Show ${filtered.length} dorm${filtered.length !== 1 ? 's' : ''}`
+                            : 'Browse all dorms'}
+                        </SheetClose>
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+                </div>
               </div>
 
+              <p className="text-sm text-muted-foreground">
+                {active ? (
+                  <>
+                    Showing{' '}
+                    <span className="font-medium text-foreground">{filtered.length}</span>
+                    {' '}of {dorms.length} dorms
+                  </>
+                ) : (
+                  <>All {dorms.length} dorms · sorted by {filters.sort === 'price_asc' ? 'price' : 'your selection'}</>
+                )}
+              </p>
+
               {active && (
-                <div className="mt-3">
-                  <FilterChips filters={filters} onChange={setFilters} />
-                </div>
+                <FilterChips filters={filters} onChange={setFilters} />
               )}
             </div>
 
@@ -444,19 +606,22 @@ export default function DormsDirectory({ dorms, availability, initialFilters }: 
                   <SlidersHorizontal className="size-6 text-muted-foreground/50" />
                 </div>
                 <p className="text-base font-medium text-foreground">No dorms match your filters</p>
-                <p className="mt-1 mb-5 text-sm text-muted-foreground">Try widening your search criteria</p>
-                <Button onClick={resetFilters} className="h-10 rounded-full px-6 text-sm">
-                  Reset all filters
-                </Button>
+                <p className="mt-1 mb-5 max-w-sm text-sm text-muted-foreground">
+                  Try removing a filter or set an alert — we&apos;ll notify you when something opens.
+                </p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  <Button onClick={resetFilters} variant="outline" className="h-10 rounded-full px-6 text-sm">
+                    Reset filters
+                  </Button>
+                  <Button nativeButton={false} className="h-10 rounded-full px-6 text-sm" render={<Link href={alertHref} />}>
+                    Set alert instead
+                  </Button>
+                </div>
               </div>
             )}
 
             {filtered.length > 0 && (
-              <div className={cn(
-                'grid gap-4',
-                'grid-cols-1 sm:grid-cols-2',
-                'xl:grid-cols-3',
-              )}>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {filtered.map((dorm) => (
                   <DormCard
                     key={dorm.id}

@@ -1,6 +1,7 @@
 import type { Dorm } from './helpers'
+import type { AvailabilityStatus } from './availability'
 
-export type SortKey = 'price_asc' | 'price_desc' | 'district_asc' | 'created_desc'
+export type SortKey = 'price_asc' | 'price_desc' | 'district_asc' | 'created_desc' | 'available_first'
 
 export interface FilterState {
   maxPrice: number
@@ -10,8 +11,11 @@ export interface FilterState {
   pets: boolean
   couples: boolean
   furnished: boolean
+  availableOnly: boolean
   search: string
   sort: SortKey
+  /** From homepage hero — display only until move-in matching ships */
+  moveIn: string | null
 }
 
 export const DEFAULT_FILTERS: FilterState = {
@@ -22,8 +26,10 @@ export const DEFAULT_FILTERS: FilterState = {
   pets: false,
   couples: false,
   furnished: false,
+  availableOnly: false,
   search: '',
   sort: 'price_asc',
+  moveIn: null,
 }
 
 export function countActiveFilters(f: FilterState): number {
@@ -34,7 +40,8 @@ export function countActiveFilters(f: FilterState): number {
     (f.maxDepositMonths !== '' ? 1 : 0) +
     (f.pets ? 1 : 0) +
     (f.couples ? 1 : 0) +
-    (f.furnished ? 1 : 0)
+    (f.furnished ? 1 : 0) +
+    (f.availableOnly ? 1 : 0)
   )
 }
 
@@ -75,6 +82,10 @@ export function parseFiltersFromParams(
   if (paramValue(params.pets) === '1') filters.pets = true
   if (paramValue(params.couples) === '1') filters.couples = true
   if (paramValue(params.furnished) === '1') filters.furnished = true
+  if (paramValue(params.available) === '1') filters.availableOnly = true
+
+  const moveIn = paramValue(params.moveIn)
+  if (moveIn && /^\d{4}-\d{2}-\d{2}$/.test(moveIn)) filters.moveIn = moveIn
 
   return filters
 }
@@ -91,11 +102,30 @@ export function filtersToSearchParams(filters: FilterState): URLSearchParams {
   if (filters.pets) params.set('pets', '1')
   if (filters.couples) params.set('couples', '1')
   if (filters.furnished) params.set('furnished', '1')
+  if (filters.availableOnly) params.set('available', '1')
+  if (filters.moveIn) params.set('moveIn', filters.moveIn)
 
   return params
 }
 
-export function applyFilters(dorms: Dorm[], filters: FilterState): Dorm[] {
+/** Cheapest listed price within budget, or unknown price kept visible. */
+export function dormWithinBudget(dorm: Dorm, maxPrice: number): boolean {
+  const entry = dorm.price_min ?? dorm.price_max
+  if (entry == null) return true
+  return entry <= maxPrice
+}
+
+function availabilityRank(status: AvailabilityStatus['status'] | undefined): number {
+  if (status === 'available') return 0
+  if (status === 'unknown') return 1
+  return 2
+}
+
+export function applyFilters(
+  dorms: Dorm[],
+  filters: FilterState,
+  availability: Record<string, AvailabilityStatus> = {},
+): Dorm[] {
   let result = [...dorms]
 
   if (filters.search) {
@@ -109,7 +139,7 @@ export function applyFilters(dorms: Dorm[], filters: FilterState): Dorm[] {
   }
 
   if (filters.maxPrice < 1500) {
-    result = result.filter((d) => d.price_min == null || d.price_min <= filters.maxPrice)
+    result = result.filter((d) => dormWithinBudget(d, filters.maxPrice))
   }
 
   if (filters.providers.length > 0) {
@@ -129,17 +159,37 @@ export function applyFilters(dorms: Dorm[], filters: FilterState): Dorm[] {
   if (filters.couples) result = result.filter((d) => d.couples === true)
   if (filters.furnished) result = result.filter((d) => d.furnished === true)
 
+  if (filters.availableOnly) {
+    result = result.filter((d) => availability[d.id]?.status === 'available')
+  }
+
   result.sort((a, b) => {
+    let cmp = 0
     switch (filters.sort) {
+      case 'available_first': {
+        cmp = availabilityRank(availability[a.id]?.status) - availabilityRank(availability[b.id]?.status)
+        if (cmp === 0) cmp = (a.price_min ?? 9999) - (b.price_min ?? 9999)
+        break
+      }
       case 'price_asc':
-        return (a.price_min ?? 9999) - (b.price_min ?? 9999)
+        cmp = (a.price_min ?? 9999) - (b.price_min ?? 9999)
+        break
       case 'price_desc':
-        return (b.price_min ?? 0) - (a.price_min ?? 0)
+        cmp = (b.price_min ?? 0) - (a.price_min ?? 0)
+        break
       case 'district_asc':
-        return (a.district ?? 99) - (b.district ?? 99)
+        cmp = (a.district ?? 99) - (b.district ?? 99)
+        break
       case 'created_desc':
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        cmp = new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        break
     }
+
+    if (cmp !== 0) return cmp
+    if (filters.sort !== 'available_first') {
+      return availabilityRank(availability[a.id]?.status) - availabilityRank(availability[b.id]?.status)
+    }
+    return a.name.localeCompare(b.name)
   })
 
   return result
@@ -151,5 +201,5 @@ function paramValue(value: string | string[] | undefined): string | undefined {
 }
 
 function isSortKey(value: string): value is SortKey {
-  return ['price_asc', 'price_desc', 'district_asc', 'created_desc'].includes(value)
+  return ['price_asc', 'price_desc', 'district_asc', 'created_desc', 'available_first'].includes(value)
 }

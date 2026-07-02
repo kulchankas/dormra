@@ -1,9 +1,10 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { type Dorm } from '@/lib/helpers'
 import { getAvailabilityStatusBulk, availabilityMapToRecord } from '@/lib/availability'
-import { parseFiltersFromParams } from '@/lib/dorm-filters'
 import DormsDirectory from '@/components/DormsDirectory'
+import DormsLoading from './loading'
 
 export const metadata: Metadata = {
   title: 'Vienna Student Dorms — Dormra',
@@ -11,14 +12,7 @@ export const metadata: Metadata = {
     'Browse and filter student dormitories across Vienna. Compare price, district, deposit, and availability from all major providers in one directory.',
 }
 
-export default async function DormsPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>
-}) {
-  const params = await searchParams
-  const initialFilters = parseFiltersFromParams(params)
-
+export default async function DormsPage() {
   const supabase = await createClient()
   const { data } = await supabase
     .from('dorms')
@@ -32,10 +26,11 @@ export default async function DormsPage({
   )
 
   return (
-    <DormsDirectory
-      dorms={dorms}
-      availability={availabilityMapToRecord(availabilityMap)}
-      initialFilters={initialFilters}
-    />
+    <Suspense fallback={<DormsLoading />}>
+      <DormsDirectory
+        dorms={dorms}
+        availability={availabilityMapToRecord(availabilityMap)}
+      />
+    </Suspense>
   )
 }
