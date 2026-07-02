@@ -15,6 +15,7 @@ Dormra is a well-structured beta: clear scraper → snapshot → diff → alert 
 | 1.1 | **RLS not verified in production** | Manual | Anon smoke test — [`MANUAL_TASKS.md`](./MANUAL_TASKS.md) §1.1 |
 | 1.5 | **Cron 504 on full scrape** | ✅ Done | PR #39 split by provider + batch; 3 cron-job.org jobs |
 | 1.6 | **No E2E alert test route** | ✅ Done | `GET /api/test-alert` (CRON_SECRET auth) |
+| 1.7 | **No account settings / delete** | ✅ Done | `/dashboard/settings` — password, export, delete |
 | 1.2 | **Password reset broken** | ✅ Done | `/reset-password` page + callback recovery redirect |
 | 1.3 | **Cron auth fails open** if `CRON_SECRET` unset | ✅ Done | `lib/cron-auth.ts` fail-closed + timing-safe compare |
 | 1.4 | **No server-side alert validation** | ✅ Done | `lib/alert-schema.ts` + server actions |
@@ -71,8 +72,8 @@ Priority order — **do not start Phase 2 scrapers until Phase 1 metric met.**
 |----------|------|-----------|------------|
 | P0 | home4students room-card parser | ✅ This sprint — structured `.room-card` parsing | — |
 | P1 | Admin per-provider last scrape | ✅ Shipped PR #42 | — |
-| P2 | `/api/test-alert` polish | ✅ Shipped PR #40 | — |
-| P3 | move_in filtering | Blocked — providers don't expose dates | Scraper data model |
+| P1 | Account settings page | ✅ This sprint | — |
+| P2 | Saved dorms + application tracker | UI placeholders only | Schema exists |
 | Hold | New scrapers (ÖJAB, WIHAST, …) | Phase 2 gate | Phase 1 week clean |
 
 **Your manual schedule (parallel):**

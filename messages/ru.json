@@ -17,7 +17,8 @@
     "newAlertPageTitle": "Новый алерт — Dormra",
     "editAlertPageTitle": "Редактировать алерт — Dormra",
     "resetPasswordPageTitle": "Сброс пароля — Dormra",
-    "adminTitle": "Админ — Dormra"
+    "adminTitle": "Админ — Dormra",
+    "settingsPageTitle": "Настройки аккаунта — Dormra"
   },
   "errors": {
     "notFoundTitle": "Страница не найдена",
@@ -61,6 +62,7 @@
     "footerNav": "Ссылки в подвале",
     "skipToContent": "Перейти к содержимому",
     "admin": "Админ",
+    "settings": "Настройки",
     "privacy": "Конфиденциальность",
     "terms": "Условия"
   },
@@ -405,7 +407,38 @@
     "pauseAlert": "Приостановить алерт",
     "resumeAlert": "Возобновить алерт",
     "signedInAs": "Вы вошли как",
-    "accountMenu": "Меню аккаунта"
+    "accountMenu": "Меню аккаунта",
+    "settings": "Аккаунт",
+    "settingsHint": "Пароль, экспорт, удаление"
+  },
+  "settings": {
+    "title": "Настройки аккаунта",
+    "subtitle": "Пароль, данные и история писем.",
+    "accountSection": "Аккаунт",
+    "email": "Email",
+    "memberSince": "С нами",
+    "securitySection": "Безопасность",
+    "securityHint": "Сменить пароль, пока вы в системе.",
+    "updatePassword": "Обновить пароль",
+    "passwordUpdated": "Пароль обновлён.",
+    "emailHistorySection": "История писем",
+    "emailHistoryHint": "Недавние алерты о свободных местах.",
+    "noEmailHistory": "Писем пока не было.",
+    "unknownDorm": "Неизвестное общежитие",
+    "dataSection": "Ваши данные",
+    "dataHint": "Скачать JSON с алертами и логом отправок.",
+    "exportData": "Экспорт данных",
+    "exportSuccess": "Экспорт скачан.",
+    "exportFailed": "Не удалось экспортировать.",
+    "exportHint": "Сохраните файл как запись ваших алертов.",
+    "dangerSection": "Удалить аккаунт",
+    "dangerHint": "Безвозвратно удалит аккаунт, алерты и историю.",
+    "deleteAccount": "Удалить аккаунт",
+    "deleteWarning": "Это нельзя отменить.",
+    "deleteConfirmHint": "Введите email ({email}) для подтверждения.",
+    "deleteConfirmLabel": "Подтвердите email",
+    "deleteAccountConfirm": "Удалить навсегда",
+    "cancel": "Отмена"
   },
   "alertForm": {
     "emailRequired": "Email-уведомления должны оставаться включёнными — Telegram пока недоступен.",

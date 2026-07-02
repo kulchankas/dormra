@@ -17,7 +17,8 @@
     "newAlertPageTitle": "Neuer Alert — Dormra",
     "editAlertPageTitle": "Alert bearbeiten — Dormra",
     "resetPasswordPageTitle": "Passwort zurücksetzen — Dormra",
-    "adminTitle": "Admin — Dormra"
+    "adminTitle": "Admin — Dormra",
+    "settingsPageTitle": "Kontoeinstellungen — Dormra"
   },
   "errors": {
     "notFoundTitle": "Seite nicht gefunden",
@@ -61,6 +62,7 @@
     "footerNav": "Footer-Links",
     "skipToContent": "Zum Inhalt springen",
     "admin": "Admin",
+    "settings": "Einstellungen",
     "privacy": "Datenschutz",
     "terms": "AGB"
   },
@@ -405,7 +407,38 @@
     "pauseAlert": "Alert pausieren",
     "resumeAlert": "Alert fortsetzen",
     "signedInAs": "Angemeldet als",
-    "accountMenu": "Kontomenü"
+    "accountMenu": "Kontomenü",
+    "settings": "Konto",
+    "settingsHint": "Passwort, Export, Konto löschen"
+  },
+  "settings": {
+    "title": "Kontoeinstellungen",
+    "subtitle": "Passwort, Daten und E-Mail-Verlauf verwalten.",
+    "accountSection": "Konto",
+    "email": "E-Mail",
+    "memberSince": "Mitglied seit",
+    "securitySection": "Sicherheit",
+    "securityHint": "Passwort ändern, während du angemeldet bist.",
+    "updatePassword": "Passwort aktualisieren",
+    "passwordUpdated": "Passwort aktualisiert.",
+    "emailHistorySection": "E-Mail-Verlauf",
+    "emailHistoryHint": "Kürzlich gesendete Verfügbarkeits-Alerts.",
+    "noEmailHistory": "Noch keine Alert-E-Mails.",
+    "unknownDorm": "Unbekanntes Heim",
+    "dataSection": "Deine Daten",
+    "dataHint": "JSON-Export deiner Alerts und des Versandlogs.",
+    "exportData": "Daten exportieren",
+    "exportSuccess": "Export heruntergeladen.",
+    "exportFailed": "Export fehlgeschlagen.",
+    "exportHint": "Bewahre die Datei als Nachweis deiner Alerts auf.",
+    "dangerSection": "Konto löschen",
+    "dangerHint": "Entfernt Konto, Alerts und E-Mail-Verlauf dauerhaft.",
+    "deleteAccount": "Konto löschen",
+    "deleteWarning": "Das kann nicht rückgängig gemacht werden.",
+    "deleteConfirmHint": "Gib deine E-Mail ein ({email}), um zu bestätigen.",
+    "deleteConfirmLabel": "E-Mail bestätigen",
+    "deleteAccountConfirm": "Endgültig löschen",
+    "cancel": "Abbrechen"
   },
   "alertForm": {
     "emailRequired": "E-Mail-Benachrichtigungen müssen aktiv bleiben — Telegram ist noch nicht verfügbar.",

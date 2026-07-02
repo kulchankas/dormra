@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
-import { LogOut, LayoutDashboard, Bell, Shield } from 'lucide-react'
+import { LogOut, LayoutDashboard, Bell, Shield, Settings } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import {
   DropdownMenu,
@@ -60,6 +60,10 @@ export default function HeaderUserMenu({
           <DropdownMenuItem nativeButton={false} render={<Link href="/dashboard/alerts" />}>
             <Bell className="size-4" />
             {t('myAlerts')}
+          </DropdownMenuItem>
+          <DropdownMenuItem nativeButton={false} render={<Link href="/dashboard/settings" />}>
+            <Settings className="size-4" />
+            {t('settings')}
           </DropdownMenuItem>
           {showAdmin && (
             <DropdownMenuItem nativeButton={false} render={<Link href="/admin" />}>
