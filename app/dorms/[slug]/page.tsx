@@ -74,7 +74,7 @@ export default async function DormDetailPage({
         </Link>
 
         {/* Hero image */}
-        <div className="relative mb-6 aspect-video w-full overflow-hidden rounded-2xl bg-brand-soft">
+        <div className="card-elevated relative mb-6 aspect-video w-full overflow-hidden rounded-2xl bg-brand-soft">
           {dorm.image_url ? (
             <Image
               src={dorm.image_url}
@@ -97,7 +97,7 @@ export default async function DormDetailPage({
           <Badge variant="secondary" className="mb-2 text-[10px]">
             {dorm.provider}
           </Badge>
-          <h1 className="text-[22px] font-medium leading-snug text-foreground mb-1">
+          <h1 className="text-[22px] font-bold leading-snug tracking-tight text-foreground mb-1">
             {dorm.name}
           </h1>
           {districtLabel && (
@@ -109,7 +109,7 @@ export default async function DormDetailPage({
         </div>
 
         {/* Price & deposit */}
-        <div className="rounded-2xl border border-border bg-surface p-5 mb-4">
+        <div className="card-elevated rounded-2xl bg-surface p-5 mb-4">
           <p className="text-xl font-semibold text-foreground mb-1">{priceLabel}</p>
           {dorm.deposit_months != null && (
             <p className="text-sm text-muted-foreground">
@@ -124,7 +124,7 @@ export default async function DormDetailPage({
         {/* Detail grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
           {details.map(({ label, value }) => (
-            <div key={label} className="rounded-xl border border-border bg-surface p-3.5">
+            <div key={label} className="card-elevated rounded-xl bg-surface p-3.5">
               <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
               <p className="text-sm font-medium text-foreground">{value}</p>
             </div>
@@ -133,7 +133,7 @@ export default async function DormDetailPage({
 
         {/* Notes */}
         {dorm.notes && (
-          <div className="rounded-2xl border border-border bg-surface p-5 mb-6">
+          <div className="card-elevated rounded-2xl bg-surface p-5 mb-6">
             <h2 className="text-sm font-medium text-foreground mb-2">Notes</h2>
             <p className="text-sm leading-relaxed text-muted-foreground">{dorm.notes}</p>
           </div>

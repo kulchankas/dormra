@@ -10,7 +10,6 @@
   --font-sans: var(--font-poppins);
   --font-heading: var(--font-poppins);
 
-  /* Brand palette */
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
   --color-brand-soft: var(--brand-soft);
@@ -18,7 +17,6 @@
   --color-surface: var(--surface);
   --color-surface-soft: var(--surface-soft);
 
-  /* shadcn token wiring */
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -51,50 +49,52 @@
   --radius-xl: 20px;
   --radius-2xl: 24px;
   --radius-pill: 999px;
+
+  --shadow-card: 0 1px 2px rgb(26 20 16 / 0.04), 0 8px 24px rgb(26 20 16 / 0.06);
+  --shadow-card-hover: 0 2px 4px rgb(26 20 16 / 0.05), 0 16px 40px rgb(26 20 16 / 0.1);
+  --shadow-search: 0 4px 24px rgb(26 20 16 / 0.08), 0 1px 3px rgb(26 20 16 / 0.04);
 }
 
 :root {
-  /* Brand palette — Dormra warm sand */
-  --background: #FFF8F4;
-  --foreground: #1A1410;
-  --muted: #FFF1E8;
-  --muted-foreground: #6B5C53;
-  --border: #FFE4D6;
-  --border-strong: #F0C9B5;
+  --background: #FAF6F2;
+  --foreground: #14110F;
+  --muted: #F3EBE4;
+  --muted-foreground: #6B5E56;
+  --border: #E4D5C9;
+  --border-strong: #C9B5A6;
   --surface: #FFFFFF;
-  --surface-soft: #FAECE7;
+  --surface-soft: #F7F0EA;
 
-  --brand: #C2401E;
+  --brand: #B8381A;
   --brand-foreground: #FFFFFF;
-  --brand-soft: #FFE4D6;
-  --brand-accent: #FF6B47;
+  --brand-soft: #F9E8E2;
+  --brand-accent: #E85D3B;
 
-  /* shadcn primary maps to brand */
-  --primary: #C2401E;
+  --primary: #B8381A;
   --primary-foreground: #FFFFFF;
-  --secondary: #FAECE7;
-  --secondary-foreground: #1A1410;
-  --accent: #FFE4D6;
-  --accent-foreground: #1A1410;
+  --secondary: #F3EBE4;
+  --secondary-foreground: #14110F;
+  --accent: #F9E8E2;
+  --accent-foreground: #14110F;
   --destructive: #B91C1C;
 
   --card: #FFFFFF;
-  --card-foreground: #1A1410;
+  --card-foreground: #14110F;
   --popover: #FFFFFF;
-  --popover-foreground: #1A1410;
-  --input: #FFE4D6;
-  --ring: #FF6B47;
+  --popover-foreground: #14110F;
+  --input: #E4D5C9;
+  --ring: #E85D3B;
 
   --radius: 0.875rem;
 
   --sidebar: #FFFFFF;
-  --sidebar-foreground: #1A1410;
-  --sidebar-primary: #C2401E;
+  --sidebar-foreground: #14110F;
+  --sidebar-primary: #B8381A;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #FFE4D6;
-  --sidebar-accent-foreground: #1A1410;
-  --sidebar-border: #FFE4D6;
-  --sidebar-ring: #FF6B47;
+  --sidebar-accent: #F9E8E2;
+  --sidebar-accent-foreground: #14110F;
+  --sidebar-border: #E4D5C9;
+  --sidebar-ring: #E85D3B;
 }
 
 @layer base {
@@ -108,5 +108,27 @@
   }
   html {
     @apply font-sans;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-poppins), system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  .hero-glow {
+    background:
+      radial-gradient(ellipse 90% 70% at 50% -20%, rgb(232 93 59 / 0.14), transparent 55%),
+      radial-gradient(ellipse 60% 40% at 100% 0%, rgb(184 56 26 / 0.06), transparent 50%),
+      var(--background);
+  }
+  .card-elevated {
+    box-shadow: var(--shadow-card);
+  }
+  .card-elevated:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+  .search-elevated {
+    box-shadow: var(--shadow-search);
   }
 }

@@ -17,14 +17,14 @@ export default async function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-surface/85 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 md:px-6">
+    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/90 backdrop-blur-lg">
+      <div className="mx-auto flex h-[3.75rem] max-w-7xl items-center justify-between gap-3 px-4 md:px-6">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-base font-medium text-brand transition-opacity hover:opacity-90"
+          className="inline-flex items-center gap-2.5 text-base font-semibold text-brand transition-opacity hover:opacity-90"
         >
-          <span className="grid size-7 place-items-center rounded-md bg-brand text-brand-foreground">
-            <Sparkles className="size-3.5" aria-hidden="true" />
+          <span className="grid size-8 place-items-center rounded-lg bg-brand text-brand-foreground shadow-sm">
+            <Sparkles className="size-4" aria-hidden="true" />
           </span>
           Dormra
         </Link>

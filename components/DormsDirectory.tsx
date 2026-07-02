@@ -314,7 +314,7 @@ export default function DormsDirectory({ dorms, availability, initialFilters }: 
       <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
         <div className="flex gap-8 items-start">
           <aside aria-label="Dorm filters" className="hidden md:block w-[260px] shrink-0">
-            <div className="sticky top-[calc(3.5rem+1.5rem)] rounded-2xl border border-border bg-surface px-5 pt-4 pb-5">
+            <div className="card-elevated sticky top-[calc(3.75rem+1.5rem)] rounded-2xl bg-surface px-5 pt-4 pb-5">
               <FilterPanel {...filterProps} />
             </div>
           </aside>
@@ -322,7 +322,7 @@ export default function DormsDirectory({ dorms, availability, initialFilters }: 
           <div className="flex-1 min-w-0">
             <div className="mb-5">
               <div className="flex items-center gap-3 mb-3">
-                <h1 className="flex-1 text-xl font-semibold text-foreground leading-tight">
+                <h1 className="flex-1 text-2xl font-bold tracking-tight text-foreground leading-tight">
                   {active ? (
                     <span>
                       <span className="text-brand">{filtered.length}</span>
@@ -392,7 +392,7 @@ export default function DormsDirectory({ dorms, availability, initialFilters }: 
                     onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                     placeholder="Search by name, provider…"
                     aria-label="Search dorms"
-                    className="h-9 rounded-full pl-8 pr-4 text-sm"
+                    className="h-9 rounded-full border-border/80 bg-surface pl-8 pr-4 text-sm shadow-sm"
                   />
                   {filters.search && (
                     <button

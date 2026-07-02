@@ -45,8 +45,8 @@ export default function DormCard({ dorm, availability, variant = 'full' }: Props
       href={`/dorms/${dorm.slug}`}
       aria-label={`View ${dorm.name}`}
       className={cn(
-        'group block overflow-hidden rounded-2xl border border-border bg-surface transition-all duration-200',
-        'hover:-translate-y-0.5 hover:border-border-strong hover:shadow-sm',
+        'group card-elevated block overflow-hidden rounded-2xl bg-surface transition-all duration-200',
+        'hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2',
       )}
     >
