@@ -9,13 +9,11 @@ import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Switch } from '@/components/ui/switch'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
-import { DISTRICT_NAMES } from '@/lib/helpers'
+import DistrictGrid from '@/components/DistrictGrid'
+import AlertMatchPreview from '@/components/AlertMatchPreview'
 import { createAlert, updateAlert, type AlertPayload } from '@/app/dashboard/alerts/actions'
-
-// ─── Schema ───────────────────────────────────────────────────────────────────
 
 const schema = z.object({
   price_max: z.string().optional(),
@@ -37,13 +35,6 @@ interface Props {
   defaultValues?: AlertPayload
 }
 
-const DISTRICTS = Object.entries(DISTRICT_NAMES).map(([k, v]) => ({
-  value: Number(k),
-  label: `${k}. ${v}`,
-}))
-
-// ─── Component ────────────────────────────────────────────────────────────────
-
 export default function AlertForm({ mode, alertId, defaultValues }: Props) {
   const [isPending, startTransition] = useTransition()
 
@@ -62,7 +53,19 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
     },
   })
 
+  const priceMax = useWatch({ control: form.control, name: 'price_max' })
+  const depositMax = useWatch({ control: form.control, name: 'deposit_max' })
   const selectedDistricts = useWatch({ control: form.control, name: 'districts' })
+  const petsRequired = useWatch({ control: form.control, name: 'pets_required' })
+  const couplesRequired = useWatch({ control: form.control, name: 'couples' })
+
+  const criteria = {
+    price_max: priceMax ? Number(priceMax) : null,
+    districts: selectedDistricts ?? [],
+    deposit_max: depositMax ? Number(depositMax) : null,
+    pets_required: !!petsRequired,
+    couples: !!couplesRequired,
+  }
 
   function buildPayload(values: FormValues): AlertPayload {
     return {
@@ -73,12 +76,17 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
       pets_required: values.pets_required,
       couples: values.couples,
       notify_email: values.notify_email,
-      notify_telegram: values.notify_telegram,
-      telegram_chat_id: values.notify_telegram ? (values.telegram_chat_id || null) : null,
+      notify_telegram: false,
+      telegram_chat_id: null,
     }
   }
 
   function onSubmit(values: FormValues) {
+    if (!values.notify_email) {
+      toast.error('Email notifications must stay on — Telegram is not available yet.')
+      return
+    }
+
     startTransition(async () => {
       const payload = buildPayload(values)
       const result = mode === 'edit' && alertId
@@ -95,9 +103,10 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
 
-        {/* ── Budget ── */}
-        <section className="rounded-2xl border border-border bg-surface p-5">
-          <h2 className="mb-4 text-sm font-medium text-foreground">Budget</h2>
+        <AlertMatchPreview criteria={criteria} />
+
+        <section className="card-elevated rounded-2xl bg-surface p-5">
+          <h2 className="mb-4 text-sm font-semibold text-foreground">Budget</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField
               control={form.control}
@@ -145,55 +154,22 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
           </div>
         </section>
 
-        {/* ── Districts ── */}
-        <section className="rounded-2xl border border-border bg-surface p-5">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-medium text-foreground">Districts</h2>
-            {selectedDistricts.length > 0 && (
-              <button
-                type="button"
-                onClick={() => form.setValue('districts', [])}
-                className="text-xs text-muted-foreground hover:text-foreground"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-          <p className="mb-3 text-xs text-muted-foreground">
-            Leave empty to match any district.
-          </p>
-          <div className="grid grid-cols-2 gap-y-2 gap-x-4 sm:grid-cols-3">
-            {DISTRICTS.map(({ value, label }) => (
-              <FormField
-                key={value}
-                control={form.control}
-                name="districts"
-                render={({ field }) => {
-                  const checked = field.value.includes(value)
-                  return (
-                    <label className="flex cursor-pointer items-center gap-2">
-                      <Checkbox
-                        checked={checked}
-                        onCheckedChange={(c) => {
-                          if (c) {
-                            field.onChange([...field.value, value])
-                          } else {
-                            field.onChange(field.value.filter((v: number) => v !== value))
-                          }
-                        }}
-                      />
-                      <span className="text-xs text-foreground">{label}</span>
-                    </label>
-                  )
-                }}
+        <section className="card-elevated rounded-2xl bg-surface p-5">
+          <FormField
+            control={form.control}
+            name="districts"
+            render={({ field }) => (
+              <DistrictGrid
+                selected={field.value}
+                onChange={field.onChange}
+                label="Districts"
               />
-            ))}
-          </div>
+            )}
+          />
         </section>
 
-        {/* ── Move-in date ── */}
-        <section className="rounded-2xl border border-border bg-surface p-5">
-          <h2 className="mb-4 text-sm font-medium text-foreground">Move-in date</h2>
+        <section className="card-elevated rounded-2xl bg-surface p-5">
+          <h2 className="mb-4 text-sm font-semibold text-foreground">Move-in date</h2>
           <FormField
             control={form.control}
             name="move_in_before"
@@ -214,9 +190,8 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
           />
         </section>
 
-        {/* ── Requirements ── */}
-        <section className="rounded-2xl border border-border bg-surface p-5">
-          <h2 className="mb-4 text-sm font-medium text-foreground">Requirements</h2>
+        <section className="card-elevated rounded-2xl bg-surface p-5">
+          <h2 className="mb-4 text-sm font-semibold text-foreground">Requirements</h2>
           <div className="flex flex-col gap-4">
             <FormField
               control={form.control}
@@ -227,10 +202,7 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
                     <p className="text-sm text-foreground">Pets allowed</p>
                     <p className="text-xs text-muted-foreground">Only show rooms that allow pets</p>
                   </div>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
                 </label>
               )}
             />
@@ -244,19 +216,15 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
                     <p className="text-sm text-foreground">Couples allowed</p>
                     <p className="text-xs text-muted-foreground">Only show rooms that accept couples</p>
                   </div>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
                 </label>
               )}
             />
           </div>
         </section>
 
-        {/* ── Notifications ── */}
-        <section className="rounded-2xl border border-border bg-surface p-5">
-          <h2 className="mb-4 text-sm font-medium text-foreground">Notifications</h2>
+        <section className="card-elevated rounded-2xl bg-surface p-5">
+          <h2 className="mb-4 text-sm font-semibold text-foreground">Notifications</h2>
           <div className="flex flex-col gap-4">
             <FormField
               control={form.control}
@@ -267,10 +235,7 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
                     <p className="text-sm text-foreground">Email</p>
                     <p className="text-xs text-muted-foreground">Get notified by email</p>
                   </div>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
                 </label>
               )}
             />
@@ -289,7 +254,7 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
           type="submit"
           size="lg"
           disabled={isPending}
-          className="h-11 rounded-2xl text-sm"
+          className="h-11 rounded-full text-sm"
         >
           {isPending && <Loader2 className="size-4 animate-spin" />}
           {mode === 'create' ? 'Create alert' : 'Save changes'}

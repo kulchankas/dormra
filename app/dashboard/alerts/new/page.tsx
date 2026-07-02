@@ -7,7 +7,7 @@ import AlertForm from '@/components/AlertForm'
 export default async function NewAlertPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/login?redirect=/dashboard/alerts/new')
 
   return (
     <main className="min-h-screen bg-background">
