@@ -41,6 +41,7 @@
     "clearCount": "Zurücksetzen ({count})"
   },
   "nav": {
+    "skipToContent": "Zum Inhalt springen",
     "browseDorms": "Heime durchsuchen",
     "alerts": "Alerts",
     "howItWorks": "So funktioniert's",

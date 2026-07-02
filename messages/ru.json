@@ -41,6 +41,7 @@
     "clearCount": "Сбросить ({count})"
   },
   "nav": {
+    "skipToContent": "Перейти к содержимому",
     "browseDorms": "Каталог общежитий",
     "alerts": "Уведомления",
     "howItWorks": "Как это работает",

@@ -46,6 +46,9 @@ Dormra is a well-structured beta: clear scraper → snapshot → diff → alert 
 | 3.10 | No sitemap/robots.txt | ✅ Done | `app/sitemap.ts`, `app/robots.ts` |
 | 3.11 | Auth guard per-page not centralized | ✅ Done | Middleware redirects `/dashboard/*` |
 | 3.12 | Sign-out POST CSRF | ✅ Done | `signOutAction` server action |
+| 3.13 | Sort `<Select>` showed raw value (`price_asc`) instead of label | ✅ Done | Base UI's `Select.Value` needs an `items`/function-child lookup — see `docs/UI_UX_AUDIT.md` F1 |
+| 3.14 | `formatDistrictLabel`/`formatPriceLabel` hardcoded English (dupes 3.3, UI-focused) | ✅ Done | Resolved by 3.3 (`lib/i18n-labels.ts`) |
+| 3.15 | `/dorms` has no Supabase error fallback | Open | See `docs/UI_UX_AUDIT.md` H3 |
 
 ## Phase 4 — Low (polish)
 
@@ -53,7 +56,7 @@ Dormra is a well-structured beta: clear scraper → snapshot → diff → alert 
 |---|--------|-------|
 | 4.1 | ScanningPill is cosmetic | ✅ Done | `ScanningPillServer` + real `lastScrapedAt` |
 | 4.2 | Bot UA points to `/about` | ✅ Done | Now `/how-it-works` |
-| 4.3 | Skip-to-content link | ✅ Done | Locale layout |
+| 4.3 | Skip-to-content link | ✅ Done | `sr-only focus:not-sr-only` link + `#main-content` target |
 | 4.4 | No local Supabase config | ✅ Done | `supabase/config.toml` |
 
 ---
@@ -100,3 +103,4 @@ Users → Next.js [locale] → Supabase (RLS) → user_alerts, dorms
 | 2026-07-01 | `cursor/project-audit-5868` | Phase 2.1–2.4, 2.6, 3.3, 3.7–3.11, 4.3, MANUAL_TASKS.md |
 | 2026-07-01 | `cursor/project-audit-5868` | Phase 1.2–1.4, 2.2, 2.7, 3.4, 3.6, 4.2, audit doc, README |
 | 2026-07-01 | `cursor/i18n-de-ru-5868` | Full i18n stages 1–5, typography, language switcher |
+| 2026-07-02 | `cursor/ui-ux-audit-fc38` | UI/UX audit (`docs/UI_UX_AUDIT.md`); fixed 3.5, 3.13, 4.3, DistrictGrid i18n + touch targets, how-it-works CTA sizing |

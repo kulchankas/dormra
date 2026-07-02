@@ -87,10 +87,16 @@ export default async function HowItWorksPage({ params }: PageProps) {
         </div>
 
         <div className="mt-10 flex flex-wrap justify-center gap-3">
-          <Button nativeButton={false} render={<Link href="/dorms" />}>
+          <Button size="lg" className="h-11 rounded-full px-7 text-sm" nativeButton={false} render={<Link href="/dorms" />}>
             {t('browseCta')}
           </Button>
-          <Button variant="outline" nativeButton={false} render={<Link href="/signup?redirect=/dashboard/alerts/new" />}>
+          <Button
+            variant="outline"
+            size="lg"
+            className="h-11 rounded-full px-7 text-sm"
+            nativeButton={false}
+            render={<Link href="/signup?redirect=/dashboard/alerts/new" />}
+          >
             {t('alertCta')}
           </Button>
         </div>

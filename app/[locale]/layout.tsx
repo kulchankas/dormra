@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
-import { getMessages, setRequestLocale } from 'next-intl/server'
+import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server'
 import { Onest, Poppins } from 'next/font/google'
 import Header from '@/components/Header'
 import { Toaster } from '@/components/ui/sonner'
@@ -37,10 +37,17 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   setRequestLocale(locale)
   const messages = await getMessages()
+  const t = await getTranslations('nav')
 
   return (
     <html lang={locale} className={`${poppins.variable} ${onest.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        >
+          {t('skipToContent')}
+        </a>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <a
             href="#main-content"

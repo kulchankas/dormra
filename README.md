@@ -116,7 +116,7 @@ messages/     en/de/ru translation files
 lib/          Supabase clients, diff engine, alert matching, types
 scrapers/     One scraper per provider + registry in index.ts
 supabase/     Migrations + seed SQL
-docs/         Project audit (docs/PROJECT_AUDIT.md) + manual tasks (docs/MANUAL_TASKS.md)
+docs/         Project audit, UI/UX audit, manual ops tasks, launch checklist
 ```
 
 ## Internationalization
@@ -126,7 +126,9 @@ Supported locales: **English** (default), **German** (`/de`), **Russian** (`/ru`
 ## Audit & roadmap
 
 - [`docs/PROJECT_AUDIT.md`](docs/PROJECT_AUDIT.md) — full project audit and prioritized code roadmap
+- [`docs/UI_UX_AUDIT.md`](docs/UI_UX_AUDIT.md) — UI/UX-focused audit with prioritized design and accessibility improvements
 - [`docs/MANUAL_TASKS.md`](docs/MANUAL_TASKS.md) — **operator checklist** (RLS, env vars, cron, Resend, smoke tests)
+- [`docs/LAUNCH_CHECKLIST.md`](docs/LAUNCH_CHECKLIST.md) — pre-launch checklist
 
 ## Product roadmap
 

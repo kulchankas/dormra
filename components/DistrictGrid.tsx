@@ -28,14 +28,14 @@ export default function DistrictGrid({
           <button
             type="button"
             onClick={() => onChange([])}
-            className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+            className="relative text-[11px] text-muted-foreground hover:text-foreground transition-colors after:absolute after:-inset-2"
           >
             {t('clearCount', { count: selected.length })}
           </button>
         )}
       </div>
       <p className="mb-2 text-xs text-muted-foreground">{t('districtAnyHint')}</p>
-      <div className="grid grid-cols-5 gap-1 sm:grid-cols-6">
+      <div className="grid grid-cols-5 gap-1.5 sm:grid-cols-6">
         {Object.keys(DISTRICT_NAMES).map((k) => {
           const n = Number(k)
           const isSelected = selected.includes(n)
@@ -44,9 +44,10 @@ export default function DistrictGrid({
               key={n}
               type="button"
               title={`${n}. ${DISTRICT_NAMES[n]}`}
+              aria-pressed={isSelected}
               onClick={() => toggle(n)}
               className={cn(
-                'h-8 w-full rounded-lg text-xs font-medium transition-all',
+                'h-11 w-full rounded-lg text-xs font-medium transition-all',
                 isSelected
                   ? 'bg-brand text-white'
                   : 'bg-muted text-muted-foreground hover:bg-brand-soft hover:text-brand',
