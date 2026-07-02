@@ -146,7 +146,7 @@ function FilterChips({
           <button
             type="button"
             onClick={chip.onRemove}
-            className="ml-0.5 rounded-full text-brand/50 hover:text-brand transition-colors"
+            className="relative ml-0.5 rounded-full text-brand/50 hover:text-brand transition-colors after:absolute after:-inset-1.5"
             aria-label={t('removeFilter', { label: chip.label })}
           >
             <X className="size-3" />
@@ -355,6 +355,14 @@ export default function DormsDirectory({ dorms, availability }: Props) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
+  const sortLabels: Record<SortKey, string> = {
+    available_first: t('availableFirst'),
+    price_asc: t('sortPriceLow'),
+    price_desc: t('sortPriceHigh'),
+    district_asc: t('sortDistrict'),
+    created_desc: t('sortRecent'),
+  }
+
   const quickFilters: QuickFilter[] = [
     {
       id: 'available',
@@ -496,9 +504,10 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                       <button
                         key={quick.id}
                         type="button"
+                        aria-pressed={isActive}
                         onClick={() => setFilters(quick.toggle(filters))}
                         className={cn(
-                          'rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                          'relative rounded-full px-3 py-1.5 text-xs font-medium transition-colors after:absolute after:-inset-y-1.5 after:inset-x-0',
                           isActive
                             ? 'bg-brand text-white shadow-sm'
                             : 'bg-surface text-muted-foreground ring-1 ring-border hover:text-foreground',
@@ -519,6 +528,7 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                       <button
                         key={preset.id}
                         type="button"
+                        aria-pressed={isActive}
                         onClick={() =>
                           setFilters({
                             ...filters,
@@ -526,7 +536,7 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                           })
                         }
                         className={cn(
-                          'rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                          'relative rounded-full px-3 py-1.5 text-xs font-medium transition-colors after:absolute after:-inset-y-1.5 after:inset-x-0',
                           isActive
                             ? 'bg-brand-soft text-brand ring-1 ring-brand/25'
                             : 'bg-surface text-muted-foreground ring-1 ring-border hover:text-foreground',
@@ -568,7 +578,12 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                     onValueChange={(v) => setFilters({ ...filters, sort: v as SortKey })}
                   >
                     <SelectTrigger className="h-10 flex-1 rounded-full text-sm sm:min-w-[168px] sm:flex-none">
-                      <SelectValue placeholder={t('sortPlaceholder')} />
+                      {/* Base UI's Select.Value renders the raw value by default — it
+                          needs a lookup (via `items` on Select.Root or a function child
+                          here) to show the translated label instead of e.g. "price_asc". */}
+                      <SelectValue placeholder={t('sortPlaceholder')}>
+                        {(value: unknown) => sortLabels[value as SortKey] ?? t('sortPlaceholder')}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="available_first">{t('availableFirst')}</SelectItem>
