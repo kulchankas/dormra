@@ -1,8 +1,7 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
-import { Home } from 'lucide-react'
+import DormPhoto from '@/components/DormPhoto'
 import {
   formatDistrictLabel,
   formatPriceLabel,
@@ -53,30 +52,16 @@ export default function DormCard({ dorm, availability, variant = 'full' }: Props
       )}
     >
       <article>
-        <div
-          className={cn(
-            'relative w-full overflow-hidden bg-brand-soft',
-            isCompact ? 'h-[140px]' : 'aspect-video',
-          )}
-        >
-          {dorm.image_url ? (
-            <Image
-              src={dorm.image_url}
-              alt={`${dorm.name} dormitory`}
-              fill
-              sizes={isCompact ? '(max-width: 768px) 100vw, 33vw' : '(max-width: 768px) 100vw, 50vw'}
-              className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-            />
-          ) : (
-            <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-gradient-to-br from-brand-soft to-background">
-              <Home className="size-7 text-muted-foreground/40" aria-hidden="true" />
-              <span className="text-xs font-medium text-muted-foreground">
-                {dorm.provider}
-              </span>
-            </div>
-          )}
-
-          <div className="absolute left-2.5 top-2.5">
+        <div className="relative">
+          <DormPhoto
+            imageUrl={dorm.image_url}
+            name={dorm.name}
+            provider={dorm.provider}
+            seed={dorm.slug}
+            sizes={isCompact ? '(max-width: 768px) 100vw, 33vw' : '(max-width: 768px) 100vw, 50vw'}
+            frameClassName={isCompact ? 'h-[140px]' : 'aspect-video'}
+          />
+          <div className="absolute left-2.5 top-2.5 z-[5]">
             <AvailabilityBadge availability={availability} className="text-[10px] px-2 py-0.5" />
           </div>
         </div>
