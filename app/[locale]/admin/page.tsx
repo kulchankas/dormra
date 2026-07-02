@@ -101,23 +101,37 @@ export default async function AdminOverviewPage({ params }: PageProps) {
           {t('lastScrape')}: <span className="font-medium text-foreground">{lastScrape}</span>
         </p>
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[320px] text-left text-sm">
+          <table className="w-full min-w-[480px] text-left text-sm">
             <thead>
               <tr className="border-b border-border text-xs text-muted-foreground">
                 <th className="pb-2 pr-4 font-medium">{t('provider')}</th>
                 <th className="pb-2 pr-4 font-medium">{t('dormCount')}</th>
-                <th className="pb-2 font-medium">{t('failures')}</th>
+                <th className="pb-2 pr-4 font-medium">{t('failures')}</th>
+                <th className="pb-2 font-medium">{t('lastScraped')}</th>
               </tr>
             </thead>
             <tbody>
-              {stats.providerStats.map(({ provider, dorms, failures }) => (
+              {stats.providerStats.map(({ provider, dorms, failures, lastScrapedAt, stale }) => (
                 <tr key={provider} className="border-b border-border/50 last:border-0">
                   <td className="py-2.5 pr-4 font-medium text-foreground">{provider}</td>
                   <td className="py-2.5 pr-4 text-muted-foreground">{dorms}</td>
-                  <td className="py-2.5">
+                  <td className="py-2.5 pr-4">
                     <span className={failures > 0 ? 'font-medium text-amber-600' : 'text-muted-foreground'}>
                       {failures}
                     </span>
+                  </td>
+                  <td className="py-2.5">
+                    <span className={stale ? 'font-medium text-amber-600' : 'text-muted-foreground'}>
+                      {lastScrapedAt
+                        ? formatDistanceToNow(new Date(lastScrapedAt), { addSuffix: true, locale: dateLocale })
+                        : t('never')}
+                    </span>
+                    {stale && (
+                      <span className="ml-1.5 inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+                        <AlertTriangle className="size-2.5" aria-hidden="true" />
+                        {t('cronJobStale')}
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}

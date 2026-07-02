@@ -504,6 +504,8 @@
     "provider": "Anbieter",
     "dormCount": "Wohnheime",
     "failures": "Fehler",
+    "lastScraped": "Zuletzt gescrapt",
+    "cronJobStale": "Cron-Job evtl. gestoppt",
     "viewDormHealth": "Dorm-Details anzeigen",
     "externalMonitoring": "Externes Monitoring",
     "externalMonitoringHint": "Nutze diese Dashboards zusätzlich zu dieser Seite:",

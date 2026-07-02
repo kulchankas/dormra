@@ -504,6 +504,8 @@
     "provider": "Provider",
     "dormCount": "Dorms",
     "failures": "Failures",
+    "lastScraped": "Last scraped",
+    "cronJobStale": "Cron job may be down",
     "viewDormHealth": "View dorm health details",
     "externalMonitoring": "External monitoring",
     "externalMonitoringHint": "Use these dashboards alongside this page for full visibility:",

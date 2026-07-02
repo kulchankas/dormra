@@ -504,6 +504,8 @@
     "provider": "Провайдер",
     "dormCount": "Общежития",
     "failures": "Ошибки",
+    "lastScraped": "Последний скрейп",
+    "cronJobStale": "Возможно, cron-задача остановлена",
     "viewDormHealth": "Подробности по общежитиям",
     "externalMonitoring": "Внешний мониторинг",
     "externalMonitoringHint": "Используйте эти панели вместе с этой страницей:",

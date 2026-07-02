@@ -1,7 +1,10 @@
 import 'server-only'
 import { createAdminClient } from './supabase/admin'
+import { computeProviderStats, type ProviderStat } from './admin-provider-stats'
 
 const STALE_MS = 6 * 60 * 60 * 1000
+
+export type { ProviderStat }
 
 export type AdminOverview = {
   activeDorms: number
@@ -13,7 +16,7 @@ export type AdminOverview = {
   emailsToday: number
   emailsThisWeek: number
   lastScrapedAt: string | null
-  providerStats: { provider: string; dorms: number; failures: number }[]
+  providerStats: ProviderStat[]
 }
 
 export type DormHealthRow = {
@@ -91,38 +94,23 @@ export async function getAdminOverview(): Promise<AdminOverview> {
   let availableNow = 0
   let scrapeFailures = 0
   let staleSnapshots = 0
-  const providerMap = new Map<string, { dorms: number; failures: number }>()
-
-  for (const dorm of dormList) {
-    const entry = providerMap.get(dorm.provider) ?? { dorms: 0, failures: 0 }
-    entry.dorms++
-    providerMap.set(dorm.provider, entry)
-  }
+  let snapshotRows: { dorm_id: string; available: boolean; scrape_ok: boolean; scraped_at: string }[] = []
 
   if (dormIds.length > 0) {
     const { data: snapshots } = await admin.rpc('get_latest_snapshots', {
       p_dorm_ids: dormIds,
     })
+    snapshotRows = snapshots ?? []
 
-    for (const row of snapshots ?? []) {
+    for (const row of snapshotRows) {
       const status = snapshotStatus(row, now)
       if (status === 'available') availableNow++
       if (status === 'failed') scrapeFailures++
       if (status === 'stale') staleSnapshots++
-
-      if (!row.scrape_ok) {
-        const dorm = dormList.find((d) => d.id === row.dorm_id)
-        if (dorm) {
-          const entry = providerMap.get(dorm.provider)!
-          entry.failures++
-        }
-      }
     }
   }
 
-  const providerStats = [...providerMap.entries()]
-    .map(([provider, stats]) => ({ provider, ...stats }))
-    .sort((a, b) => a.provider.localeCompare(b.provider))
+  const providerStats = computeProviderStats(dormList, snapshotRows, now)
 
   return {
     activeDorms: activeDorms ?? 0,
