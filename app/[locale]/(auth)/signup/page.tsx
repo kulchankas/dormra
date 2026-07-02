@@ -136,7 +136,7 @@ function SignupPageContent() {
 
       <div className="relative">
         <Separator />
-        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap bg-background px-2 text-[11px] uppercase tracking-wider text-muted-foreground">
           {t('orSignUpWithEmail')}
         </span>
       </div>

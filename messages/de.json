@@ -39,7 +39,9 @@
     "priceFrom": "Ab €{min} / Monat",
     "priceOnRequest": "Preis auf Anfrage",
     "districtAnyHint": "Leer lassen für alle Bezirke.",
-    "clearCount": "Zurücksetzen ({count})"
+    "clearCount": "Zurücksetzen ({count})",
+    "districtLegendAria": "Alle Wiener Bezirksnummern und -namen anzeigen",
+    "districtLegendTitle": "Wiener Bezirke"
   },
   "nav": {
     "skipToContent": "Zum Inhalt springen",

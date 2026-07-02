@@ -12,7 +12,7 @@ import {
 import { formatDistrictLabel, formatPriceLabel } from '@/lib/i18n-labels'
 import AvailabilityBadge from '@/components/AvailabilityBadge'
 import { Badge } from '@/components/ui/badge'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 
 type Variant = 'compact' | 'full'
@@ -124,8 +124,10 @@ export default function DormCard({ dorm, availability, variant = 'full' }: Props
               {priceLabel}
             </span>
 
-            <Tooltip>
-              <TooltipTrigger
+            <Popover>
+              {/* A hover-only Tooltip would be invisible on touch devices — a
+                  tap-to-open Popover works identically for mouse and touch. */}
+              <PopoverTrigger
                 render={
                   <button
                     type="button"
@@ -137,9 +139,11 @@ export default function DormCard({ dorm, availability, variant = 'full' }: Props
                 }
               >
                 {chances.emoji} {chances.label}
-              </TooltipTrigger>
-              <TooltipContent className="max-w-52 text-xs">{chances.tooltip}</TooltipContent>
-            </Tooltip>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-56 text-xs text-popover-foreground">
+                {chances.tooltip}
+              </PopoverContent>
+            </Popover>
           </div>
 
           {!isCompact && depositLabel && (

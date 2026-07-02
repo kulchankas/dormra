@@ -39,7 +39,9 @@
     "priceFrom": "From €{min} / month",
     "priceOnRequest": "Price on request",
     "districtAnyHint": "Leave empty to match any district.",
-    "clearCount": "Clear ({count})"
+    "clearCount": "Clear ({count})",
+    "districtLegendAria": "Show all Vienna district numbers and names",
+    "districtLegendTitle": "Vienna districts"
   },
   "nav": {
     "skipToContent": "Skip to content",
