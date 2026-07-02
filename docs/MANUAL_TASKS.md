@@ -91,35 +91,59 @@ After adding/changing vars → **Redeploy** production.
 
 ## 3. cron-job.org — scrape scheduler
 
-**Why:** Dorm availability updates every 15 minutes.
+**Why:** Dorm availability updates every 15 minutes. A single job scraping all ~40 dorms (including OeAD via Playwright) exceeds Vercel’s 300s limit and gets **504**. Use **three jobs** instead.
 
-**Steps:**
+**Header (all jobs):**
 
-1. Create job at [cron-job.org](https://cron-job.org) (or your scheduler).
-2. **URL:** `https://dormra.eu/api/cron/scrape`
-3. **Schedule:** every 15 minutes (`*/15 * * * *`)
-4. **Request headers:**
+```
+Authorization: Bearer YOUR_CRON_SECRET
+```
 
-   ```
-   Authorization: Bearer YOUR_CRON_SECRET
-   ```
+Must match `CRON_SECRET` in Vercel exactly. Set **request timeout** to **300 seconds** on each job.
 
-   Must match `CRON_SECRET` in Vercel exactly.
+### Option A — three jobs (recommended)
 
-5. **Generate CRON_SECRET:**
+| Job | Title | URL | Schedule (UTC) |
+|-----|-------|-----|----------------|
+| 1 — Fast + prune | Dormra fast scrape | `https://dormra.eu/api/cron/scrape?providers=stuwo,home4students&prune=1` | Every 15 min: `*/15 * * * *` |
+| 2 — OeAD batch 0 | Dormra OeAD batch 0 | `https://dormra.eu/api/cron/scrape?provider=oead&batch=0&batches=2` | `5,20,35,50 * * * *` |
+| 3 — OeAD batch 1 | Dormra OeAD batch 1 | `https://dormra.eu/api/cron/scrape?provider=oead&batch=1&batches=2` | `10,25,40,55 * * * *` |
 
-   ```bash
-   openssl rand -base64 32
-   ```
+Job 1 refreshes STUWO + home4students quickly and prunes old snapshots once per cycle. Jobs 2–3 split OeAD (~26 dorms) so each run finishes under 300s.
 
-6. After first run, check response JSON: `{ "ok": true, "scraped": N, ... }`.
+### Manual steps
+
+1. Open [cron-job.org console](https://console.cron-job.org/).
+2. **Disable or delete** the old single-job entry (if present).
+3. Create the three jobs above with the auth header and 300s timeout.
+4. **Enable** all three (disabled jobs stay off until you turn them back on).
+5. After first run, check JSON: `{ "ok": true, "scraped": N, ... }`.
+
+### Automated setup (optional)
+
+If you have a cron-job.org API key (Console → Settings):
+
+```bash
+export CRON_JOB_ORG_API_KEY='your-api-key'
+export CRON_SECRET='same-as-vercel'
+./scripts/setup-cron-jobs.sh
+```
+
+### Generate CRON_SECRET (if rotating)
+
+```bash
+openssl rand -base64 32
+```
+
+Update Vercel **and** all three cron-job.org jobs.
 
 **Failure signs:**
 
 - `401 Unauthorized` → secret mismatch
 - `404 Not Found` → deploy missing the route, or i18n proxy intercepting `/api/*` (fixed in proxy matcher)
 - `500` → missing `SUPABASE_SERVICE_ROLE_KEY` or DB error
-- Job **disabled automatically** on cron-job.org → too many consecutive failures (404/401/500/timeout). Fix the error, then re-enable the job in the cron-job.org dashboard.
+- `504 Gateway Timeout` → job URL too broad; use the split URLs above
+- Job **disabled automatically** on cron-job.org → too many consecutive failures. Fix the error, then re-enable (or run the setup script).
 
 ---
 

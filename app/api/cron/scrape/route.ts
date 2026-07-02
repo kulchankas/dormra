@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { authorizeCronRequest } from '@/lib/cron-auth'
+import { parseCronScrapeParams, providerSortKey, sliceForBatch } from '@/lib/cron-scrape-params'
 import { ScrapeHtmlCache } from '@/lib/scrape-html-cache'
 import { getScraperForProvider, usesBrowser } from '@/scrapers'
 import { launchScraperBrowser } from '@/scrapers/browser'
@@ -9,15 +10,28 @@ import { pruneOldSnapshots } from '@/lib/snapshot-maintenance'
 
 export const maxDuration = 300
 
-const DELAY_MS = 500
+const DELAY_MS_BROWSER = 300
+const DELAY_MS_FETCH = 0
 
 function delay(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return ms > 0 ? new Promise((resolve) => setTimeout(resolve, ms)) : Promise.resolve()
+}
+
+type DormRow = {
+  id: string
+  slug: string
+  scrape_url: string | null
+  provider: string
 }
 
 export async function GET(request: NextRequest) {
   if (!authorizeCronRequest(request)) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const params = parseCronScrapeParams(request.nextUrl.searchParams)
+  if ('error' in params) {
+    return Response.json({ ok: false, error: params.error }, { status: 400 })
   }
 
   const start = Date.now()
@@ -40,17 +54,35 @@ export async function GET(request: NextRequest) {
     return Response.json({ ok: false, error: fetchError?.message }, { status: 500 })
   }
 
-  const byProviderDorms = new Map<string, typeof dorms>()
-  for (const dorm of dorms) {
+  const providerSet = new Set(params.providers)
+  const filtered = dorms.filter((d) => providerSet.has(d.provider.toLowerCase()))
+
+  const byProviderDorms = new Map<string, DormRow[]>()
+  for (const dorm of filtered) {
     const key = dorm.provider.toLowerCase()
     const list = byProviderDorms.get(key) ?? []
     list.push(dorm)
     byProviderDorms.set(key, list)
   }
 
-  for (const [providerKey, providerDorms] of byProviderDorms) {
+  const providerKeys = [...byProviderDorms.keys()].sort(
+    (a, b) => providerSortKey(a, usesBrowser) - providerSortKey(b, usesBrowser),
+  )
+
+  for (const providerKey of providerKeys) {
+    let providerDorms = byProviderDorms.get(providerKey) ?? []
+    providerDorms = [...providerDorms].sort((a, b) => a.slug.localeCompare(b.slug))
+
+    if (params.batch !== null && params.batches !== null) {
+      providerDorms = sliceForBatch(providerDorms, params.batch, params.batches)
+    }
+
     const scraper = getScraperForProvider(providerKey)
     byProvider[providerKey] = { scraped: 0, errors: 0, skipped: 0 }
+
+    if (providerDorms.length === 0) {
+      continue
+    }
 
     if (!scraper) {
       console.warn(
@@ -62,6 +94,7 @@ export async function GET(request: NextRequest) {
     }
 
     const browser = usesBrowser(providerKey) ? await launchScraperBrowser() : null
+    const delayMs = browser ? DELAY_MS_BROWSER : DELAY_MS_FETCH
 
     try {
       for (const dorm of providerDorms) {
@@ -88,14 +121,14 @@ export async function GET(request: NextRequest) {
           byProvider[providerKey].errors++
         }
 
-        await delay(DELAY_MS)
+        await delay(delayMs)
       }
     } finally {
       await browser?.close()
     }
   }
 
-  const pruned = await pruneOldSnapshots()
+  const pruned = params.prune ? await pruneOldSnapshots() : 0
 
   return Response.json({
     ok: true,
@@ -103,6 +136,9 @@ export async function GET(request: NextRequest) {
     errors,
     skipped,
     pruned,
+    providers: params.providers,
+    batch: params.batch,
+    batches: params.batches,
     byProvider,
     duration_ms: Date.now() - start,
   })

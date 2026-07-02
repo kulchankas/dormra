@@ -31,15 +31,18 @@ curl -H "Authorization: Bearer YOUR_CRON_SECRET" https://dormra.eu/api/cron/scra
 | **404** | Deploy not finished or PR #33 not merged |
 | **500** | Check Vercel logs; likely missing `SUPABASE_SERVICE_ROLE_KEY` |
 
-### 3. Re-enable cron-job.org
+### 3. Re-enable cron-job.org (3 jobs)
 
-Disabled jobs stay off until you turn them back on.
+Disabled jobs stay off until you turn them back on. One job times out (504); use **three split jobs**:
 
-- [ ] Open [cron-job.org](https://console.cron-job.org/) → **enable** the job
-- [ ] URL: `GET https://dormra.eu/api/cron/scrape`
-- [ ] Schedule: every 15 min (`*/15 * * * *`)
-- [ ] Header: `Authorization: Bearer <same CRON_SECRET as Vercel>`
-- [ ] Confirm execution history shows **HTTP 200**
+- [ ] Open [cron-job.org](https://console.cron-job.org/) → disable/delete old single job
+- [ ] **Job 1** — `GET https://dormra.eu/api/cron/scrape?providers=stuwo,home4students&prune=1` — `*/15 * * * *`
+- [ ] **Job 2** — `GET ...?provider=oead&batch=0&batches=2` — `5,20,35,50 * * * *`
+- [ ] **Job 3** — `GET ...?provider=oead&batch=1&batches=2` — `10,25,40,55 * * * *`
+- [ ] All jobs: header `Authorization: Bearer <CRON_SECRET>`, timeout **300s**
+- [ ] **Enable** all three; confirm execution history shows **HTTP 200**
+
+Or run `./scripts/setup-cron-jobs.sh` with `CRON_JOB_ORG_API_KEY` + `CRON_SECRET` (see [`MANUAL_TASKS.md`](./MANUAL_TASKS.md) §3).
 
 ### 4. Fix Supabase auth URLs
 

@@ -98,14 +98,19 @@ npm run dev
 
 ## Cron
 
-Point cron-job.org at:
+Use **three** cron-job.org jobs (one full scrape exceeds Vercel’s 300s limit):
 
-```
-GET https://dormra.eu/api/cron/scrape
-Authorization: Bearer $CRON_SECRET
-```
+| Job | URL | Schedule |
+|-----|-----|----------|
+| Fast + prune | `GET https://dormra.eu/api/cron/scrape?providers=stuwo,home4students&prune=1` | `*/15 * * * *` |
+| OeAD batch 0 | `GET ...?provider=oead&batch=0&batches=2` | `5,20,35,50 * * * *` |
+| OeAD batch 1 | `GET ...?provider=oead&batch=1&batches=2` | `10,25,40,55 * * * *` |
 
-Every 15 minutes. Response JSON includes `scraped`, `errors`, `skipped`, and per-provider breakdown.
+All jobs: `Authorization: Bearer $CRON_SECRET`, request timeout 300s.
+
+Automated setup: `./scripts/setup-cron-jobs.sh` (needs `CRON_JOB_ORG_API_KEY` + `CRON_SECRET`).
+
+Response JSON includes `scraped`, `errors`, `skipped`, `byProvider`, and `duration_ms`.
 
 ## Project structure
 
