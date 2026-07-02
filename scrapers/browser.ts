@@ -1,5 +1,4 @@
 import type { Browser } from 'playwright-core'
-import { chromium } from 'playwright-core'
 
 function isServerless(): boolean {
   return Boolean(
@@ -10,6 +9,8 @@ function isServerless(): boolean {
 }
 
 export async function launchScraperBrowser(): Promise<Browser> {
+  const { chromium } = await import('playwright-core')
+
   if (isServerless()) {
     const chromiumPkg = await import('@sparticuz/chromium-min')
     const sparticuz = chromiumPkg.default
