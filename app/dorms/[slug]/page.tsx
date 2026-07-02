@@ -1,5 +1,5 @@
-import Image from 'next/image'
 import Link from 'next/link'
+import DormImage from '@/components/DormImage'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, Bell, ExternalLink } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
@@ -89,13 +89,11 @@ export default async function DormDetailPage({
         {/* Hero image */}
         <div className="card-elevated relative mb-6 aspect-video w-full overflow-hidden rounded-2xl bg-brand-soft">
           {dorm.image_url ? (
-            <Image
+            <DormImage
               src={dorm.image_url}
               alt={`${dorm.name} dormitory`}
-              fill
-              sizes="(max-width: 768px) 100vw, 768px"
-              className="object-cover"
               priority
+              sizes="(max-width: 768px) 100vw, 768px"
             />
           ) : (
             <div className="flex h-full w-full flex-col items-center justify-center gap-2">
