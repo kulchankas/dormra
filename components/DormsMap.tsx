@@ -10,6 +10,7 @@ import { type Dorm } from '@/lib/helpers'
 import type { AvailabilityStatus } from '@/lib/availability'
 import { formatPriceLabel } from '@/lib/i18n-labels'
 import AvailabilityBadge from '@/components/AvailabilityBadge'
+import { UNIVERSITIES } from '@/lib/universities'
 
 type LatLng = { lat: number; lng: number }
 type LocatedDorm = Dorm & { lat: number; lng: number }
@@ -20,6 +21,9 @@ interface Props {
   userLocation?: LatLng | null
   /** Compact mode for single-dorm previews (e.g. the dorm detail page). */
   compact?: boolean
+  /** Shows small pins for Vienna's main universities. Defaults to on for the
+   * full directory map, off for compact single-dorm previews. */
+  showUniversities?: boolean
 }
 
 const STATUS_COLORS: Record<AvailabilityStatus['status'], string> = {
@@ -45,6 +49,16 @@ function userIcon() {
     html: '<span style="display:block;width:14px;height:14px;border-radius:9999px;background:#2563eb;border:3px solid white;box-shadow:0 0 0 4px rgba(37,99,235,0.25)"></span>',
     iconSize: [14, 14],
     iconAnchor: [7, 7],
+  })
+}
+
+function universityIcon() {
+  return L.divIcon({
+    className: '',
+    html: '<div style="display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:6px;background:#3A322C;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.3);font-size:11px;line-height:1;">🎓</div>',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+    popupAnchor: [0, -12],
   })
 }
 
@@ -83,7 +97,13 @@ function FitBounds({ points }: { points: LatLng[] }) {
   return null
 }
 
-export default function DormsMap({ dorms, availability, userLocation, compact = false }: Props) {
+export default function DormsMap({
+  dorms,
+  availability,
+  userLocation,
+  compact = false,
+  showUniversities = !compact,
+}: Props) {
   const t = useTranslations('dormCard')
   const tDorms = useTranslations('dorms')
   const tLabels = useTranslations('labels')
@@ -166,6 +186,12 @@ export default function DormsMap({ dorms, availability, userLocation, compact = 
             </Marker>
           )
         })}
+        {showUniversities &&
+          UNIVERSITIES.map((u) => (
+            <Marker key={u.id} position={[u.lat, u.lng]} icon={universityIcon()}>
+              <Popup>{u.name}</Popup>
+            </Marker>
+          ))}
         {userLocation && (
           <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon()}>
             <Popup>{tDorms('youAreHere')}</Popup>

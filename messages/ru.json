@@ -248,7 +248,8 @@
     "viewModeAria": "Переключение между списком и картой",
     "listView": "Список",
     "mapView": "Карта",
-    "mapNoLocations": "Для текущих фильтров пока нет объектов на карте."
+    "mapNoLocations": "Для текущих фильтров пока нет объектов на карте.",
+    "mapUniversityLegend": "Университеты"
   },
   "dormDetail": {
     "back": "Назад к каталогу",
@@ -284,7 +285,11 @@
     "unsaveAria": "Убрать {name} из сохранённых",
     "loginToSaveAria": "Войдите, чтобы сохранить это общежитие",
     "savedToast": "{name} сохранено — найдите в панели управления",
-    "unsavedToast": "{name} убрано из сохранённых"
+    "unsavedToast": "{name} убрано из сохранённых",
+    "lastChecked": "Доступность проверена {time}",
+    "kmAway": "{km} км",
+    "visitWebsite": "Сайт",
+    "similarDorms": "Вам может понравиться"
   },
   "saved": {
     "title": "Сохранённые общежития",

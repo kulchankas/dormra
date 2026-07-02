@@ -248,7 +248,8 @@
     "viewModeAria": "Zwischen Listen- und Kartenansicht wechseln",
     "listView": "Liste",
     "mapView": "Karte",
-    "mapNoLocations": "Für die aktuellen Filter gibt es noch keine Standorte auf der Karte."
+    "mapNoLocations": "Für die aktuellen Filter gibt es noch keine Standorte auf der Karte.",
+    "mapUniversityLegend": "Universitäten"
   },
   "dormDetail": {
     "back": "Zurück zu allen Heimen",
@@ -284,7 +285,11 @@
     "unsaveAria": "{name} aus gespeicherten Heimen entfernen",
     "loginToSaveAria": "Anmelden, um dieses Heim zu speichern",
     "savedToast": "{name} gespeichert — im Dashboard zu finden",
-    "unsavedToast": "{name} aus gespeicherten Heimen entfernt"
+    "unsavedToast": "{name} aus gespeicherten Heimen entfernt",
+    "lastChecked": "Verfügbarkeit geprüft {time}",
+    "kmAway": "{km} km",
+    "visitWebsite": "Website",
+    "similarDorms": "Das könnte dir auch gefallen"
   },
   "saved": {
     "title": "Gespeicherte Heime",

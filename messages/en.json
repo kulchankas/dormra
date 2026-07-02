@@ -248,7 +248,8 @@
     "viewModeAria": "Switch between list and map view",
     "listView": "List",
     "mapView": "Map",
-    "mapNoLocations": "No mapped locations for the current filters yet."
+    "mapNoLocations": "No mapped locations for the current filters yet.",
+    "mapUniversityLegend": "Universities"
   },
   "dormDetail": {
     "back": "Back to all dorms",
@@ -284,7 +285,11 @@
     "unsaveAria": "Remove {name} from saved dorms",
     "loginToSaveAria": "Log in to save this dorm",
     "savedToast": "Saved {name} — find it in your dashboard",
-    "unsavedToast": "Removed {name} from saved dorms"
+    "unsavedToast": "Removed {name} from saved dorms",
+    "lastChecked": "Availability checked {time}",
+    "kmAway": "{km} km",
+    "visitWebsite": "Website",
+    "similarDorms": "You might also like"
   },
   "saved": {
     "title": "Saved dorms",
