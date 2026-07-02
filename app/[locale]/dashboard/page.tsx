@@ -1,4 +1,4 @@
-import { Bell, BookmarkCheck, TrendingUp, Plus, Search } from 'lucide-react'
+import { Bell, BookmarkCheck, TrendingUp, Plus, Search, Settings } from 'lucide-react'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
 import { buildPageMetadata } from '@/lib/i18n-metadata'
@@ -47,7 +47,7 @@ export default async function DashboardPage({ params }: PageProps) {
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Link
             href="/dashboard/alerts"
             className="card-elevated group rounded-2xl bg-surface p-5 transition-all hover:-translate-y-0.5"
@@ -70,6 +70,17 @@ export default async function DashboardPage({ params }: PageProps) {
                   ? t('activeAlertCount', { count })
                   : t('activeAlertCountPlural', { count })}
             </p>
+          </Link>
+
+          <Link
+            href="/dashboard/settings"
+            className="card-elevated group rounded-2xl bg-surface p-5 transition-all hover:-translate-y-0.5"
+          >
+            <div className="mb-3 grid size-10 place-items-center rounded-xl bg-brand-soft transition-colors group-hover:bg-brand/10">
+              <Settings className="size-4 text-brand" />
+            </div>
+            <p className="text-sm font-semibold text-foreground">{t('settings')}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{t('settingsHint')}</p>
           </Link>
 
           <div

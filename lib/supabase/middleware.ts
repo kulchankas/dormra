@@ -5,6 +5,21 @@ import { isAdminEmail } from '@/lib/admin-emails'
 
 const LOCALE_PREFIXES = ['de', 'ru'] as const
 
+function isAuthPath(pathname: string): boolean {
+  const segments = ['login', 'signup', 'reset-password']
+  if (segments.some((seg) => pathname === `/${seg}`)) return true
+  return LOCALE_PREFIXES.some((locale) =>
+    segments.some((seg) => pathname === `/${locale}/${seg}`),
+  )
+}
+
+function dashboardRedirectUrl(request: NextRequest): URL {
+  const pathname = request.nextUrl.pathname
+  const locale = LOCALE_PREFIXES.find((l) => pathname.startsWith(`/${l}/`))
+  const prefix = locale ? `/${locale}` : ''
+  return new URL(`${prefix}/dashboard`, request.url)
+}
+
 function isDashboardPath(pathname: string): boolean {
   if (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) return true
   return LOCALE_PREFIXES.some(
@@ -89,6 +104,10 @@ export async function updateSession(request: NextRequest, baseResponse?: NextRes
 
   if (isDashboardPath(request.nextUrl.pathname) && !user) {
     return NextResponse.redirect(loginRedirectUrl(request))
+  }
+
+  if (isAuthPath(request.nextUrl.pathname) && user) {
+    return NextResponse.redirect(dashboardRedirectUrl(request))
   }
 
   return response

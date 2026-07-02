@@ -17,7 +17,8 @@
     "newAlertPageTitle": "New alert — Dormra",
     "editAlertPageTitle": "Edit alert — Dormra",
     "resetPasswordPageTitle": "Reset password — Dormra",
-    "adminTitle": "Admin — Dormra"
+    "adminTitle": "Admin — Dormra",
+    "settingsPageTitle": "Account settings — Dormra"
   },
   "errors": {
     "notFoundTitle": "Page not found",
@@ -61,6 +62,7 @@
     "footerNav": "Footer links",
     "skipToContent": "Skip to content",
     "admin": "Admin",
+    "settings": "Settings",
     "privacy": "Privacy",
     "terms": "Terms"
   },
@@ -405,7 +407,38 @@
     "pauseAlert": "Pause alert",
     "resumeAlert": "Resume alert",
     "signedInAs": "Signed in as",
-    "accountMenu": "Account menu"
+    "accountMenu": "Account menu",
+    "settings": "Account",
+    "settingsHint": "Password, export data, delete account"
+  },
+  "settings": {
+    "title": "Account settings",
+    "subtitle": "Manage your password, data, and email history.",
+    "accountSection": "Account",
+    "email": "Email",
+    "memberSince": "Member since",
+    "securitySection": "Security",
+    "securityHint": "Change your password while signed in.",
+    "updatePassword": "Update password",
+    "passwordUpdated": "Password updated.",
+    "emailHistorySection": "Email history",
+    "emailHistoryHint": "Recent availability alerts we sent you.",
+    "noEmailHistory": "No alert emails sent yet.",
+    "unknownDorm": "Unknown dorm",
+    "dataSection": "Your data",
+    "dataHint": "Download a JSON copy of your alerts and delivery log.",
+    "exportData": "Export my data",
+    "exportSuccess": "Export downloaded.",
+    "exportFailed": "Export failed. Try again.",
+    "exportHint": "Keep this file if you need a record of your alerts.",
+    "dangerSection": "Delete account",
+    "dangerHint": "Permanently removes your account, alerts, and email history.",
+    "deleteAccount": "Delete account",
+    "deleteWarning": "This cannot be undone. All your alerts and data will be removed.",
+    "deleteConfirmHint": "Type your email ({email}) to confirm.",
+    "deleteConfirmLabel": "Confirm email",
+    "deleteAccountConfirm": "Permanently delete",
+    "cancel": "Cancel"
   },
   "alertForm": {
     "emailRequired": "Email notifications must stay on — Telegram is not available yet.",
