@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, LogIn, UserPlus, LogOut, Bell } from 'lucide-react'
+import { Menu, LogIn, UserPlus, LogOut, Bell, LayoutDashboard } from 'lucide-react'
 import {
   Sheet,
   SheetClose,
@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils'
 
 const NAV = [
   { href: '/dorms', label: 'Browse dorms' },
+  { href: '/dashboard/alerts', label: 'Alerts' },
   { href: '/how-it-works', label: 'How it works' },
 ] as const
 
@@ -71,15 +72,16 @@ export default function HeaderMobileMenu({ signedIn }: { signedIn: boolean }) {
             <SheetClose
               render={
                 <Link
-                  href="/dashboard/alerts"
+                  href="/dashboard"
                   className={cn(
-                    'rounded-md px-3 py-2 text-sm transition-colors',
-                    pathname.startsWith('/dashboard')
+                    'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
+                    pathname === '/dashboard'
                       ? 'bg-brand-soft font-medium text-brand'
                       : 'text-foreground hover:bg-muted',
                   )}
                 >
-                  My alerts
+                  <LayoutDashboard className="size-4 text-muted-foreground" />
+                  Dashboard
                 </Link>
               }
             />

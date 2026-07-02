@@ -5,10 +5,10 @@ import { createClient } from '@/lib/supabase/server'
 import { getAvailabilityStatusBulk, type Dorm } from '@/lib/helpers'
 import HeroSearch from '@/components/HeroSearch'
 import DormCard from '@/components/DormCard'
+import ScanningPill from '@/components/ScanningPill'
+import UniversityLogos from '@/components/UniversityLogos'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
-
-// ─── How it works ─────────────────────────────────────────────────────────────
 
 const HOW_IT_WORKS = [
   {
@@ -33,8 +33,6 @@ const HOW_IT_WORKS = [
 
 const PROVIDERS = ['OeAD', 'STUWO', 'home4students', 'ÖJAB', 'Akademikerhilfe', 'Viennabase']
 
-// ─── Skeletons ────────────────────────────────────────────────────────────────
-
 function DormPreviewSkeleton() {
   return (
     <div className="card-elevated overflow-hidden rounded-2xl bg-surface">
@@ -48,8 +46,6 @@ function DormPreviewSkeleton() {
     </div>
   )
 }
-
-// ─── Dorms preview RSC ────────────────────────────────────────────────────────
 
 async function DormsPreview() {
   const supabase = await createClient()
@@ -85,12 +81,9 @@ async function DormsPreview() {
   )
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
 export default function HomePage() {
   return (
     <main>
-      {/* ── Hero ── */}
       <section
         className="hero-glow w-full pt-12 pb-10 md:pt-20 md:pb-14"
         aria-label="Search student dorms in Vienna"
@@ -133,23 +126,33 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Stats strip ── */}
+      <section className="w-full bg-background pb-4" aria-label="Trusted by students from Vienna universities">
+        <p className="mb-6 px-6 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/60">
+          Trusted by students from
+        </p>
+        <UniversityLogos />
+      </section>
+
       <div className="w-full bg-surface-soft/80">
-        <div className="mx-auto grid max-w-[1100px] grid-cols-3 gap-4 px-6 py-5 md:gap-8">
-          {[
-            { value: '70+', label: 'dorm buildings' },
-            { value: '8+', label: 'providers covered' },
-            { value: '15 min', label: 'refresh interval' },
-          ].map(({ value, label }) => (
-            <div key={label} className="text-center">
-              <p className="text-xl font-bold tracking-tight text-foreground md:text-2xl">{value}</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
-            </div>
-          ))}
+        <div className="mx-auto max-w-[1100px] px-6 py-5">
+          <div className="grid grid-cols-3 gap-4 md:gap-8">
+            {[
+              { value: '70+', label: 'dorm buildings' },
+              { value: '8+', label: 'providers covered' },
+              { value: '15 min', label: 'refresh interval' },
+            ].map(({ value, label }) => (
+              <div key={label} className="text-center">
+                <p className="text-xl font-bold tracking-tight text-foreground md:text-2xl">{value}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 flex justify-center">
+            <ScanningPill />
+          </div>
         </div>
       </div>
 
-      {/* ── How it works ── */}
       <section className="w-full bg-background" aria-label="How Dormra works">
         <div className="mx-auto max-w-[1100px] px-6 py-12">
           <div className="mb-6 text-center">
@@ -184,7 +187,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Dorms preview ── */}
       <section className="w-full bg-surface pb-12 pt-10" aria-label="Dorms in Vienna">
         <div className="mx-auto max-w-[1100px] px-6">
           <div className="mb-5 flex items-end justify-between">
@@ -234,7 +236,45 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Footer ── */}
+      <section className="w-full bg-background" aria-label="Set a dorm alert">
+        <div className="mx-auto max-w-[1100px] px-6 pb-12">
+          <div className="card-elevated overflow-hidden rounded-3xl border border-brand/15 bg-gradient-to-br from-brand-soft to-surface px-6 py-10 text-center md:py-14">
+            <div className="mx-auto max-w-xl">
+              <div className="mb-4 inline-flex size-11 items-center justify-center rounded-2xl bg-brand text-white">
+                <Bell className="size-5" />
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-[28px]">
+                Never miss a room again
+              </h2>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+                Set one alert with your budget and districts. Dormra checks every provider every
+                15 minutes and emails you the moment a match opens.
+              </p>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <Button
+                  size="lg"
+                  nativeButton={false}
+                  className="h-11 rounded-full px-7 text-sm"
+                  render={<Link href="/dashboard/alerts/new" />}
+                >
+                  <Bell className="size-4" />
+                  Set an alert
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  nativeButton={false}
+                  className="h-11 rounded-full px-7 text-sm"
+                  render={<Link href="/dorms" />}
+                >
+                  Browse dorms first
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <footer className="w-full bg-background">
         <div className="mx-auto flex max-w-[1100px] flex-col items-start justify-between gap-4 px-6 py-8 sm:flex-row sm:items-center">
           <div>
