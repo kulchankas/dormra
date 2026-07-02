@@ -26,6 +26,8 @@ const dorm = (overrides: Partial<Dorm>): Dorm => ({
   active: true,
   created_at: '',
   image_url: null,
+  lat: null,
+  lng: null,
   ...overrides,
 })
 

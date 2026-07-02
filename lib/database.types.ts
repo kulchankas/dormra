@@ -103,6 +103,8 @@ export interface Database {
           active: boolean
           created_at: string
           image_url: string | null
+          lat: number | null
+          lng: number | null
         }
         Insert: {
           id?: string
@@ -128,6 +130,8 @@ export interface Database {
           active?: boolean
           created_at?: string
           image_url?: string | null
+          lat?: number | null
+          lng?: number | null
         }
         Update: {
           id?: string
@@ -153,6 +157,8 @@ export interface Database {
           active?: boolean
           created_at?: string
           image_url?: string | null
+          lat?: number | null
+          lng?: number | null
         }
         Relationships: []
       }

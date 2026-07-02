@@ -6,13 +6,14 @@
 
 ## What it does
 
-Dormra aggregates dorm availability across Vienna student housing providers into one searchable directory. Users filter by budget, district, deposit, and amenities, and get email alerts when matching rooms become available.
+Dormra aggregates dorm availability across Vienna student housing providers into one searchable directory. Users filter by budget, district, deposit, amenities, and stay length, browse results on a list or an interactive map, and get email alerts when matching rooms become available.
 
 ## Implemented vs planned
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Dorm directory + filters | ✅ Live | SSR at `/dorms`, shareable URL params |
+| Dorm directory + filters | ✅ Live | SSR at `/dorms`, shareable URL params; budget range, districts, deposit, pets/couples/furnished, short-stay |
+| Map view + "Near me" | ✅ Live | Leaflet/OpenStreetMap, colored by availability; sort by distance via browser geolocation |
 | Email alerts | ✅ Live | Resend via `onboarding@resend.dev` until domain verified |
 | OeAD scraper | ✅ Live | Playwright, 26 Vienna residences seeded |
 | home4students scraper | ✅ Live | Cheerio |
@@ -36,6 +37,7 @@ Scrapers visit each provider's website every 15 minutes and write availability s
 - **Framework**: Next.js 16 (App Router) + TypeScript
 - **Database & Auth**: Supabase (PostgreSQL, EU region)
 - **Styling**: Tailwind CSS + shadcn/ui
+- **Map**: Leaflet + react-leaflet, OpenStreetMap/CARTO tiles (no API key required)
 - **Scraping**: Cheerio (static), Playwright (OeAD)
 - **Cron**: cron-job.org → `GET /api/cron/scrape` every 15 min
 - **Email**: Resend

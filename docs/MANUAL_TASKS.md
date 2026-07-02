@@ -76,9 +76,20 @@ Run in order if not already applied:
 psql "$DATABASE_URL" -f supabase/migrations/20260701120000_user_alerts_locale.sql
 psql "$DATABASE_URL" -f supabase/migrations/20260701130000_snapshot_rpc_and_retention.sql
 psql "$DATABASE_URL" -f supabase/migrations/20260701140000_alert_log_dedup.sql
+psql "$DATABASE_URL" -f supabase/migrations/20260702150000_dorm_coordinates.sql
 ```
 
 Or paste each file into Supabase SQL Editor.
+
+**After applying `20260702150000_dorm_coordinates.sql`**, re-run the seed files to backfill `lat`/`lng` for existing rows (they're idempotent upserts, safe to re-run):
+
+```bash
+psql "$DATABASE_URL" -f supabase/seeds/stuwo_vienna.sql
+psql "$DATABASE_URL" -f supabase/seeds/oead_vienna.sql
+psql "$DATABASE_URL" -f supabase/seeds/home4students_vienna.sql
+```
+
+Without this, the `/dorms` map view will show "No mapped locations" until coordinates are backfilled. New dorms added going forward should include `lat`/`lng` too — see `scripts/geocode-dorms.mjs` for the geocoding approach (Nominatim/OpenStreetMap, no API key required).
 
 ### 1.3 Regenerate TypeScript types (optional)
 

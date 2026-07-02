@@ -1,11 +1,13 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import { Link, usePathname, useRouter } from '@/i18n/navigation'
 import { format, parseISO } from 'date-fns'
-import { Bell, Search, SlidersHorizontal, X } from 'lucide-react'
+import { toast } from 'sonner'
+import { Bell, List, Loader2, Map as MapIcon, MapPin, Search, SlidersHorizontal, X } from 'lucide-react'
 import {
   DISTRICT_NAMES,
   type AvailabilityStatus,
@@ -13,14 +15,18 @@ import {
 } from '@/lib/helpers'
 import {
   DEFAULT_FILTERS,
+  MAX_PRICE_CEILING,
+  MIN_PRICE_FLOOR,
   applyFilters,
   countActiveFilters,
   filtersToSearchParams,
+  haversineDistanceKm,
   parseFiltersFromParams,
   type FilterState,
   type SortKey,
 } from '@/lib/dorm-filters'
 import DormCard from '@/components/DormCard'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -48,10 +54,17 @@ import {
 } from '@/lib/district-presets'
 import { cn } from '@/lib/utils'
 
+const DormsMap = dynamic(() => import('@/components/DormsMap'), {
+  ssr: false,
+  loading: () => <Skeleton className="h-[60vh] w-full rounded-2xl md:h-[70vh]" />,
+})
+
 interface Props {
   dorms: Dorm[]
   availability: Record<string, AvailabilityStatus>
 }
+
+type ViewMode = 'list' | 'map'
 
 type QuickFilter = {
   id: string
@@ -85,11 +98,19 @@ function FilterChips({
       onRemove: () => onChange({ ...filters, search: '' }),
     })
   }
-  if (filters.maxPrice < 1500) {
+  if (filters.minPrice > MIN_PRICE_FLOOR || filters.maxPrice < MAX_PRICE_CEILING) {
+    const maxLabel = filters.maxPrice < MAX_PRICE_CEILING ? `€${filters.maxPrice}` : `€${MAX_PRICE_CEILING}+`
     chips.push({
       key: 'price',
-      label: `≤ €${filters.maxPrice}/mo`,
-      onRemove: () => onChange({ ...filters, maxPrice: 1500 }),
+      label: `€${filters.minPrice}–${maxLabel}/mo`,
+      onRemove: () => onChange({ ...filters, minPrice: MIN_PRICE_FLOOR, maxPrice: MAX_PRICE_CEILING }),
+    })
+  }
+  if (filters.shortStayOk) {
+    chips.push({
+      key: 'shortStay',
+      label: t('shortStayOk'),
+      onRemove: () => onChange({ ...filters, shortStayOk: false }),
     })
   }
   if (filters.availableOnly) {
@@ -223,23 +244,26 @@ function FilterPanel({
 
       <div className="space-y-3 py-4 border-t border-border">
         <div className="flex items-center justify-between">
-          <Label className="text-xs font-semibold text-foreground">{t('maxRent')}</Label>
+          <Label className="text-xs font-semibold text-foreground">{t('rentRange')}</Label>
           <span className="text-xs font-medium text-brand">
-            {filters.maxPrice < 1500 ? `€${filters.maxPrice}/mo` : t('any')}
+            {filters.minPrice > MIN_PRICE_FLOOR || filters.maxPrice < MAX_PRICE_CEILING
+              ? `€${filters.minPrice}–${filters.maxPrice < MAX_PRICE_CEILING ? `€${filters.maxPrice}` : `€${MAX_PRICE_CEILING}+`}`
+              : t('any')}
           </span>
         </div>
         <Slider
-          min={200}
-          max={1500}
+          min={MIN_PRICE_FLOOR}
+          max={MAX_PRICE_CEILING}
           step={50}
-          value={[filters.maxPrice]}
-          onValueChange={(vals) =>
-            set('maxPrice', Array.isArray(vals) ? (vals as number[])[0] : (vals as number))
-          }
-          aria-label={t('maxPriceAria')}
+          value={[filters.minPrice, filters.maxPrice]}
+          onValueChange={(vals) => {
+            const [min, max] = vals as number[]
+            onChange({ ...filters, minPrice: min, maxPrice: max })
+          }}
+          aria-label={t('rentRangeAria')}
         />
         <div className="flex justify-between text-[11px] text-muted-foreground">
-          <span>€200</span>
+          <span>€{MIN_PRICE_FLOOR}</span>
           <span>{t('anyRent')}</span>
         </div>
       </div>
@@ -333,6 +357,7 @@ function FilterPanel({
             ['pets', 'petsAllowed'],
             ['couples', 'couplesAllowed'],
             ['furnished', 'furnished'],
+            ['shortStayOk', 'shortStayOk'],
           ] as const
         ).map(([key, labelKey]) => (
           <label key={key} className="flex cursor-pointer items-center gap-2">
@@ -355,12 +380,17 @@ export default function DormsDirectory({ dorms, availability }: Props) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
+  const [view, setView] = useState<ViewMode>('list')
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const [locating, setLocating] = useState(false)
+
   const sortLabels: Record<SortKey, string> = {
     available_first: t('availableFirst'),
     price_asc: t('sortPriceLow'),
     price_desc: t('sortPriceHigh'),
     district_asc: t('sortDistrict'),
     created_desc: t('sortRecent'),
+    distance: t('sortDistance'),
   }
 
   const quickFilters: QuickFilter[] = [
@@ -403,15 +433,46 @@ export default function DormsDirectory({ dorms, availability }: Props) {
     [dorms],
   )
 
+  const distanceById = useMemo(() => {
+    if (!userLocation) return {}
+    const map: Record<string, number> = {}
+    for (const d of dorms) {
+      if (d.lat != null && d.lng != null) {
+        map[d.id] = haversineDistanceKm(userLocation, { lat: d.lat, lng: d.lng })
+      }
+    }
+    return map
+  }, [dorms, userLocation])
+
   const filtered = useMemo(
-    () => applyFilters(dorms, filters, availability),
-    [dorms, filters, availability],
+    () => applyFilters(dorms, filters, availability, distanceById),
+    [dorms, filters, availability, distanceById],
   )
 
   const availableCount = useMemo(
     () => dorms.filter((d) => availability[d.id]?.status === 'available').length,
     [dorms, availability],
   )
+
+  function handleNearMe() {
+    if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
+      toast.error(t('locationUnsupported'))
+      return
+    }
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+        setLocating(false)
+        setFilters({ ...filters, sort: 'distance' })
+      },
+      () => {
+        setLocating(false)
+        toast.error(t('locationDenied'))
+      },
+      { timeout: 10000 },
+    )
+  }
 
   const active =
     countActiveFilters(filters) > 0 || filters.search !== '' || filters.moveIn != null
@@ -517,6 +578,25 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                       </button>
                     )
                   })}
+                  <button
+                    type="button"
+                    onClick={handleNearMe}
+                    disabled={locating}
+                    aria-pressed={!!userLocation && filters.sort === 'distance'}
+                    className={cn(
+                      'relative inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors after:absolute after:-inset-y-1.5 after:inset-x-0 disabled:opacity-70',
+                      userLocation && filters.sort === 'distance'
+                        ? 'bg-brand text-white shadow-sm'
+                        : 'bg-surface text-muted-foreground ring-1 ring-border hover:text-foreground',
+                    )}
+                  >
+                    {locating ? (
+                      <Loader2 className="size-3 animate-spin" aria-hidden="true" />
+                    ) : (
+                      <MapPin className="size-3" aria-hidden="true" />
+                    )}
+                    {locating ? t('locating') : t('nearMe')}
+                  </button>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/70">
@@ -586,6 +666,7 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
+                      {userLocation && <SelectItem value="distance">{t('sortDistance')}</SelectItem>}
                       <SelectItem value="available_first">{t('availableFirst')}</SelectItem>
                       <SelectItem value="price_asc">{t('sortPriceLow')}</SelectItem>
                       <SelectItem value="price_desc">{t('sortPriceHigh')}</SelectItem>
@@ -644,16 +725,51 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                 </div>
               </div>
 
-              <p className="text-sm text-muted-foreground">
-                {active ? (
-                  t('showingOf', { filtered: filtered.length, total: dorms.length })
-                ) : (
-                  t('allSorted', {
-                    total: dorms.length,
-                    sort: sortLabels[filters.sort],
-                  })
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm text-muted-foreground">
+                  {active ? (
+                    t('showingOf', { filtered: filtered.length, total: dorms.length })
+                  ) : (
+                    t('allSorted', {
+                      total: dorms.length,
+                      sort: sortLabels[filters.sort],
+                    })
+                  )}
+                </p>
+
+                {filtered.length > 0 && (
+                  <div
+                    role="group"
+                    aria-label={t('viewModeAria')}
+                    className="inline-flex shrink-0 rounded-full bg-muted p-0.5"
+                  >
+                    <button
+                      type="button"
+                      aria-pressed={view === 'list'}
+                      onClick={() => setView('list')}
+                      className={cn(
+                        'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                        view === 'list' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground',
+                      )}
+                    >
+                      <List className="size-3.5" aria-hidden="true" />
+                      {t('listView')}
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={view === 'map'}
+                      onClick={() => setView('map')}
+                      className={cn(
+                        'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                        view === 'map' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground',
+                      )}
+                    >
+                      <MapIcon className="size-3.5" aria-hidden="true" />
+                      {t('mapView')}
+                    </button>
+                  </div>
                 )}
-              </p>
+              </div>
 
               {active && (
                 <FilterChips filters={filters} onChange={setFilters} />
@@ -690,7 +806,11 @@ export default function DormsDirectory({ dorms, availability }: Props) {
               </div>
             )}
 
-            {filtered.length > 0 && (
+            {filtered.length > 0 && view === 'map' && (
+              <DormsMap dorms={filtered} availability={availability} userLocation={userLocation} />
+            )}
+
+            {filtered.length > 0 && view === 'list' && (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {filtered.map((dorm) => (
                   <DormCard

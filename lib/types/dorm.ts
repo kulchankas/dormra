@@ -23,6 +23,8 @@ export interface Dorm {
   active: boolean
   created_at: string
   image_url: string | null
+  lat: number | null
+  lng: number | null
 }
 
 /** Subset used by the alert email template. */
