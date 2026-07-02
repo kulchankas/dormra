@@ -1,4 +1,4 @@
-import { Bell, BookmarkCheck, TrendingUp, Plus, Search, Settings } from 'lucide-react'
+import { Bell, BookmarkCheck, Plus, Search, Settings } from 'lucide-react'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
 import { buildPageMetadata } from '@/lib/i18n-metadata'
@@ -28,13 +28,20 @@ export default async function DashboardPage({ params }: PageProps) {
     return
   }
 
-  const { count: alertCount } = await supabase
-    .from('user_alerts')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-    .eq('active', true)
+  const [{ count: alertCount }, { count: savedCountRaw }] = await Promise.all([
+    supabase
+      .from('user_alerts')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('active', true),
+    supabase
+      .from('tracker')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id),
+  ])
 
   const count = alertCount ?? 0
+  const savedCount = savedCountRaw ?? 0
 
   return (
     <main className="min-h-screen bg-background">
@@ -83,33 +90,29 @@ export default async function DashboardPage({ params }: PageProps) {
             <p className="mt-0.5 text-xs text-muted-foreground">{t('settingsHint')}</p>
           </Link>
 
-          <div
-            className="rounded-2xl bg-surface-soft/80 p-5 opacity-60"
-            title={t('savedDormsTooltip')}
+          <Link
+            href="/dashboard/saved"
+            className="card-elevated group rounded-2xl bg-surface p-5 transition-all hover:-translate-y-0.5"
           >
-            <div className="mb-3 grid size-10 place-items-center rounded-xl bg-muted">
-              <BookmarkCheck className="size-4 text-muted-foreground" />
+            <div className="mb-3 flex items-center justify-between">
+              <div className="grid size-10 place-items-center rounded-xl bg-brand-soft transition-colors group-hover:bg-brand/10">
+                <BookmarkCheck className="size-4 text-brand" />
+              </div>
+              {savedCount > 0 && (
+                <span className="rounded-full bg-brand px-2 py-0.5 text-[11px] font-semibold text-white">
+                  {savedCount}
+                </span>
+              )}
             </div>
             <p className="text-sm font-semibold text-foreground">{t('savedDorms')}</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">{t('savedDormsHint')}</p>
-            <p className="mt-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
-              {t('comingSoon')}
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {savedCount === 0
+                ? t('savedDormsHint')
+                : savedCount === 1
+                  ? t('savedDormsCount', { count: savedCount })
+                  : t('savedDormsCountPlural', { count: savedCount })}
             </p>
-          </div>
-
-          <div
-            className="rounded-2xl bg-surface-soft/80 p-5 opacity-60"
-            title={t('applicationTrackerTooltip')}
-          >
-            <div className="mb-3 grid size-10 place-items-center rounded-xl bg-muted">
-              <TrendingUp className="size-4 text-muted-foreground" />
-            </div>
-            <p className="text-sm font-semibold text-foreground">{t('applicationTracker')}</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">{t('applicationTrackerHint')}</p>
-            <p className="mt-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
-              {t('comingSoon')}
-            </p>
-          </div>
+          </Link>
         </div>
 
         {count === 0 && (
