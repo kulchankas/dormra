@@ -70,8 +70,8 @@ Priority order — **do not start Phase 2 scrapers until Phase 1 metric met.**
 | Priority | Task | Rationale | Depends on |
 |----------|------|-----------|------------|
 | P0 | *(blocked)* home4students attribution verify | Data trust — Döbling front/back share URL | You enable cron |
-| P1 | Admin cron health — per-provider last scrape | Ops visibility for 3-job split | Cron running |
-| P2 | `/api/test-alert` polish | ✅ Shipped this sprint | — |
+| P1 | Admin per-provider last scrape | ✅ This sprint | — |
+| P2 | `/api/test-alert` polish | ✅ Shipped PR #40 | — |
 | P3 | move_in filtering | Blocked — providers don't expose dates | Scraper data model |
 | Hold | New scrapers (ÖJAB, WIHAST, …) | Phase 2 gate | Phase 1 week clean |
 
