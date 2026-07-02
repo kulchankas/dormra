@@ -51,6 +51,11 @@
   --radius-xl: 20px;
   --radius-2xl: 24px;
   --radius-pill: 999px;
+
+  /* Warm, brand-tinted elevation */
+  --shadow-soft: 0 1px 2px rgba(26, 20, 16, 0.04), 0 6px 20px -8px rgba(26, 20, 16, 0.10);
+  --shadow-card: 0 2px 4px rgba(26, 20, 16, 0.05), 0 16px 36px -14px rgba(194, 64, 30, 0.20);
+  --shadow-brand: 0 6px 16px -6px rgba(194, 64, 30, 0.45);
 }
 
 :root {
@@ -109,6 +114,16 @@
   html {
     @apply font-sans;
   }
+}
+
+/* ── Hero glow ────────────────────────────────────────────────────────── */
+.hero-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(52% 60% at 50% -8%, color-mix(in oklch, var(--color-brand-soft) 85%, transparent) 0%, transparent 68%),
+    radial-gradient(38% 40% at 82% 6%, color-mix(in oklch, var(--color-brand-accent) 14%, transparent) 0%, transparent 70%);
 }
 
 /* ── Conveyor-belt marquee (logo wall) ───────────────────────────────── */

@@ -94,10 +94,11 @@ export default function HomePage() {
     <main>
       {/* ── Hero ── */}
       <section
-        className="w-full bg-background pt-12 pb-10 md:pt-20 md:pb-14"
+        className="relative w-full overflow-hidden bg-background pt-12 pb-10 md:pt-20 md:pb-14"
         aria-label="Search student dorms in Vienna"
       >
-        <div className="mx-auto flex max-w-[680px] flex-col items-center px-6 text-center">
+        <span className="hero-glow" aria-hidden="true" />
+        <div className="relative mx-auto flex max-w-[680px] flex-col items-center px-6 text-center">
           {/* Eyebrow */}
           <span className="mb-4 inline-flex items-center rounded-full bg-brand-soft px-3 py-1 text-xs font-medium text-brand">
             Vienna student housing
@@ -147,7 +148,7 @@ export default function HomePage() {
               { value: '15 min', label: 'refresh interval' },
             ].map(({ value, label }) => (
               <div key={label} className="py-5 text-center">
-                <p className="text-xl font-semibold text-foreground md:text-2xl">{value}</p>
+                <p className="text-xl font-semibold text-brand md:text-2xl">{value}</p>
                 <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
               </div>
             ))}
@@ -167,7 +168,7 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {HOW_IT_WORKS.map(({ icon: Icon, step, title, desc }) => (
-              <div key={step} className="relative rounded-2xl border border-border bg-surface p-5">
+              <div key={step} className="relative rounded-2xl border border-border bg-surface p-5 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card">
                 <div className="mb-4 flex items-center justify-between">
                   <div className="grid size-10 place-items-center rounded-xl bg-brand-soft">
                     <Icon className="size-5 text-brand" />

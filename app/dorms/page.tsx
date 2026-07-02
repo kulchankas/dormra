@@ -37,6 +37,13 @@ import {
 
 type SortKey = 'price_asc' | 'price_desc' | 'district_asc' | 'created_desc'
 
+const SORT_LABELS: Record<SortKey, string> = {
+  price_asc: 'Price: low → high',
+  price_desc: 'Price: high → low',
+  district_asc: 'By district',
+  created_desc: 'Recently added',
+}
+
 interface FilterState {
   priceMin: number
   priceMax: number
@@ -475,7 +482,7 @@ export default function DormsPage() {
 
                 <Select value={filters.sort} onValueChange={(v) => setFilters((f) => ({ ...f, sort: v as SortKey }))}>
                   <SelectTrigger className="h-9 w-auto min-w-[155px] rounded-full text-sm">
-                    <SelectValue />
+                    <SelectValue>{SORT_LABELS[filters.sort]}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="price_asc">Price: low → high</SelectItem>
