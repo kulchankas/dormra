@@ -439,7 +439,7 @@ export default function DormsDirectory({ dorms, availability }: Props) {
     <main className="min-h-screen bg-background">
       <div className="hero-glow border-b border-border/40">
         <div className="mx-auto max-w-7xl px-4 py-8 md:px-8 md:py-10">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="flex flex-col items-start gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 {t('viennaListings', { count: dorms.length })}
