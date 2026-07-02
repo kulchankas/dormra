@@ -101,7 +101,7 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+      <form id="alert-form" onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
 
         <AlertMatchPreview criteria={criteria} />
 
@@ -254,12 +254,25 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
           type="submit"
           size="lg"
           disabled={isPending}
-          className="h-11 rounded-full text-sm"
+          className="hidden h-11 w-full rounded-full text-sm md:inline-flex"
         >
           {isPending && <Loader2 className="size-4 animate-spin" />}
           {mode === 'create' ? 'Create alert' : 'Save changes'}
         </Button>
       </form>
+
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 p-4 backdrop-blur-sm md:hidden">
+        <Button
+          type="submit"
+          form="alert-form"
+          size="lg"
+          disabled={isPending}
+          className="h-12 w-full rounded-full text-sm"
+        >
+          {isPending && <Loader2 className="size-4 animate-spin" />}
+          {mode === 'create' ? 'Create alert' : 'Save changes'}
+        </Button>
+      </div>
     </Form>
   )
 }

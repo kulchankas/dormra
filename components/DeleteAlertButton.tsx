@@ -5,6 +5,7 @@ import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { deleteAlert } from '@/app/dashboard/alerts/actions'
 import { useRouter } from 'next/navigation'
+import { cn } from '@/lib/utils'
 
 export default function DeleteAlertButton({ id }: { id: string }) {
   const [pending, setPending] = useState(false)
@@ -14,7 +15,7 @@ export default function DeleteAlertButton({ id }: { id: string }) {
   async function handleClick() {
     if (!confirmed) {
       setConfirmed(true)
-      setTimeout(() => setConfirmed(false), 3000)
+      setTimeout(() => setConfirmed(false), 4000)
       return
     }
     setPending(true)
@@ -30,13 +31,14 @@ export default function DeleteAlertButton({ id }: { id: string }) {
   return (
     <Button
       variant={confirmed ? 'destructive' : 'ghost'}
-      size="icon-sm"
+      size={confirmed ? 'sm' : 'icon-sm'}
       onClick={handleClick}
       disabled={pending}
-      aria-label={confirmed ? 'Confirm delete' : 'Delete alert'}
+      className={cn(confirmed && 'h-8 rounded-full px-2.5 text-xs')}
+      aria-label={confirmed ? 'Confirm delete alert' : 'Delete alert'}
     >
       <Trash2 className="size-3.5" />
-      {confirmed && <span className="ml-1 text-xs">Confirm?</span>}
+      {confirmed && <span>Delete?</span>}
     </Button>
   )
 }
