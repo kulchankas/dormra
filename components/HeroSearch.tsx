@@ -25,8 +25,18 @@ export default function HeroSearch() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   function handleSearch() {
-    router.push('/dorms')
+    const params = new URLSearchParams()
+    if (budget) params.set('maxPrice', budget)
+    if (selectedDate) params.set('moveIn', format(selectedDate, 'yyyy-MM-dd'))
+    const qs = params.toString()
+    router.push(qs ? `/dorms?${qs}` : '/dorms')
   }
+
+  const mobileSummary = [
+    'Vienna',
+    selectedDate ? format(selectedDate, 'd MMM') : 'Any time',
+    budget ? `≤ €${budget}` : 'Any budget',
+  ].join(' · ')
 
   return (
     <>
@@ -119,7 +129,7 @@ export default function HeroSearch() {
         </span>
         <div className="flex-1 text-left">
           <p className="text-sm font-medium text-foreground">Search dorms</p>
-          <p className="text-xs text-muted-foreground">Vienna · Any time · Any budget</p>
+          <p className="text-xs text-muted-foreground">{mobileSummary}</p>
         </div>
       </button>
 
@@ -197,6 +207,8 @@ export default function HeroSearch() {
                     type="text"
                     inputMode="numeric"
                     pattern="[0-9]*"
+                    value={budget}
+                    onChange={e => setBudget(e.target.value.replace(/\D/g, ''))}
                     placeholder="Any amount"
                     className="h-5 border-0 p-0 text-sm font-medium shadow-none focus-visible:ring-0 bg-transparent"
                   />
