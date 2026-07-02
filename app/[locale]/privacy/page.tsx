@@ -1,13 +1,14 @@
 import { Link } from '@/i18n/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/lib/i18n-metadata'
 
 type PageProps = { params: Promise<{ locale: string }> }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'metadata' })
-  return { title: t('privacyTitle') }
+  return buildPageMetadata(locale, '/privacy', t('privacyTitle'))
 }
 
 export default async function PrivacyPage({ params }: PageProps) {

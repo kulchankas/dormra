@@ -415,5 +415,21 @@
     "serviceBody": "Dormra aggregates publicly listed student dorm availability from third-party providers and notifies you when matching rooms become available. We are not a housing provider and do not handle bookings or payments between you and any provider.",
     "accuracyTitle": "Availability accuracy",
     "accuracyBody": "We strive to keep listings current by re-scraping every 15 minutes, but we cannot guarantee a room will still be available at the exact moment you contact the provider. Availability can change within minutes — always confirm directly with the provider before relying on a listing."
+  },
+  "email": {
+    "alertSubject": "A room just opened at {name}",
+    "greetingNamed": "Hi {name},",
+    "greetingAnonymous": "Hi,",
+    "bodyIntro": "Good news! A dorm matching your alert just became available:",
+    "district": "District",
+    "price": "Price",
+    "address": "Address",
+    "priceFrom": "From €{min}/mo",
+    "priceUpTo": "Up to €{max}/mo",
+    "priceRange": "€{min} – €{max}/mo",
+    "priceNotListed": "Price not listed",
+    "cta": "View & apply →",
+    "footerReason": "You're receiving this because you set up an alert on Dormra.",
+    "manageAlerts": "Manage your alerts"
   }
 }

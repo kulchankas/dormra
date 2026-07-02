@@ -1,13 +1,14 @@
 import { Link } from '@/i18n/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/lib/i18n-metadata'
 
 type PageProps = { params: Promise<{ locale: string }> }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'metadata' })
-  return { title: t('termsTitle') }
+  return buildPageMetadata(locale, '/terms', t('termsTitle'))
 }
 
 export default async function TermsPage({ params }: PageProps) {

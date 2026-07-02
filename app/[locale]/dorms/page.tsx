@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
-import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
+import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/lib/i18n-metadata'
 import { createClient } from '@/lib/supabase/server'
 import { type Dorm } from '@/lib/helpers'
 import { getAvailabilityStatusBulk, availabilityMapToRecord } from '@/lib/availability'
@@ -13,10 +14,7 @@ type PageProps = { params: Promise<{ locale: string }> }
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'metadata' })
-  return {
-    title: t('dormsTitle'),
-    description: t('dormsDescription'),
-  }
+  return buildPageMetadata(locale, '/dorms', t('dormsTitle'), t('dormsDescription'))
 }
 
 export default async function DormsPage({ params }: PageProps) {

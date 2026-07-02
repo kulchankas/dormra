@@ -1,6 +1,7 @@
 import { Link } from '@/i18n/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/lib/i18n-metadata'
 import { Search, Bell, Mail, Clock, Map, ShieldCheck } from 'lucide-react'
 import {
   Accordion,
@@ -15,7 +16,7 @@ type PageProps = { params: Promise<{ locale: string }> }
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'metadata' })
-  return { title: t('howItWorksTitle') }
+  return buildPageMetadata(locale, '/how-it-works', t('howItWorksTitle'))
 }
 
 export default async function HowItWorksPage({ params }: PageProps) {

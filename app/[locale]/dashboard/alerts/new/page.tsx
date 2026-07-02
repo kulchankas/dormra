@@ -1,6 +1,7 @@
 import { ArrowLeft } from 'lucide-react'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/lib/i18n-metadata'
 import { createClient } from '@/lib/supabase/server'
 import AlertForm from '@/components/AlertForm'
 import type { AlertPayload } from '@/app/[locale]/dashboard/alerts/actions'
@@ -14,7 +15,7 @@ type PageProps = {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'metadata' })
-  return { title: t('newAlertPageTitle') }
+  return buildPageMetadata(locale, '/dashboard/alerts/new', t('newAlertPageTitle'))
 }
 
 export default async function NewAlertPage({ params, searchParams }: PageProps) {

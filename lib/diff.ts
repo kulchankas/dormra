@@ -103,6 +103,7 @@ export async function sendAlertsForDorm(
         userName: null,
         dorm,
         alertId: alert.id,
+        locale: alert.locale,
       })
 
       if (result.success) {

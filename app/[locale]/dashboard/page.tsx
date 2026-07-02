@@ -1,6 +1,7 @@
 import { Bell, BookmarkCheck, TrendingUp, Plus, Search } from 'lucide-react'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/lib/i18n-metadata'
 import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import ScanningPill from '@/components/ScanningPill'
@@ -11,7 +12,7 @@ type PageProps = { params: Promise<{ locale: string }> }
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'metadata' })
-  return { title: t('dashboardTitle') }
+  return buildPageMetadata(locale, '/dashboard', t('dashboardTitle'))
 }
 
 export default async function DashboardPage({ params }: PageProps) {

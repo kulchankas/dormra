@@ -200,6 +200,7 @@ export interface Database {
           notify_telegram: boolean
           telegram_chat_id: string | null
           active: boolean
+          locale: string
           created_at: string
         }
         Insert: {
@@ -215,6 +216,7 @@ export interface Database {
           notify_telegram?: boolean
           telegram_chat_id?: string | null
           active?: boolean
+          locale?: string
           created_at?: string
         }
         Update: {
@@ -230,6 +232,7 @@ export interface Database {
           notify_telegram?: boolean
           telegram_chat_id?: string | null
           active?: boolean
+          locale?: string
           created_at?: string
         }
         Relationships: []

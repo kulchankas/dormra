@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { Bell, Search, Mail } from 'lucide-react'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/lib/i18n-metadata'
 import { createClient } from '@/lib/supabase/server'
 import { getAvailabilityStatusBulk, type Dorm } from '@/lib/helpers'
 import { localizeAvailabilityMap } from '@/lib/i18n-availability'
@@ -28,10 +29,7 @@ type PageProps = { params: Promise<{ locale: string }> }
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'metadata' })
-  return {
-    title: t('homeTitle'),
-    description: t('homeDescription'),
-  }
+  return buildPageMetadata(locale, '/', t('homeTitle'), t('homeDescription'))
 }
 
 async function LiveStats() {

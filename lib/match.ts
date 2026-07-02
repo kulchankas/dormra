@@ -6,6 +6,7 @@ interface MatchingAlert {
   id: string
   user_id: string
   notify_email: boolean
+  locale: string
 }
 
 export { dormMatchesAlert, type AlertCriteria } from './alert-criteria'
@@ -19,7 +20,7 @@ export async function matchAlertsForDorm(dorm: DormForAlertMatching): Promise<Ma
 
   const { data: alerts, error } = await admin
     .from('user_alerts')
-    .select('id, user_id, price_max, districts, pets_required, couples, deposit_max, notify_email')
+    .select('id, user_id, price_max, districts, pets_required, couples, deposit_max, notify_email, locale')
     .eq('active', true)
     .eq('notify_email', true)
 
@@ -34,7 +35,12 @@ export async function matchAlertsForDorm(dorm: DormForAlertMatching): Promise<Ma
     if (!alert.user_id) continue
     if (!dormMatchesAlert(dorm, alert)) continue
 
-    matched.push({ id: alert.id, user_id: alert.user_id, notify_email: alert.notify_email })
+    matched.push({
+      id: alert.id,
+      user_id: alert.user_id,
+      notify_email: alert.notify_email,
+      locale: alert.locale ?? 'en',
+    })
   }
 
   return matched
