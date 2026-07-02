@@ -8,7 +8,6 @@ import DormraLogo from '@/components/DormraLogo'
 import DormCard from '@/components/DormCard'
 import ScanningPill from '@/components/ScanningPill'
 import UniversityLogos from '@/components/UniversityLogos'
-import PixelHeroDecor from '@/components/pixel/PixelHeroDecor'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 
@@ -139,10 +138,9 @@ export default function HomePage() {
   return (
     <main>
       <section
-        className="hero-glow relative w-full pt-12 pb-10 md:pt-20 md:pb-14"
+        className="hero-glow w-full pt-12 pb-10 md:pt-20 md:pb-14"
         aria-label="Search student dorms in Vienna"
       >
-        <PixelHeroDecor />
         <div className="mx-auto flex max-w-[680px] flex-col items-center px-6 text-center">
           <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-border/60 bg-surface/80 px-3 py-1 text-xs font-medium text-brand backdrop-blur-sm">
             Vienna student housing
