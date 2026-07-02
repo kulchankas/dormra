@@ -57,20 +57,21 @@ export default function HeroSearch() {
         aria-label={t('aria')}
         className="search-elevated hidden md:flex items-center w-full max-w-[580px] rounded-pill bg-surface border border-border/80 p-1.5 transition-shadow hover:shadow-[var(--shadow-card-hover)]"
       >
-        <div className="flex-1 px-4 py-2 rounded-full hover:bg-muted/50 transition-colors cursor-default">
+        <div className="flex-1 min-w-0 px-4 py-2.5 rounded-full hover:bg-muted/50 transition-colors cursor-default">
           <p className="text-[10px] font-semibold uppercase tracking-wide leading-none text-muted-foreground mb-1">{t('where')}</p>
           <p className="text-sm leading-none font-medium text-foreground">{t('vienna')}</p>
         </div>
 
-        <div className="w-px self-stretch my-1.5 bg-border shrink-0" />
+        <div className="w-px self-stretch bg-border shrink-0" />
 
         <Popover>
           <PopoverTrigger
             render={
               <button
                 type="button"
+                title={t('moveInPickerHint')}
                 className={cn(
-                  'flex-1 px-4 py-2 text-left bg-transparent border-none cursor-pointer rounded-full',
+                  'flex-1 min-w-0 px-4 py-2.5 text-left bg-transparent border-none cursor-pointer rounded-full',
                   'hover:bg-muted/50 transition-colors',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
                 )}
@@ -82,7 +83,6 @@ export default function HeroSearch() {
             <p className={cn('text-sm leading-none font-medium', selectedDate ? 'text-foreground' : 'text-muted-foreground')}>
               {dateLabel}
             </p>
-            <p className="mt-1 text-[10px] leading-tight text-muted-foreground/80">{t('moveInPickerHint')}</p>
           </PopoverTrigger>
           <PopoverContent align="start" className="w-auto p-0">
             <Calendar
@@ -96,9 +96,9 @@ export default function HeroSearch() {
           </PopoverContent>
         </Popover>
 
-        <div className="w-px self-stretch my-1.5 bg-border shrink-0" />
+        <div className="w-px self-stretch bg-border shrink-0" />
 
-        <div className="flex-1 px-4 py-2 rounded-full hover:bg-muted/50 transition-colors">
+        <div className="flex-1 min-w-0 px-4 py-2.5 rounded-full hover:bg-muted/50 transition-colors">
           <label htmlFor="hero-budget" className="block text-[10px] font-semibold uppercase tracking-wide leading-none text-muted-foreground mb-1 cursor-pointer">
             {t('budget')}
           </label>
