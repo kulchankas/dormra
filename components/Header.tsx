@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import { Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import DormraLogo from '@/components/DormraLogo'
 import { Button } from '@/components/ui/button'
 import HeaderUserMenu from './HeaderUserMenu'
 import HeaderMobileMenu from './HeaderMobileMenu'
@@ -19,14 +19,8 @@ export default async function Header() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/90 backdrop-blur-lg">
       <div className="mx-auto flex h-[3.75rem] max-w-7xl items-center justify-between gap-3 px-4 md:px-6">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2.5 text-base font-semibold text-brand transition-opacity hover:opacity-90"
-        >
-          <span className="grid size-8 place-items-center rounded-lg bg-brand text-brand-foreground shadow-sm">
-            <Sparkles className="size-4" aria-hidden="true" />
-          </span>
-          Dormra
+        <Link href="/" className="transition-opacity hover:opacity-90">
+          <DormraLogo size="md" />
         </Link>
 
         <HeaderNav />

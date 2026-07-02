@@ -4,7 +4,8 @@ Apply when editing pages, components, copy, or styling in the Dormra codebase.
 
 ## Design system
 
-- **Palette**: warm sand background `#FFF8F4`, brand `#C2401E`, accent `#FF6B47`, muted text `#6B5C53`
+- **Palette**: warm sand background `#FAF6F2`, brand `#B8381A`, accent `#E85D3B`, muted text `#6B5E56`
+- **Logo**: `DormraLogo` — soft peach mark shell + house outline + small accent dot; avoid solid brand blocks or decorative icons
 - **Font**: Poppins (400/500/600) — do not introduce new font families
 - **Radius**: cards `rounded-2xl`, buttons often `rounded-full` or `rounded-xl`, pills `rounded-pill`
 - **Surfaces**: `bg-surface` (white cards), `bg-background` (page), `border-border`

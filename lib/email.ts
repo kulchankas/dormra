@@ -54,7 +54,16 @@ export async function sendAvailabilityAlert({ to, userName, dorm, alertId }: Sen
           <!-- Header -->
           <tr>
             <td style="padding-bottom:24px;text-align:center;">
-              <span style="font-size:28px;font-weight:800;color:#C2401E;letter-spacing:-0.5px;">dormra</span>
+              <table cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
+                <tr>
+                  <td style="padding-right:10px;vertical-align:middle;">
+                    <div style="width:36px;height:36px;border-radius:10px;background-color:#F9E8E2;border:1px solid rgba(184,56,26,0.12);text-align:center;line-height:36px;">
+                      <img src="https://dormra.eu/icon.svg" width="20" height="20" alt="" style="vertical-align:middle;display:inline-block;" />
+                    </div>
+                  </td>
+                  <td style="vertical-align:middle;font-size:22px;font-weight:600;color:#B8381A;letter-spacing:-0.3px;">Dormra</td>
+                </tr>
+              </table>
             </td>
           </tr>
 
