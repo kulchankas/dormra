@@ -22,7 +22,7 @@ Dormra is a well-structured beta: clear scraper → snapshot → diff → alert 
 | # | Issue | Status | Notes |
 |---|--------|--------|-------|
 | 2.1 | **Snapshot query scales poorly** | Planned | `getAvailabilityStatusBulk` fetches all rows; add RPC + retention |
-| 2.2 | **home4students 11× duplicate fetches** | ✅ Code | Same vacancy URL fetched per dorm |
+| 2.2 | **home4students 11× duplicate fetches** | ✅ Done | `ScrapeHtmlCache` shared per cron run |
 | 2.3 | **Alert matching loads all alerts** | Planned | Push filters to SQL |
 | 2.4 | **Email dedup race** | Planned | Check-then-insert; add transactional guard |
 | 2.5 | **Resend sandbox sender** | Manual | Verify `dormra.eu` domain |
@@ -52,7 +52,7 @@ Dormra is a well-structured beta: clear scraper → snapshot → diff → alert 
 | # | Issue | Notes |
 |---|--------|-------|
 | 4.1 | ScanningPill is cosmetic | Show real last-scrape time |
-| 4.2 | Bot UA points to `/about` | Use `/how-it-works` |
+| 4.2 | Bot UA points to `/about` | ✅ Done | Now `/how-it-works` |
 | 4.3 | Skip-to-content link | A11y |
 | 4.4 | No local Supabase config | Add `supabase/config.toml` |
 
