@@ -62,6 +62,9 @@ const DormsMap = dynamic(() => import('@/components/DormsMap'), {
 interface Props {
   dorms: Dorm[]
   availability: Record<string, AvailabilityStatus>
+  /** Dorm IDs the signed-in viewer has saved. Omitted entirely for signed-out
+   * visitors, in which case the save toggle isn't rendered on cards. */
+  savedDormIds?: string[]
 }
 
 type ViewMode = 'list' | 'map'
@@ -373,7 +376,8 @@ function FilterPanel({
   )
 }
 
-export default function DormsDirectory({ dorms, availability }: Props) {
+export default function DormsDirectory({ dorms, availability, savedDormIds }: Props) {
+  const savedSet = useMemo(() => new Set(savedDormIds ?? []), [savedDormIds])
   const t = useTranslations('dorms')
   const tAvail = useTranslations('availability')
   const router = useRouter()
@@ -807,7 +811,27 @@ export default function DormsDirectory({ dorms, availability }: Props) {
             )}
 
             {filtered.length > 0 && view === 'map' && (
-              <DormsMap dorms={filtered} availability={availability} userLocation={userLocation} />
+              <div className="space-y-2">
+                <DormsMap dorms={filtered} availability={availability} userLocation={userLocation} />
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-1 text-[11px] text-muted-foreground">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="inline-block size-2.5 rounded-full bg-brand-accent" />
+                    {tAvail('available')}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="inline-block size-2.5 rounded-full bg-foreground/80" />
+                    {tAvail('fullyBooked')}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="inline-block size-2.5 rounded-full bg-muted-foreground/40" />
+                    {tAvail('unknown')}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span aria-hidden="true">🎓</span>
+                    {t('mapUniversityLegend')}
+                  </span>
+                </div>
+              </div>
             )}
 
             {filtered.length > 0 && view === 'list' && (
@@ -823,6 +847,8 @@ export default function DormsDirectory({ dorms, availability }: Props) {
                       }
                     }
                     variant="full"
+                    showSaveButton={savedDormIds != null}
+                    initialSaved={savedSet.has(dorm.id)}
                   />
                 ))}
               </div>
