@@ -1,9 +1,10 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Bell, ExternalLink } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { formatDistrictLabel, formatPriceLabel } from '@/lib/helpers'
+import { formatDistrictLabel, formatPriceLabel, getAvailabilityStatusBulk } from '@/lib/helpers'
+import AvailabilityBadge from '@/components/AvailabilityBadge'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { Metadata } from 'next'
@@ -33,6 +34,15 @@ function boolLabel(v: boolean | null): string {
   return '—'
 }
 
+function alertHref(dorm: { district: number | null; price_max: number | null; price_min: number | null }) {
+  const params = new URLSearchParams()
+  if (dorm.district != null) params.set('districts', String(dorm.district))
+  const maxPrice = dorm.price_max ?? dorm.price_min
+  if (maxPrice != null) params.set('maxPrice', String(maxPrice))
+  const qs = params.toString()
+  return qs ? `/dashboard/alerts/new?${qs}` : '/dashboard/alerts/new'
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function DormDetailPage({
@@ -44,6 +54,9 @@ export default async function DormDetailPage({
   const supabase = await createClient()
   const { data: dorm } = await supabase.from('dorms').select('*').eq('slug', slug).single()
   if (!dorm) notFound()
+
+  const availabilityMap = await getAvailabilityStatusBulk([dorm.id])
+  const availability = availabilityMap.get(dorm.id) ?? { status: 'unknown' as const, label: 'Status unknown' }
 
   const districtLabel = formatDistrictLabel(dorm.district)
   const priceLabel = formatPriceLabel(dorm.price_min, dorm.price_max)
@@ -90,13 +103,19 @@ export default async function DormDetailPage({
               <span className="text-sm font-medium text-muted-foreground">{dorm.provider}</span>
             </div>
           )}
+          <div className="absolute left-3 top-3">
+            <AvailabilityBadge availability={availability} />
+          </div>
         </div>
 
         {/* Provider + name + location */}
         <div className="mb-6">
-          <Badge variant="secondary" className="mb-2 text-[10px]">
-            {dorm.provider}
-          </Badge>
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <Badge variant="secondary" className="text-[10px]">
+              {dorm.provider}
+            </Badge>
+            <AvailabilityBadge availability={availability} className="md:hidden" />
+          </div>
           <h1 className="text-[22px] font-bold leading-snug tracking-tight text-foreground mb-1">
             {dorm.name}
           </h1>
@@ -139,26 +158,48 @@ export default async function DormDetailPage({
           </div>
         )}
 
-        {/* Desktop apply CTA */}
-        {applyHref ? (
-          <Button size="lg" className="hidden md:inline-flex h-11 gap-2 rounded-2xl px-7 text-sm" nativeButton={false} render={<a href={applyHref} target="_blank" rel="noopener noreferrer" />}>
-            Apply on {dorm.provider} website
-            <ExternalLink className="size-3.5" />
-          </Button>
-        ) : (
-          <p className="hidden md:block text-sm text-muted-foreground">No application link available yet.</p>
-        )}
-      </div>
-
-      {/* Mobile sticky Apply bar */}
-      {applyHref && (
-        <div className="fixed inset-x-0 bottom-0 z-30 flex md:hidden border-t border-border bg-surface/90 backdrop-blur-sm px-4 py-3 safe-area-inset-bottom">
-          <Button size="lg" className="h-12 w-full gap-2 rounded-xl text-sm" nativeButton={false} render={<a href={applyHref} target="_blank" rel="noopener noreferrer" />}>
-            Apply on {dorm.provider} website
-            <ExternalLink className="size-3.5" />
+        {/* CTAs */}
+        <div className="hidden flex-wrap items-center gap-3 md:flex">
+          {applyHref ? (
+            <Button size="lg" className="h-11 gap-2 rounded-2xl px-7 text-sm" nativeButton={false} render={<a href={applyHref} target="_blank" rel="noopener noreferrer" />}>
+              Apply on {dorm.provider} website
+              <ExternalLink className="size-3.5" />
+            </Button>
+          ) : (
+            <p className="text-sm text-muted-foreground">No application link available yet.</p>
+          )}
+          <Button
+            variant="outline"
+            size="lg"
+            nativeButton={false}
+            className="h-11 gap-2 rounded-2xl px-6 text-sm"
+            render={<Link href={alertHref(dorm)} />}
+          >
+            <Bell className="size-3.5" aria-hidden="true" />
+            Set alert for similar rooms
           </Button>
         </div>
-      )}
+      </div>
+
+      {/* Mobile sticky action bar */}
+      <div className="fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-border bg-surface/90 p-3 backdrop-blur-sm md:hidden safe-area-inset-bottom">
+        <Button
+          variant="outline"
+          size="lg"
+          nativeButton={false}
+          className="h-12 flex-1 gap-2 rounded-xl text-sm"
+          render={<Link href={alertHref(dorm)} />}
+        >
+          <Bell className="size-3.5" aria-hidden="true" />
+          Alert
+        </Button>
+        {applyHref && (
+          <Button size="lg" className="h-12 flex-[1.4] gap-2 rounded-xl text-sm" nativeButton={false} render={<a href={applyHref} target="_blank" rel="noopener noreferrer" />}>
+            Apply
+            <ExternalLink className="size-3.5" />
+          </Button>
+        )}
+      </div>
     </main>
   )
 }
