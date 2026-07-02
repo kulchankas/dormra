@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { countMatches } from './alertMatch'
+import { countMatches, alertToDormsHref } from './alertMatch'
 import type { Dorm } from './types/dorm'
 
 const dorm = (overrides: Partial<Dorm>): Dorm => ({
@@ -53,5 +53,15 @@ describe('countMatches', () => {
       pets_required: false,
       couples: false,
     })).toBe(1)
+  })
+
+  it('builds filtered dorms href from criteria', () => {
+    expect(alertToDormsHref({
+      price_max: 600,
+      districts: [9, 10],
+      deposit_max: 2,
+      pets_required: true,
+      couples: false,
+    })).toBe('/dorms?maxPrice=600&districts=9%2C10&maxDeposit=2&pets=1')
   })
 })

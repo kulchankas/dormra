@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import DeleteAlertButton from '@/components/DeleteAlertButton'
 import AlertActiveToggle from '@/components/AlertActiveToggle'
+import ScanningPill from '@/components/ScanningPill'
 import { DISTRICT_NAMES, type Dorm } from '@/lib/helpers'
-import { countMatches } from '@/lib/alertMatch'
+import { alertToDormsHref, countMatches } from '@/lib/alertMatch'
 import { cn } from '@/lib/utils'
 
 type AlertRow = {
@@ -42,6 +43,11 @@ function formatAlertSummary(alert: AlertRow): string {
   return parts.join(' · ') || 'Any room in Vienna'
 }
 
+function formatCreatedAt(iso: string): string {
+  const d = new Date(iso)
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
 export default async function AlertsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -58,6 +64,7 @@ export default async function AlertsPage() {
 
   const rows = (alerts ?? []) as AlertRow[]
   const dorms = (dormData ?? []) as Dorm[]
+  const activeCount = rows.filter((r) => r.active).length
 
   return (
     <main className="min-h-screen bg-background">
@@ -70,19 +77,24 @@ export default async function AlertsPage() {
           Dashboard
         </Link>
 
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-foreground">Alerts</h1>
-            <p className="mt-0.5 text-sm text-muted-foreground">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Alerts</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
               {rows.length === 0
                 ? 'Get emailed when a matching room opens'
-                : `${rows.filter((r) => r.active).length} active · ${rows.length} total`}
+                : `${activeCount} active · ${rows.length} total`}
             </p>
+            {rows.length > 0 && (
+              <div className="mt-3">
+                <ScanningPill />
+              </div>
+            )}
           </div>
           <Button
             size="sm"
             nativeButton={false}
-            className="h-8 rounded-full px-4 text-xs"
+            className="h-9 shrink-0 self-start rounded-full px-4 text-xs"
             render={<Link href="/dashboard/alerts/new" />}
           >
             <Plus className="size-3.5" />
@@ -92,54 +104,69 @@ export default async function AlertsPage() {
 
         {rows.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border bg-surface-soft/50 p-12 text-center">
-            <Bell className="mx-auto mb-3 size-8 text-muted-foreground/40" />
-            <p className="text-sm font-medium text-foreground">No alerts yet</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Create an alert and we&apos;ll email you the moment a matching room opens.
+            <div className="mx-auto mb-4 grid size-14 place-items-center rounded-2xl bg-brand-soft">
+              <Bell className="size-6 text-brand" />
+            </div>
+            <p className="text-base font-semibold text-foreground">No alerts yet</p>
+            <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+              Tell us your budget and districts once — we check every provider every 15 minutes and email you when a room opens.
             </p>
-            <Button
-              size="sm"
-              nativeButton={false}
-              className="mt-4 h-8 rounded-full px-4 text-xs"
-              render={<Link href="/dashboard/alerts/new" />}
-            >
-              <Plus className="size-3.5" />
-              Create first alert
-            </Button>
+            <div className="mt-6 flex flex-col items-center gap-2 sm:flex-row sm:justify-center">
+              <Button
+                nativeButton={false}
+                className="h-10 rounded-full px-6 text-sm"
+                render={<Link href="/dashboard/alerts/new" />}
+              >
+                <Plus className="size-4" />
+                Create first alert
+              </Button>
+              <Button
+                variant="outline"
+                nativeButton={false}
+                className="h-10 rounded-full px-6 text-sm"
+                render={<Link href="/dorms" />}
+              >
+                Browse dorms first
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col gap-3">
             {rows.map((alert) => {
-              const matchCount = countMatches(dorms, {
+              const criteria = {
                 price_max: alert.price_max,
                 districts: alert.districts,
                 deposit_max: alert.deposit_max,
                 pets_required: alert.pets_required,
                 couples: alert.couples,
-              })
+              }
+              const matchCount = countMatches(dorms, criteria)
+              const dormsHref = alertToDormsHref(criteria)
 
               return (
-                <div
+                <article
                   key={alert.id}
                   className={cn(
-                    'card-elevated rounded-2xl bg-surface p-4 transition-opacity',
+                    'card-elevated rounded-2xl bg-surface p-4 transition-opacity sm:p-5',
                     !alert.active && 'opacity-60',
                   )}
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="truncate text-sm font-semibold text-foreground">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-sm font-semibold text-foreground sm:text-base">
                           {formatAlertSummary(alert)}
-                        </p>
+                        </h2>
                         {!alert.active && (
-                          <Badge variant="secondary" className="shrink-0 text-[10px]">
-                            Paused
-                          </Badge>
+                          <Badge variant="secondary" className="text-[10px]">Paused</Badge>
                         )}
                       </div>
 
-                      <div className="mt-2 flex flex-wrap gap-1.5">
+                      <p className="mt-1 text-[11px] text-muted-foreground">
+                        Created {formatCreatedAt(alert.created_at)}
+                      </p>
+
+                      <div className="mt-3 flex flex-wrap gap-1.5">
                         {alert.pets_required && (
                           <Badge variant="secondary" className="text-[10px]">Pets</Badge>
                         )}
@@ -157,21 +184,22 @@ export default async function AlertsPage() {
                       </div>
 
                       <Link
-                        href="/dorms"
-                        className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-2.5 py-1 text-[11px] font-medium text-brand transition-colors hover:bg-brand-soft/70"
+                        href={dormsHref}
+                        className="mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1.5 text-xs font-medium text-brand transition-colors hover:bg-brand-soft/70"
                       >
-                        <Home className="size-3" />
+                        <Home className="size-3.5" />
                         {matchCount} {matchCount === 1 ? 'dorm matches' : 'dorms match'} now
                       </Link>
                     </div>
 
-                    <div className="flex shrink-0 flex-col items-end gap-2">
+                    <div className="flex items-center justify-between gap-3 border-t border-border pt-3 sm:flex-col sm:items-end sm:border-0 sm:pt-0">
                       <AlertActiveToggle id={alert.id} active={alert.active} />
                       <div className="flex items-center gap-1">
                         <Button
                           variant="ghost"
                           size="icon-sm"
                           nativeButton={false}
+                          className="size-9"
                           render={<Link href={`/dashboard/alerts/${alert.id}`} />}
                           aria-label="Edit alert"
                         >
@@ -181,7 +209,7 @@ export default async function AlertsPage() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </article>
               )
             })}
           </div>
