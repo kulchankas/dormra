@@ -41,6 +41,7 @@ One-page ordered checklist for going live. Full details: [`MANUAL_TASKS.md`](./M
 
 ## Recommended before announcing
 
+- [ ] **Admin access** — set `ADMIN_EMAILS=your@email.com` in Vercel, redeploy, verify `/admin`
 - [ ] **Resend domain** — verify `dormra.eu`, update `lib/email.ts` from address to `alerts@dormra.eu`
 - [ ] **Smoke tests** — homepage, `/de/dorms`, signup, alert create, password reset, cron (MANUAL_TASKS §6)
 - [ ] **Optional:** regenerate `lib/database.types.ts` via Supabase CLI

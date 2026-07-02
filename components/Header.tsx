@@ -1,6 +1,7 @@
 import { Link } from '@/i18n/navigation'
 import { getTranslations } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
+import { isAdminEmail } from '@/lib/admin-emails'
 import DormraLogo from '@/components/DormraLogo'
 import { Button } from '@/components/ui/button'
 import HeaderUserMenu from './HeaderUserMenu'
@@ -11,10 +12,12 @@ import LanguageSwitcher from './LanguageSwitcher'
 export default async function Header() {
   const t = await getTranslations('nav')
   let userEmail: string | null = null
+  let showAdmin = false
   try {
     const supabase = await createClient()
     const { data } = await supabase.auth.getUser()
     userEmail = data.user?.email ?? null
+    showAdmin = isAdminEmail(userEmail)
   } catch {
     // No Supabase env in this environment — fall back to signed-out state.
   }
@@ -41,7 +44,7 @@ export default async function Header() {
               >
                 {t('myAlerts')}
               </Button>
-              <HeaderUserMenu email={userEmail} />
+              <HeaderUserMenu email={userEmail} showAdmin={showAdmin} />
             </>
           ) : (
             <div className="hidden items-center gap-2 md:flex">
