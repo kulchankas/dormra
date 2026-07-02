@@ -20,7 +20,7 @@ Dormra aggregates dorm availability across Vienna student housing providers into
 | STUWO scraper | ✅ Live | Cheerio — category-level BOOK NOW detection |
 | Other providers (ÖJAB, WIHAST, …) | ❌ Not started | No scraper registered yet |
 | Telegram notifications | ❌ UI only | Form field disabled; no dispatcher |
-| Application tracker (kanban) | ❌ UI only | Dashboard card shows "Coming soon" |
+| Saved dorms + application tracker | ✅ Live | Bookmark a dorm from its detail page; track status (Interested/Applied/Accepted/Rejected) at `/dashboard/saved`. List-based, not a drag-and-drop kanban board |
 | `move_in_before` alert matching | ❌ Not matched | Stored in DB + shown in UI; providers don't expose move-in dates in scraped data |
 | Stripe payments | ❌ Not started | — |
 
