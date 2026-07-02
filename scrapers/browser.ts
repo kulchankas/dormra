@@ -1,5 +1,9 @@
 import type { Browser } from 'playwright-core'
 
+/** Sparticuz `-min` package ships no binaries; fetch pack from GitHub releases on Vercel. */
+const DEFAULT_CHROMIUM_PACK_URL =
+  'https://github.com/Sparticuz/chromium/releases/download/v147.0.1/chromium-v147.0.1-pack.x64.tar'
+
 function isServerless(): boolean {
   return Boolean(
     process.env.VERCEL ||
@@ -14,9 +18,10 @@ export async function launchScraperBrowser(): Promise<Browser> {
   if (isServerless()) {
     const chromiumPkg = await import('@sparticuz/chromium-min')
     const sparticuz = chromiumPkg.default
+    const packUrl = process.env.CHROMIUM_PACK_URL ?? DEFAULT_CHROMIUM_PACK_URL
     return chromium.launch({
       args: sparticuz.args,
-      executablePath: await sparticuz.executablePath(),
+      executablePath: await sparticuz.executablePath(packUrl),
       headless: true,
     })
   }
