@@ -70,6 +70,17 @@ Three jobs (single job hits Vercel 300s limit on full scrape):
 
 Execution history shows HTTP status and response time per run. If jobs fail silently, availability goes stale (>6h shows as "unknown" on the site).
 
+**Test alert without waiting for a scrape transition:**
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" \
+  "https://dormra.eu/api/test-alert?slug=oead-guadenzdorf&dryRun=1"
+curl -H "Authorization: Bearer $CRON_SECRET" \
+  "https://dormra.eu/api/test-alert?slug=oead-guadenzdorf&email=YOUR_ADMIN_EMAIL"
+```
+
+`email` must be in `ADMIN_EMAILS`. Modes: `dryRun=1` (match count only), `email=` (one test send), `send=1` (full pipeline to matched users, respects weekly dedup).
+
 ---
 
 ## 4. Supabase — database & auth
