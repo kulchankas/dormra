@@ -155,7 +155,11 @@
     "couples": "Paare ✓",
     "furnished": "Möbliert ✓",
     "imageAlt": "Studentenheim {name}",
-    "viewAria": "{name} ansehen"
+    "viewAria": "{name} ansehen",
+    "galleryAria": "Fotos von {name}",
+    "galleryPrev": "Vorheriges Foto",
+    "galleryNext": "Nächstes Foto",
+    "galleryGoTo": "Zu Foto {index}"
   },
   "dorms": {
     "title": "Heime durchsuchen",

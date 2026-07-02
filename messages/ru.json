@@ -155,7 +155,11 @@
     "couples": "Пары ✓",
     "furnished": "Мебель ✓",
     "imageAlt": "Общежитие {name}",
-    "viewAria": "Открыть {name}"
+    "viewAria": "Открыть {name}",
+    "galleryAria": "Фото {name}",
+    "galleryPrev": "Предыдущее фото",
+    "galleryNext": "Следующее фото",
+    "galleryGoTo": "Перейти к фото {index}"
   },
   "dorms": {
     "title": "Каталог общежитий",

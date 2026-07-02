@@ -155,7 +155,11 @@
     "couples": "Couples ✓",
     "furnished": "Furnished ✓",
     "imageAlt": "{name} dormitory",
-    "viewAria": "View {name}"
+    "viewAria": "View {name}",
+    "galleryAria": "Photos of {name}",
+    "galleryPrev": "Previous photo",
+    "galleryNext": "Next photo",
+    "galleryGoTo": "Go to photo {index}"
   },
   "dorms": {
     "title": "Browse dorms",

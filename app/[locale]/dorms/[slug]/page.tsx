@@ -1,4 +1,3 @@
-import DormImage from '@/components/DormImage'
 import { notFound } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
 import { de, ru, enGB } from 'date-fns/locale'
@@ -11,11 +10,13 @@ import { formatDistrictLabel, formatPriceLabel } from '@/lib/i18n-labels'
 import { getAvailabilityStatusBulk, availabilityMapToRecord, type AvailabilityStatus } from '@/lib/availability'
 import { localizeAvailability, localizeAvailabilityRecord } from '@/lib/i18n-availability'
 import { nearestUniversities } from '@/lib/universities'
+import { getDormGallery } from '@/lib/dorm-images'
 import { absoluteUrl, localePath } from '@/lib/i18n-path'
 import { type Dorm } from '@/lib/helpers'
 import AvailabilityBadge from '@/components/AvailabilityBadge'
 import DormLocationMap from '@/components/DormLocationMap'
 import DormCard from '@/components/DormCard'
+import DormGallery from '@/components/DormGallery'
 import SaveDormButton from '@/components/SaveDormButton'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -90,6 +91,9 @@ export default async function DormDetailPage({ params }: PageProps) {
     ? nearestUniversities({ lat: dorm.lat, lng: dorm.lng }, 3)
     : []
 
+  const galleryImages = await getDormGallery(dorm.id, supabase)
+  const allImages = galleryImages.length > 0 ? galleryImages : dorm.image_url ? [dorm.image_url] : []
+
   let similarDorms: Dorm[] = []
   let similarAvailability: Record<string, AvailabilityStatus> = {}
   if (dorm.district != null) {
@@ -146,7 +150,7 @@ export default async function DormDetailPage({ params }: PageProps) {
     '@type': 'ApartmentComplex',
     name: dorm.name,
     url: absoluteUrl(localePath(`/dorms/${dorm.slug}`, locale)),
-    ...(dorm.image_url ? { image: dorm.image_url } : {}),
+    ...(allImages.length > 0 ? { image: allImages } : {}),
     ...(dorm.address
       ? {
           address: {
@@ -185,13 +189,8 @@ export default async function DormDetailPage({ params }: PageProps) {
         </Link>
 
         <div className="card-elevated relative mb-6 aspect-video w-full overflow-hidden rounded-2xl bg-brand-soft">
-          {dorm.image_url ? (
-            <DormImage
-              src={dorm.image_url}
-              alt={tCard('imageAlt', { name: dorm.name })}
-              priority
-              sizes="(max-width: 768px) 100vw, 768px"
-            />
+          {allImages.length > 0 ? (
+            <DormGallery images={allImages} alt={tCard('imageAlt', { name: dorm.name })} />
           ) : (
             <div className="flex h-full w-full flex-col items-center justify-center gap-2">
               <span className="text-4xl opacity-25">🏠</span>
