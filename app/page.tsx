@@ -4,6 +4,7 @@ import { Bell, Search, Mail } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getAvailabilityStatusBulk, type Dorm } from '@/lib/helpers'
 import HeroSearch from '@/components/HeroSearch'
+import DormraLogo from '@/components/DormraLogo'
 import DormCard from '@/components/DormCard'
 import ScanningPill from '@/components/ScanningPill'
 import UniversityLogos from '@/components/UniversityLogos'
@@ -278,7 +279,9 @@ export default function HomePage() {
       <footer className="w-full bg-background">
         <div className="mx-auto flex max-w-[1100px] flex-col items-start justify-between gap-4 px-6 py-8 sm:flex-row sm:items-center">
           <div>
-            <Link href="/" className="text-sm font-bold text-brand">Dormra</Link>
+            <Link href="/" className="inline-block transition-opacity hover:opacity-90">
+              <DormraLogo size="sm" variant="muted" />
+            </Link>
             <p className="mt-1 text-xs text-muted-foreground">Vienna student housing · 2026</p>
           </div>
           <nav className="flex items-center gap-4" aria-label="Footer links">
