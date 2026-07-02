@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from './database.types'
 import { supabase } from './supabase'
 
 export type AvailabilityStatus = {
@@ -9,33 +10,31 @@ export type AvailabilityStatus = {
 const UNKNOWN: AvailabilityStatus = { status: 'unknown', label: 'Status unknown' }
 const STALE_MS = 6 * 60 * 60 * 1000
 
-type SnapshotRow = {
-  dorm_id: string
-  available: boolean
-  scrape_ok: boolean
-  scraped_at: string
-}
+type SnapshotRow = Pick<
+  Database['public']['Tables']['availability_snapshots']['Row'],
+  'dorm_id' | 'available' | 'scrape_ok' | 'scraped_at'
+>
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyClient = SupabaseClient<any, any, any>
+type DbClient = SupabaseClient<Database>
 
 export async function getAvailabilityStatusBulk(
   dormIds: string[],
-  db: AnyClient = supabase as AnyClient,
+  db: DbClient = supabase,
 ): Promise<Map<string, AvailabilityStatus>> {
   const map = new Map<string, AvailabilityStatus>()
   if (dormIds.length === 0) return map
 
-  const { data, error } = (await db
+  const { data, error } = await db
     .from('availability_snapshots')
     .select('dorm_id, available, scrape_ok, scraped_at')
     .in('dorm_id', dormIds)
-    .order('scraped_at', { ascending: false })) as { data: SnapshotRow[] | null; error: unknown }
+    .order('scraped_at', { ascending: false })
 
   if (error || !data) return map
 
+  const rows = data as SnapshotRow[]
   const now = Date.now()
-  for (const row of data) {
+  for (const row of rows) {
     if (map.has(row.dorm_id)) continue
 
     const stale = now - new Date(row.scraped_at).getTime() > STALE_MS

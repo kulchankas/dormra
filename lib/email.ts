@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import type { DormAlertInfo } from './types/dorm'
 
 // Lazy instantiation: constructing Resend at module-load time crashes the
 // build during page-data collection if RESEND_API_KEY is unset (Next.js
@@ -13,22 +14,10 @@ function getResend(): Resend {
   return _resend
 }
 
-interface Dorm {
-  id: string
-  slug: string
-  name: string
-  provider: string
-  address: string | null
-  district: number | null
-  price_min: number | null
-  price_max: number | null
-  apply_url: string | null
-}
-
 interface SendAlertParams {
   to: string
   userName: string | null
-  dorm: Dorm
+  dorm: DormAlertInfo
   alertId: string
 }
 
