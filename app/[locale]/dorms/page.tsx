@@ -4,7 +4,11 @@ import type { Metadata } from 'next'
 import { buildPageMetadata } from '@/lib/i18n-metadata'
 import { createClient } from '@/lib/supabase/server'
 import { type Dorm } from '@/lib/helpers'
-import { getAvailabilityStatusBulk, availabilityMapToRecord } from '@/lib/availability'
+import {
+  getAvailabilityStatusBulk,
+  availabilityMapToRecord,
+  type AvailabilityStatus,
+} from '@/lib/availability'
 import { localizeAvailabilityRecord } from '@/lib/i18n-availability'
 import DormsDirectory from '@/components/DormsDirectory'
 import DormsLoading from './loading'
@@ -50,7 +54,9 @@ async function DormsUnavailable() {
   )
 }
 
-async function DormsContent() {
+async function fetchDormsData(): Promise<
+  { ok: true; dorms: Dorm[]; availability: Record<string, AvailabilityStatus> } | { ok: false }
+> {
   const tAvail = await getTranslations('availability')
 
   try {
@@ -73,10 +79,20 @@ async function DormsContent() {
       (key) => tAvail(key),
     )
 
-    return <DormsDirectory dorms={dorms} availability={availability} />
+    return { ok: true, dorms, availability }
   } catch {
+    return { ok: false }
+  }
+}
+
+async function DormsContent() {
+  const result = await fetchDormsData()
+
+  if (!result.ok) {
     return <DormsUnavailable />
   }
+
+  return <DormsDirectory dorms={result.dorms} availability={result.availability} />
 }
 
 export default async function DormsPage({ params }: PageProps) {
