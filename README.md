@@ -119,7 +119,7 @@ Supported locales: **English** (default), **German** (`/de`), **Russian** (`/ru`
 
 ## Audit & roadmap
 
-See [`docs/PROJECT_AUDIT.md`](docs/PROJECT_AUDIT.md) for the full project audit, known gaps, and prioritized roadmap.
+See [`docs/PROJECT_AUDIT.md`](docs/PROJECT_AUDIT.md) for the full project audit, known gaps, and prioritized roadmap, and [`docs/UI_UX_AUDIT.md`](docs/UI_UX_AUDIT.md) for a UI/UX-focused audit with prioritized design and accessibility improvements.
 
 ## Roadmap
 

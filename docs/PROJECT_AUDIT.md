@@ -38,22 +38,25 @@ Dormra is a well-structured beta: clear scraper → snapshot → diff → alert 
 | 3.2 | `move_in_before` not matched | Open | Documented; hide field when ready |
 | 3.3 | Hardcoded English in helpers | Planned | `formatDistrictLabel`, `formatPriceLabel`, DistrictGrid |
 | 3.4 | Inactive dorms reachable by URL | ✅ Code | Detail page didn't check `active` |
-| 3.5 | `/dorms` Suspense ineffective | Open | Data fetched before Suspense boundary |
+| 3.5 | `/dorms` Suspense ineffective | ✅ Done | Data fetch moved into async child rendered inside `<Suspense>` |
 | 3.6 | No branded error/404 pages | ✅ Code | Generic Next.js fallbacks |
-| 3.7 | No dashboard loading skeletons | Open | Only dorms has `loading.tsx` |
+| 3.7 | No dashboard loading skeletons | Open | `/dashboard`, `/dashboard/alerts`, `/dorms/[slug]` still have none — see `docs/UI_UX_AUDIT.md` M4 |
 | 3.8 | Legacy `lib/supabase.ts` singleton | Planned | Pass server client everywhere |
 | 3.9 | Hand-maintained DB types | Open | Regenerate via Supabase CLI |
 | 3.10 | No sitemap/robots.txt | Planned | SEO for dorm slugs |
 | 3.11 | Auth guard per-page not centralized | Planned | Middleware for `/dashboard/*` |
 | 3.12 | Sign-out POST CSRF | Low | Use server action instead |
+| 3.13 | Sort `<Select>` showed raw value (`price_asc`) instead of label | ✅ Done | Base UI's `Select.Value` needs an `items`/function-child lookup — see `docs/UI_UX_AUDIT.md` F1 |
+| 3.14 | `formatDistrictLabel`/`formatPriceLabel` hardcoded English (dupes 3.3, UI-focused) | Open | See `docs/UI_UX_AUDIT.md` H1 |
+| 3.15 | `/dorms` has no Supabase error fallback | Open | See `docs/UI_UX_AUDIT.md` H3 |
 
 ## Phase 4 — Low (polish)
 
 | # | Issue | Notes |
 |---|--------|-------|
-| 4.1 | ScanningPill is cosmetic | Show real last-scrape time |
+| 4.1 | ScanningPill is cosmetic | Show real last-scrape time — see `docs/UI_UX_AUDIT.md` H2 |
 | 4.2 | Bot UA points to `/about` | ✅ Done | Now `/how-it-works` |
-| 4.3 | Skip-to-content link | A11y |
+| 4.3 | Skip-to-content link | ✅ Done | `sr-only focus:not-sr-only` link + `#main-content` target |
 | 4.4 | No local Supabase config | Add `supabase/config.toml` |
 
 ---
@@ -94,3 +97,4 @@ Users → Next.js [locale] → Supabase (RLS) → user_alerts, dorms
 |------|--------|------|
 | 2026-07-01 | `cursor/project-audit-5868` | Phase 1.2–1.4, 2.2, 2.7, 3.4, 3.6, 4.2, audit doc, README |
 | 2026-07-01 | `cursor/i18n-de-ru-5868` | Full i18n stages 1–5, typography, language switcher |
+| 2026-07-02 | `cursor/ui-ux-audit-fc38` | UI/UX audit (`docs/UI_UX_AUDIT.md`); fixed 3.5, 3.13, 4.3, DistrictGrid i18n + touch targets, how-it-works CTA sizing |
