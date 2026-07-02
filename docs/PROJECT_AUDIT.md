@@ -69,8 +69,8 @@ Priority order — **do not start Phase 2 scrapers until Phase 1 metric met.**
 
 | Priority | Task | Rationale | Depends on |
 |----------|------|-----------|------------|
-| P0 | *(blocked)* home4students attribution verify | Data trust — Döbling front/back share URL | You enable cron |
-| P1 | Admin per-provider last scrape | ✅ This sprint | — |
+| P0 | home4students room-card parser | ✅ This sprint — structured `.room-card` parsing | — |
+| P1 | Admin per-provider last scrape | ✅ Shipped PR #42 | — |
 | P2 | `/api/test-alert` polish | ✅ Shipped PR #40 | — |
 | P3 | move_in filtering | Blocked — providers don't expose dates | Scraper data model |
 | Hold | New scrapers (ÖJAB, WIHAST, …) | Phase 2 gate | Phase 1 week clean |

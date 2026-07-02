@@ -44,7 +44,7 @@ Everything else — design, branding, monetization — is secondary until those 
 | Merge `feature/wire-email-engine` | Stop branch divergence | ✅ **Done** | Branch fully absorbed into `main` (0 unique commits on `feature/wire-email-engine`) |
 | End-to-end test via `/api/test-alert` | Real Supabase, not fixtures | ✅ **Done** | `GET /api/test-alert?slug=…&dryRun=1` or `&email=ADMIN` |
 | Fix hero search | Homepage must search | ⚠️ **Partial** | Budget + navigation work; `moveIn` param passed but **not filtered** (no provider move-in data) |
-| Fix home4students shared-URL attribution | Wrong attribution kills trust | ⚠️ **Partial** | Dedup + keyword windows in code; **verify in `/admin` after cron runs** |
+| Fix home4students shared-URL attribution | Wrong attribution kills trust | ✅ **Done** | Room-card parser; Döbling front/back share one building listing by design |
 | Rotate exposed secrets | Security hygiene | ⬜ **Manual** | CRON, Supabase service role, Resend — see MANUAL_TASKS §2.1 |
 | Cron running every 15 min | Data stays fresh | ⚠️ **Code ready** | Endpoint 200; **cron-job.org disabled** — enable 3 split jobs |
 | Auth flows (login, reset, Google) | Users can sign up | ⚠️ **Partial** | Callback route fixed; **Supabase Site URL → dormra.eu** still manual |
