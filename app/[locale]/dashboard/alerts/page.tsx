@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import DeleteAlertButton from '@/components/DeleteAlertButton'
 import AlertActiveToggle from '@/components/AlertActiveToggle'
-import ScanningPill from '@/components/ScanningPill'
+import ScanningPillServer from '@/components/ScanningPillServer'
 import { DISTRICT_NAMES, type Dorm } from '@/lib/helpers'
 import { alertToDormsHref, countMatches } from '@/lib/alertMatch'
 import { cn } from '@/lib/utils'
@@ -118,7 +118,7 @@ export default async function AlertsPage({ params }: PageProps) {
             </p>
             {rows.length > 0 && (
               <div className="mt-3">
-                <ScanningPill />
+                <ScanningPillServer />
               </div>
             )}
           </div>

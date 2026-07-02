@@ -2,6 +2,8 @@
 
 Tasks that **cannot be done in code** or require access to external dashboards. Work through these before public launch or after merging audit PRs.
 
+**Quick path:** see [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md) for a one-page ordered checklist.
+
 Check off items as you complete them.
 
 ---
@@ -180,6 +182,20 @@ Not set up yet. Consider before scale:
 
 ---
 
+## 8. Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Cron returns `401` | `CRON_SECRET` mismatch | Compare Vercel env vs cron-job.org header exactly |
+| Cron returns `500` | Missing service role key | Set `SUPABASE_SERVICE_ROLE_KEY` in Vercel, redeploy |
+| OAuth / reset link fails | Redirect URL not whitelisted | Supabase Auth → URL Configuration (§5) |
+| Alerts empty for anon curl | RLS working correctly | Use authenticated session to test |
+| Emails not arriving | Resend sandbox / spam | Verify domain (§4), check Resend logs |
+| German/Russian 404 | i18n PR not merged | Merge `cursor/i18n-de-ru-5868` |
+| Stale availability | Cron not running | Check cron-job.org history + Vercel logs |
+
+---
+
 ## Quick reference
 
 | Task | Owner | Blocker for launch? |
@@ -196,5 +212,6 @@ Not set up yet. Consider before scale:
 
 ## Related docs
 
+- [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md) — one-page launch order
 - [`PROJECT_AUDIT.md`](./PROJECT_AUDIT.md) — full audit and code roadmap
 - [`../README.md`](../README.md) — dev setup and architecture

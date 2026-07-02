@@ -119,7 +119,8 @@
   },
   "scanning": {
     "prefix": "Scanne",
-    "suffix": "alle 15 Min."
+    "suffix": "alle 15 Min.",
+    "lastChecked": "aktualisiert {time}"
   },
   "availability": {
     "available": "Verfügbar",

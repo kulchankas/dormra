@@ -119,7 +119,8 @@
   },
   "scanning": {
     "prefix": "Сканируем",
-    "suffix": "каждые 15 мин"
+    "suffix": "каждые 15 мин",
+    "lastChecked": "обновлено {time}"
   },
   "availability": {
     "available": "Свободно",

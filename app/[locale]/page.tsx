@@ -11,7 +11,7 @@ import { Link } from '@/i18n/navigation'
 import HeroSearch from '@/components/HeroSearch'
 import DormraLogo from '@/components/DormraLogo'
 import DormCard from '@/components/DormCard'
-import ScanningPill from '@/components/ScanningPill'
+import ScanningPillServer from '@/components/ScanningPillServer'
 import UniversityLogos from '@/components/UniversityLogos'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
@@ -205,7 +205,13 @@ export default async function HomePage({ params }: PageProps) {
             <LiveStats />
           </Suspense>
           <div className="mt-4 flex justify-center">
-            <ScanningPill />
+            <Suspense
+              fallback={
+                <span className="inline-flex h-8 w-48 animate-pulse rounded-full bg-muted/60" />
+              }
+            >
+              <ScanningPillServer />
+            </Suspense>
           </div>
         </div>
       </div>
