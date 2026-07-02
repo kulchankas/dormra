@@ -16,7 +16,7 @@ Dormra aggregates dorm availability across Vienna student housing providers into
 | Email alerts | ✅ Live | Resend via `onboarding@resend.dev` until domain verified |
 | OeAD scraper | ✅ Live | Playwright, 26 Vienna residences seeded |
 | home4students scraper | ✅ Live | Cheerio |
-| STUWO scraper | 🔧 Stub | Registered in cron; returns `scrapeOk: false` |
+| STUWO scraper | ✅ Live | Cheerio — category-level BOOK NOW detection |
 | Other providers (ÖJAB, WIHAST, …) | ❌ Not started | No scraper registered yet |
 | Telegram notifications | ❌ UI only | Form field disabled; no dispatcher |
 | Application tracker (kanban) | ❌ UI only | Dashboard card shows "Coming soon" |
@@ -62,8 +62,10 @@ psql $DATABASE_URL -f supabase/migrations/00000000000000_schema.sql
 # 2. Enable RLS policies
 psql $DATABASE_URL -f supabase/migrations/20260605120000_enable_rls.sql
 
-# 3. Seed OeAD Vienna residences
+# 3. Seed dorm listings
 psql $DATABASE_URL -f supabase/seeds/oead_vienna.sql
+psql $DATABASE_URL -f supabase/seeds/stuwo_vienna.sql
+psql $DATABASE_URL -f supabase/seeds/home4students_vienna.sql
 ```
 
 Regenerate TypeScript types after schema changes:

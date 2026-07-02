@@ -1,8 +1,75 @@
+import * as cheerio from 'cheerio'
 import type { ScraperResult } from './types'
-import { scrapeFailure } from './shared'
+import { BOT_UA, scrapeFailure } from './shared'
 
-/** STUWO stub — registered so cron can route STUWO dorms; returns scrapeOk: false until implemented. */
+const TIMEOUT_MS = 15_000
+
+const UNAVAILABLE_PATTERNS = [
+  /fully booked/i,
+  /ausgebucht/i,
+  /sold out/i,
+  /nicht buchbar/i,
+  /no availability/i,
+  /keine verfügbarkeit/i,
+  /waitlist only/i,
+]
+
+/** Category price blocks show "BOOK NOW Category …" when rooms are bookable. Nav uses "BOOK NOW!". */
+export function parseStuwoAvailability(html: string): { available: boolean; rawText: string } {
+  const withoutNav = html.replace(/<nav[\s\S]*?<\/nav>/gi, ' ')
+  const $ = cheerio.load(withoutNav)
+  $('header, footer, script, style, noscript').remove()
+
+  const text = $.root().text().replace(/\s+/g, ' ').trim()
+  const priceIdx = text.search(/Our prices at a glance|Unsere Preise/i)
+  const priceSection = priceIdx >= 0 ? text.slice(priceIdx, priceIdx + 4000) : text
+
+  const hasCategoryBookNow =
+    /BOOK NOW Category/i.test(withoutNav) ||
+    /BOOK NOW\s+Category/i.test(withoutNav)
+
+  const explicitlyUnavailable =
+    UNAVAILABLE_PATTERNS.some((pattern) => pattern.test(priceSection)) && !hasCategoryBookNow
+
+  const available = hasCategoryBookNow && !explicitlyUnavailable
+  const rawText = (priceSection || text).slice(0, 500)
+
+  return { available, rawText }
+}
+
 export async function scrapeStuwo(dormSlug: string, scrapeUrl: string): Promise<ScraperResult> {
-  void scrapeUrl
-  return scrapeFailure(dormSlug, 'STUWO scraper not implemented yet')
+  const abort = new AbortController()
+  const timer = setTimeout(() => abort.abort(), TIMEOUT_MS)
+
+  let html: string
+  try {
+    const res = await fetch(scrapeUrl, {
+      signal: abort.signal,
+      headers: {
+        'User-Agent': BOT_UA,
+        Accept: 'text/html,application/xhtml+xml',
+        'Accept-Language': 'en,de;q=0.8',
+      },
+    })
+    if (!res.ok) {
+      return scrapeFailure(dormSlug, `HTTP ${res.status} from ${scrapeUrl}`)
+    }
+    html = await res.text()
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    return scrapeFailure(dormSlug, abort.signal.aborted ? `Timed out after ${TIMEOUT_MS}ms` : msg)
+  } finally {
+    clearTimeout(timer)
+  }
+
+  const { available, rawText } = parseStuwoAvailability(html)
+
+  return {
+    dormSlug,
+    available,
+    roomsCount: null,
+    rawText,
+    scrapeOk: true,
+    errorMsg: null,
+  }
 }

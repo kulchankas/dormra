@@ -32,7 +32,59 @@ const HOW_IT_WORKS = [
   },
 ] as const
 
-const PROVIDERS = ['OeAD', 'STUWO', 'home4students', 'ÖJAB', 'Akademikerhilfe', 'Viennabase']
+const TRACKED_PROVIDERS = [
+  { name: 'OeAD', live: true },
+  { name: 'STUWO', live: true },
+  { name: 'home4students', live: true },
+  { name: 'ÖJAB', live: false },
+  { name: 'Akademikerhilfe', live: false },
+  { name: 'Viennabase', live: false },
+] as const
+
+async function LiveStats() {
+  let dormCount: number | null = null
+  let providerCount: number | null = null
+
+  try {
+    const supabase = await createClient()
+    const { count } = await supabase
+      .from('dorms')
+      .select('*', { count: 'exact', head: true })
+      .eq('active', true)
+    dormCount = count ?? 0
+
+    const { data: providerRows } = await supabase
+      .from('dorms')
+      .select('provider')
+      .eq('active', true)
+    providerCount = new Set((providerRows ?? []).map((row) => row.provider)).size
+  } catch {
+    // No Supabase env — show static fallback below.
+  }
+
+  const stats = [
+    {
+      value: dormCount != null ? `${dormCount}+` : '49+',
+      label: 'dorm listings',
+    },
+    {
+      value: providerCount != null ? String(providerCount) : '3',
+      label: 'providers live',
+    },
+    { value: '15 min', label: 'refresh interval' },
+  ]
+
+  return (
+    <div className="grid grid-cols-3 gap-4 md:gap-8">
+      {stats.map(({ value, label }) => (
+        <div key={label} className="text-center">
+          <p className="text-xl font-bold tracking-tight text-foreground md:text-2xl">{value}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 function DormPreviewSkeleton() {
   return (
@@ -114,15 +166,20 @@ export default function HomePage() {
             <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
               Tracking
             </span>
-            {PROVIDERS.map((p) => (
+            {TRACKED_PROVIDERS.map(({ name, live }) => (
               <span
-                key={p}
-                className="rounded-full bg-surface/70 px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground ring-1 ring-border/50"
+                key={name}
+                className={
+                  live
+                    ? 'rounded-full bg-surface/70 px-2.5 py-0.5 text-[11px] font-medium text-foreground ring-1 ring-brand/25'
+                    : 'rounded-full bg-surface/50 px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground/60 ring-1 ring-border/40'
+                }
+                title={live ? 'Live availability scraping' : 'Coming soon'}
               >
-                {p}
+                {name}
+                {!live ? ' · soon' : ''}
               </span>
             ))}
-            <span className="text-[11px] text-muted-foreground/70">& more</span>
           </div>
         </div>
       </section>
@@ -136,18 +193,17 @@ export default function HomePage() {
 
       <div className="w-full bg-surface-soft/80">
         <div className="mx-auto max-w-[1100px] px-6 py-5">
-          <div className="grid grid-cols-3 gap-4 md:gap-8">
-            {[
-              { value: '70+', label: 'dorm buildings' },
-              { value: '8+', label: 'providers covered' },
-              { value: '15 min', label: 'refresh interval' },
-            ].map(({ value, label }) => (
-              <div key={label} className="text-center">
-                <p className="text-xl font-bold tracking-tight text-foreground md:text-2xl">{value}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
+          <Suspense
+            fallback={
+              <div className="grid grid-cols-3 gap-4 md:gap-8">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="mx-auto h-12 w-20 rounded-lg" />
+                ))}
               </div>
-            ))}
-          </div>
+            }
+          >
+            <LiveStats />
+          </Suspense>
           <div className="mt-4 flex justify-center">
             <ScanningPill />
           </div>

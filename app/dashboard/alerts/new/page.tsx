@@ -3,11 +3,27 @@ import { redirect } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import AlertForm from '@/components/AlertForm'
+import type { AlertPayload } from '@/app/dashboard/alerts/actions'
 
-export default async function NewAlertPage() {
+export default async function NewAlertPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ maxPrice?: string; districts?: string }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login?redirect=/dashboard/alerts/new')
+
+  const params = await searchParams
+  const districts = (params.districts ?? '')
+    .split(',')
+    .map((value) => Number(value.trim()))
+    .filter((value) => !Number.isNaN(value) && value >= 1 && value <= 23)
+
+  const maxPrice = params.maxPrice ? Number(params.maxPrice) : NaN
+  const prefilled: Partial<AlertPayload> = {}
+  if (districts.length > 0) prefilled.districts = districts
+  if (!Number.isNaN(maxPrice) && maxPrice > 0) prefilled.price_max = maxPrice
 
   return (
     <main className="min-h-screen bg-background">
@@ -28,7 +44,7 @@ export default async function NewAlertPage() {
       </div>
 
       <div className="mx-auto max-w-2xl px-4 py-6 pb-28 md:px-8 md:py-8 md:pb-8">
-        <AlertForm mode="create" />
+        <AlertForm mode="create" defaultValues={prefilled as AlertPayload} />
       </div>
     </main>
   )
