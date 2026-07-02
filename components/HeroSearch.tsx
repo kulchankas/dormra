@@ -44,7 +44,7 @@ export default function HeroSearch() {
       <div
         role="search"
         aria-label="Search dorms"
-        className="hidden md:flex items-center w-full max-w-[580px] rounded-pill bg-surface border border-border shadow-[0_0_0_5px_var(--color-brand-soft)] transition-shadow hover:shadow-[0_0_0_5px_var(--color-border)] p-1.5"
+        className="search-elevated hidden md:flex items-center w-full max-w-[580px] rounded-pill bg-surface border border-border/80 p-1.5 transition-shadow hover:shadow-[var(--shadow-card-hover)]"
       >
         {/* Where */}
         <div className="flex-1 px-4 py-2 rounded-full hover:bg-muted/50 transition-colors cursor-default">
@@ -121,7 +121,7 @@ export default function HeroSearch() {
       {/* ── Mobile: collapsed button ── */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="md:hidden w-full max-w-[400px] flex items-center gap-3 bg-surface border border-border rounded-pill px-4 py-3 shadow-[0_0_0_4px_var(--color-brand-soft)] hover:shadow-[0_0_0_4px_var(--color-border)] transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="search-elevated md:hidden w-full max-w-[400px] flex items-center gap-3 bg-surface border border-border/80 rounded-pill px-4 py-3 transition-shadow hover:shadow-[var(--shadow-card-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         aria-label="Search dorms"
       >
         <span className="grid place-items-center size-8 rounded-full bg-brand text-white shrink-0">
