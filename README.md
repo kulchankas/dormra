@@ -66,6 +66,7 @@ psql $DATABASE_URL -f supabase/migrations/20260605120000_enable_rls.sql
 psql $DATABASE_URL -f supabase/seeds/oead_vienna.sql
 psql $DATABASE_URL -f supabase/seeds/stuwo_vienna.sql
 psql $DATABASE_URL -f supabase/seeds/home4students_vienna.sql
+psql $DATABASE_URL -f supabase/seeds/dorm_images.sql
 ```
 
 Regenerate TypeScript types after schema changes:
