@@ -31,7 +31,6 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
