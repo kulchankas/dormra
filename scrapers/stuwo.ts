@@ -37,29 +37,41 @@ export function parseStuwoAvailability(html: string): { available: boolean; rawT
   return { available, rawText }
 }
 
-export async function scrapeStuwo(dormSlug: string, scrapeUrl: string): Promise<ScraperResult> {
-  const abort = new AbortController()
-  const timer = setTimeout(() => abort.abort(), TIMEOUT_MS)
+export async function scrapeStuwo(
+  dormSlug: string,
+  scrapeUrl: string,
+  _browser?: unknown,
+  htmlCache?: import('@/lib/scrape-html-cache').ScrapeHtmlCache,
+): Promise<ScraperResult> {
+  const fetchHtml = async (): Promise<string> => {
+    const abort = new AbortController()
+    const timer = setTimeout(() => abort.abort(), TIMEOUT_MS)
+    try {
+      const res = await fetch(scrapeUrl, {
+        signal: abort.signal,
+        headers: {
+          'User-Agent': BOT_UA,
+          Accept: 'text/html,application/xhtml+xml',
+          'Accept-Language': 'en,de;q=0.8',
+        },
+      })
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status} from ${scrapeUrl}`)
+      }
+      return res.text()
+    } finally {
+      clearTimeout(timer)
+    }
+  }
 
   let html: string
   try {
-    const res = await fetch(scrapeUrl, {
-      signal: abort.signal,
-      headers: {
-        'User-Agent': BOT_UA,
-        Accept: 'text/html,application/xhtml+xml',
-        'Accept-Language': 'en,de;q=0.8',
-      },
-    })
-    if (!res.ok) {
-      return scrapeFailure(dormSlug, `HTTP ${res.status} from ${scrapeUrl}`)
-    }
-    html = await res.text()
+    html = htmlCache
+      ? await htmlCache.getOrFetch(scrapeUrl, fetchHtml)
+      : await fetchHtml()
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    return scrapeFailure(dormSlug, abort.signal.aborted ? `Timed out after ${TIMEOUT_MS}ms` : msg)
-  } finally {
-    clearTimeout(timer)
+    return scrapeFailure(dormSlug, msg)
   }
 
   const { available, rawText } = parseStuwoAvailability(html)

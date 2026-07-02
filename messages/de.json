@@ -15,7 +15,16 @@
     "loginPageTitle": "Anmelden — Dormra",
     "signupPageTitle": "Registrieren — Dormra",
     "newAlertPageTitle": "Neuer Alert — Dormra",
-    "editAlertPageTitle": "Alert bearbeiten — Dormra"
+    "editAlertPageTitle": "Alert bearbeiten — Dormra",
+    "resetPasswordPageTitle": "Passwort zurücksetzen — Dormra"
+  },
+  "errors": {
+    "notFoundTitle": "Seite nicht gefunden",
+    "notFoundBody": "Diese Seite existiert nicht oder wurde verschoben.",
+    "errorTitle": "Etwas ist schiefgelaufen",
+    "errorBody": "Ein unerwarteter Fehler ist aufgetreten. Versuche es erneut oder gehe zur Startseite.",
+    "backHome": "Zur Startseite",
+    "tryAgain": "Erneut versuchen"
   },
   "language": {
     "switch": "Sprache ändern",
@@ -306,7 +315,13 @@
     "termsLink": "Nutzungsbedingungen",
     "and": "und die",
     "privacyLink": "Datenschutzerklärung",
-    "signupSuccessInbox": "Prüfe dein Postfach zur E-Mail-Bestätigung."
+    "signupSuccessInbox": "Prüfe dein Postfach zur E-Mail-Bestätigung.",
+    "resetPasswordTitle": "Neues Passwort festlegen",
+    "resetPasswordSubtitle": "Wähle ein Passwort mit mindestens 8 Zeichen.",
+    "newPassword": "Neues Passwort",
+    "updatePassword": "Passwort aktualisieren",
+    "passwordUpdated": "Passwort aktualisiert. Du kannst dich jetzt anmelden.",
+    "resetSessionExpired": "Dieser Link ist abgelaufen. Fordere auf der Anmeldeseite einen neuen an."
   },
   "dashboard": {
     "title": "Dashboard",

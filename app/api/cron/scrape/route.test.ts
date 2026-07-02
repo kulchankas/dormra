@@ -40,6 +40,16 @@ describe('GET /api/cron/scrape', () => {
     expect(response.status).toBe(401)
   })
 
+  it('returns 401 when CRON_SECRET is unset', async () => {
+    delete process.env.CRON_SECRET
+    const { GET } = await import('./route')
+    const request = new NextRequest('http://localhost/api/cron/scrape', {
+      headers: { authorization: 'Bearer undefined' },
+    })
+    const response = await GET(request)
+    expect(response.status).toBe(401)
+  })
+
   it('returns 200 when Authorization header matches CRON_SECRET', async () => {
     const { GET } = await import('./route')
     const request = new NextRequest('http://localhost/api/cron/scrape', {

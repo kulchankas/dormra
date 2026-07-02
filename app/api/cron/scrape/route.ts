@@ -1,5 +1,7 @@
 import type { NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { authorizeCronRequest } from '@/lib/cron-auth'
+import { ScrapeHtmlCache } from '@/lib/scrape-html-cache'
 import { getScraperForProvider, usesBrowser } from '@/scrapers'
 import { launchScraperBrowser } from '@/scrapers/browser'
 import { processSnapshot } from '@/lib/diff'
@@ -13,8 +15,7 @@ function delay(ms: number) {
 }
 
 export async function GET(request: NextRequest) {
-  const expected = `Bearer ${process.env.CRON_SECRET}`
-  if (request.headers.get('authorization') !== expected) {
+  if (!authorizeCronRequest(request)) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -25,6 +26,7 @@ export async function GET(request: NextRequest) {
   const byProvider: Record<string, { scraped: number; errors: number; skipped: number }> = {}
 
   const admin = createAdminClient()
+  const htmlCache = new ScrapeHtmlCache()
 
   const { data: dorms, error: fetchError } = await admin
     .from('dorms')
@@ -37,7 +39,6 @@ export async function GET(request: NextRequest) {
     return Response.json({ ok: false, error: fetchError?.message }, { status: 500 })
   }
 
-  // Group by provider so browser scrapers launch once per provider batch.
   const byProviderDorms = new Map<string, typeof dorms>()
   for (const dorm of dorms) {
     const key = dorm.provider.toLowerCase()
@@ -68,6 +69,7 @@ export async function GET(request: NextRequest) {
             dorm.slug,
             dorm.scrape_url as string,
             browser ?? undefined,
+            htmlCache,
           )
           await processSnapshot(dorm.id, result)
 

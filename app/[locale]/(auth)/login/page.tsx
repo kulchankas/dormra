@@ -132,7 +132,7 @@ function LoginPageContent() {
     }
     const supabase = createClient()
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+      redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent('/reset-password')}`,
     })
     if (error) toast.error(error.message)
     else toast.success(t('passwordResetSent'))
