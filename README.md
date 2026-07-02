@@ -129,7 +129,8 @@ Supported locales: **English** (default), **German** (`/de`), **Russian** (`/ru`
 - [`docs/PROJECT_AUDIT.md`](docs/PROJECT_AUDIT.md) — full project audit and prioritized code roadmap
 - [`docs/UI_UX_AUDIT.md`](docs/UI_UX_AUDIT.md) — UI/UX-focused audit with prioritized design and accessibility improvements
 - [`docs/MANUAL_TASKS.md`](docs/MANUAL_TASKS.md) — **operator checklist** (RLS, env vars, cron, Resend, smoke tests)
-- [`docs/LAUNCH_CHECKLIST.md`](docs/LAUNCH_CHECKLIST.md) — pre-launch checklist
+- [`docs/LAUNCH_CHECKLIST.md`](docs/LAUNCH_CHECKLIST.md) — **what to do now** (ops + Phase 1 gates)
+- [`docs/STRATEGY.md`](docs/STRATEGY.md) — business thesis and phase roadmap vs current status
 
 ## Product roadmap
 
