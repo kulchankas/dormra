@@ -52,15 +52,34 @@ Data is read via the Supabase service role (server-side only). Non-admin users a
 
 **URL:** [console.cron-job.org](https://console.cron-job.org/)
 
+Three jobs (single job hits Vercel 300s limit on full scrape):
+
+| Job | URL | Schedule |
+|-----|-----|----------|
+| Fast + prune | `.../api/cron/scrape?providers=stuwo,home4students&prune=1` | `*/15 * * * *` |
+| OeAD batch 0 | `.../api/cron/scrape?provider=oead&batch=0&batches=2` | `5,20,35,50 * * * *` |
+| OeAD batch 1 | `.../api/cron/scrape?provider=oead&batch=1&batches=2` | `10,25,40,55 * * * *` |
+
 | What | Expected |
 |------|----------|
-| Schedule | Every 15 min → `GET https://dormra.eu/api/cron/scrape` |
 | Auth header | `Authorization: Bearer <CRON_SECRET>` |
+| Request timeout | 300 seconds per job |
 | Success body | `{ "ok": true, "scraped": N, ... }` |
-| Failure | 401 (secret), 404 (route/proxy), 500 (server/DB), timeout (scrape too slow) |
-| Auto-disabled | cron-job.org disables after repeated failures — fix root cause, then re-enable |
+| Failure | 401 (secret), 404 (route/proxy), 500 (server/DB), 504 (job too broad — use split URLs) |
+| Auto-disabled | cron-job.org disables after repeated failures — fix root cause, then re-enable all three |
 
 Execution history shows HTTP status and response time per run. If jobs fail silently, availability goes stale (>6h shows as "unknown" on the site).
+
+**Test alert without waiting for a scrape transition:**
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" \
+  "https://dormra.eu/api/test-alert?slug=oead-guadenzdorf&dryRun=1"
+curl -H "Authorization: Bearer $CRON_SECRET" \
+  "https://dormra.eu/api/test-alert?slug=oead-guadenzdorf&email=YOUR_ADMIN_EMAIL"
+```
+
+`email` must be in `ADMIN_EMAILS`. Modes: `dryRun=1` (match count only), `email=` (one test send), `send=1` (full pipeline to matched users, respects weekly dedup).
 
 ---
 

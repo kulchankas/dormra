@@ -4,7 +4,31 @@ Tasks that **cannot be done in code** or require access to external dashboards. 
 
 **Quick path:** see [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md) for a one-page ordered checklist.
 
-Check off items as you complete them.
+---
+
+## Your action list (2026-07-02)
+
+Agent verified production after PRs #33–#39. **You still need to complete the unchecked items.**
+
+| # | Task | Status | Blocker? |
+|---|------|--------|----------|
+| 1 | **cron-job.org** — create/enable **3 split jobs** (§3) | ⬜ **You** | **Yes** — data goes stale without cron |
+| 2 | **Supabase Site URL** → `https://dormra.eu` + redirect URLs (§6) | ⬜ **You** | **Yes** — OAuth/reset broken until fixed |
+| 3 | **RLS smoke test** with anon key (§1.1 step 4) | ⬜ **You** | **Yes** — confirm no data leak |
+| 4 | **Rotate exposed secrets** (§2.1) — CRON, Supabase service role, Resend | ⬜ **You** | **Yes** if keys were pasted in chat |
+| 5 | **Resend domain** verify `dormra.eu` + `RESEND_FROM` (§4) | ⬜ **You** | Recommended |
+| 6 | **Post-deploy smoke tests** (§7) — signup, alert, reset | ⬜ **You** | Recommended |
+| 7 | **Google OAuth** if using “Continue with Google” (§5b) | ⬜ **You** | Only if using Google login |
+
+**Already done (agent / code):**
+
+- [x] Cron endpoint live — split URLs return **200** (fast ~20s, OeAD batch ~125s)
+- [x] PR #33 proxy fix, PR #36–37 Playwright/Chromium, PR #39 cron split
+- [x] Vercel env: `ADMIN_EMAILS`, `CRON_SECRET`, Supabase, Resend keys set
+- [x] RLS migration + other SQL applied in Supabase (you confirmed)
+- [x] `/api/test-alert` route for E2E email testing (§3.1)
+
+Check off items below as you complete them.
 
 ---
 
@@ -98,39 +122,101 @@ Set for **Production** (and Preview if you test PRs):
 
 After adding/changing vars → **Redeploy** production.
 
+### 2.1 Rotate secrets (if exposed)
+
+If `CRON_SECRET`, Supabase service role key, or `RESEND_API_KEY` were ever pasted in chat, tickets, or commits:
+
+1. Generate new values (see §3 for `CRON_SECRET`).
+2. Update **Vercel** production env vars.
+3. Update **cron-job.org** auth header on all 3 jobs.
+4. Rotate Supabase service role key in Supabase → Settings → API.
+5. Revoke old Resend key in Resend dashboard.
+6. Redeploy Vercel.
+
 ---
 
 ## 3. cron-job.org — scrape scheduler
 
-**Why:** Dorm availability updates every 15 minutes.
+**Why:** Dorm availability updates every 15 minutes. A single job scraping all ~40 dorms (including OeAD via Playwright) exceeds Vercel’s 300s limit and gets **504**. Use **three jobs** instead.
 
-**Steps:**
+**Header (all jobs):**
 
-1. Create job at [cron-job.org](https://cron-job.org) (or your scheduler).
-2. **URL:** `https://dormra.eu/api/cron/scrape`
-3. **Schedule:** every 15 minutes (`*/15 * * * *`)
-4. **Request headers:**
+```
+Authorization: Bearer YOUR_CRON_SECRET
+```
 
-   ```
-   Authorization: Bearer YOUR_CRON_SECRET
-   ```
+Must match `CRON_SECRET` in Vercel exactly. Set **request timeout** to **300 seconds** on each job.
 
-   Must match `CRON_SECRET` in Vercel exactly.
+### Option A — three jobs (recommended)
 
-5. **Generate CRON_SECRET:**
+| Job | Title | URL | Schedule (UTC) |
+|-----|-------|-----|----------------|
+| 1 — Fast + prune | Dormra fast scrape | `https://dormra.eu/api/cron/scrape?providers=stuwo,home4students&prune=1` | Every 15 min: `*/15 * * * *` |
+| 2 — OeAD batch 0 | Dormra OeAD batch 0 | `https://dormra.eu/api/cron/scrape?provider=oead&batch=0&batches=2` | `5,20,35,50 * * * *` |
+| 3 — OeAD batch 1 | Dormra OeAD batch 1 | `https://dormra.eu/api/cron/scrape?provider=oead&batch=1&batches=2` | `10,25,40,55 * * * *` |
 
-   ```bash
-   openssl rand -base64 32
-   ```
+Job 1 refreshes STUWO + home4students quickly and prunes old snapshots once per cycle. Jobs 2–3 split OeAD (~26 dorms) so each run finishes under 300s.
 
-6. After first run, check response JSON: `{ "ok": true, "scraped": N, ... }`.
+### Manual steps
+
+1. Open [cron-job.org console](https://console.cron-job.org/).
+2. **Disable or delete** the old single-job entry (if present).
+3. Create the three jobs above with the auth header and 300s timeout.
+4. **Enable** all three (disabled jobs stay off until you turn them back on).
+5. After first run, check JSON: `{ "ok": true, "scraped": N, ... }`.
+
+### Automated setup (optional)
+
+If you have a cron-job.org API key (Console → Settings):
+
+```bash
+export CRON_JOB_ORG_API_KEY='your-api-key'
+export CRON_SECRET='same-as-vercel'
+./scripts/setup-cron-jobs.sh
+```
+
+### Generate CRON_SECRET (if rotating)
+
+```bash
+openssl rand -base64 32
+```
+
+Update Vercel **and** all three cron-job.org jobs.
 
 **Failure signs:**
 
 - `401 Unauthorized` → secret mismatch
 - `404 Not Found` → deploy missing the route, or i18n proxy intercepting `/api/*` (fixed in proxy matcher)
 - `500` → missing `SUPABASE_SERVICE_ROLE_KEY` or DB error
-- Job **disabled automatically** on cron-job.org → too many consecutive failures (404/401/500/timeout). Fix the error, then re-enable the job in the cron-job.org dashboard.
+- `504 Gateway Timeout` → job URL too broad; use the split URLs above
+- Job **disabled automatically** on cron-job.org → too many consecutive failures. Fix the error, then re-enable (or run the setup script).
+
+### 3.1 Verify cron + test alert (curl)
+
+Replace `YOUR_CRON_SECRET` with the Vercel value.
+
+**Fast job (should return 200 in ~30s):**
+
+```bash
+curl -sS -H "Authorization: Bearer YOUR_CRON_SECRET" \
+  "https://dormra.eu/api/cron/scrape?providers=stuwo,home4students"
+```
+
+**Dry-run alert match (no email sent):**
+
+```bash
+curl -sS -H "Authorization: Bearer YOUR_CRON_SECRET" \
+  "https://dormra.eu/api/test-alert?slug=oead-guadenzdorf&dryRun=1"
+```
+
+**Send one test email to your admin address:**
+
+```bash
+curl -sS -H "Authorization: Bearer YOUR_CRON_SECRET" \
+  "https://dormra.eu/api/test-alert?slug=oead-guadenzdorf&email=kulchankas@gmail.com"
+```
+
+`email` must match `ADMIN_EMAILS`. Check inbox + Resend dashboard + `/admin` → Email log.
 
 ---
 
@@ -210,7 +296,8 @@ Run through once after deploy:
 | Create alert | `/dashboard/alerts/new` | Saves, redirects to list |
 | Log out / in | Header menu | Session persists |
 | Password reset | Login → Forgot → email → `/reset-password` | New password works |
-| Cron | Wait 15 min or manual GET with Bearer | `ok: true` in logs |
+| Cron | Split jobs (§3.1 curl) or wait 15 min | `ok: true`; admin shows fresh scrape times |
+| Test alert email | §3.1 curl with `email=` | Email arrives; Resend + `/admin` log |
 
 ---
 
@@ -244,7 +331,8 @@ Not set up yet. Consider before scale:
 | Alerts empty for anon curl | RLS working correctly | Use authenticated session to test |
 | Emails not arriving | Resend sandbox / spam | Verify domain (§4), check Resend logs |
 | German/Russian 404 | i18n PR not merged | Merge `cursor/i18n-de-ru-5868` |
-| Stale availability | Cron not running | Check cron-job.org history + Vercel logs |
+| Stale availability | Cron not running | Enable 3 jobs on cron-job.org (§3) |
+| Cron returns `504` | Single full scrape job | Use split URLs (§3) — merged in PR #39 |
 
 ---
 
