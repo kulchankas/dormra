@@ -348,19 +348,20 @@ export default function DormsPage() {
   )
 }
 
-function parseFiltersFromSearchParams(params: URLSearchParams): FilterState {
+function parseMaxPriceFromParams(params: URLSearchParams): number {
   const maxPrice = params.get('maxPrice')
-  if (maxPrice && !Number.isNaN(Number(maxPrice))) {
-    return { ...DEFAULT_FILTERS, maxPrice: Number(maxPrice) }
-  }
-  return DEFAULT_FILTERS
+  if (maxPrice && !Number.isNaN(Number(maxPrice))) return Number(maxPrice)
+  return DEFAULT_FILTERS.maxPrice
 }
 
 function DormsPageContent() {
   const searchParams = useSearchParams()
   const [dorms, setDorms] = useState<Dorm[]>([])
   const [loading, setLoading] = useState(true)
-  const [filters, setFilters] = useState<FilterState>(() => parseFiltersFromSearchParams(searchParams))
+  const [filters, setFilters] = useState<FilterState>(() => ({
+    ...DEFAULT_FILTERS,
+    maxPrice: parseMaxPriceFromParams(searchParams),
+  }))
   const [availabilityMap, setAvailabilityMap] = useState<Map<string, AvailabilityStatus>>(new Map())
 
   useEffect(() => {

@@ -115,7 +115,7 @@ export default async function AlertsPage() {
                       )}
                       {alert.deposit_max != null && (
                         <Badge variant="secondary" className="text-[10px]">
-                          Deposit ≤ €{alert.deposit_max}
+                          Deposit ≤ {alert.deposit_max} mo
                         </Badge>
                       )}
                       {alert.notify_email && (

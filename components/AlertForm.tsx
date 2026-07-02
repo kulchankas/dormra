@@ -205,6 +205,9 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
                 <FormControl>
                   <Input type="date" className="h-9 w-48" {...field} />
                 </FormControl>
+                <p className="text-[11px] text-muted-foreground">
+                  Saved for your reference — move-in filtering is coming soon.
+                </p>
                 <FormMessage />
               </FormItem>
             )}

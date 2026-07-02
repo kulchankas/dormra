@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Menu, LogIn, UserPlus, LogOut } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { Menu, LogIn, UserPlus, LogOut, Bell } from 'lucide-react'
 import {
   Sheet,
   SheetClose,
@@ -13,6 +14,7 @@ import {
 } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { cn } from '@/lib/utils'
 
 const NAV = [
   { href: '/dorms', label: 'Browse dorms' },
@@ -21,6 +23,7 @@ const NAV = [
 
 export default function HeaderMobileMenu({ signedIn }: { signedIn: boolean }) {
   const [open, setOpen] = useState(false)
+  const pathname = usePathname()
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -42,19 +45,45 @@ export default function HeaderMobileMenu({ signedIn }: { signedIn: boolean }) {
         </SheetHeader>
 
         <nav className="flex flex-col gap-1 px-2" aria-label="Mobile navigation">
-          {NAV.map(({ href, label }) => (
+          {NAV.map(({ href, label }) => {
+            const active = pathname === href || pathname.startsWith(`${href}/`)
+            return (
+              <SheetClose
+                key={href}
+                render={
+                  <Link
+                    href={href}
+                    aria-current={active ? 'page' : undefined}
+                    className={cn(
+                      'rounded-md px-3 py-2 text-sm transition-colors',
+                      active
+                        ? 'bg-brand-soft font-medium text-brand'
+                        : 'text-foreground hover:bg-muted',
+                    )}
+                  >
+                    {label}
+                  </Link>
+                }
+              />
+            )
+          })}
+          {signedIn && (
             <SheetClose
-              key={href}
               render={
                 <Link
-                  href={href}
-                  className="rounded-md px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+                  href="/dashboard/alerts"
+                  className={cn(
+                    'rounded-md px-3 py-2 text-sm transition-colors',
+                    pathname.startsWith('/dashboard')
+                      ? 'bg-brand-soft font-medium text-brand'
+                      : 'text-foreground hover:bg-muted',
+                  )}
                 >
-                  {label}
+                  My alerts
                 </Link>
               }
             />
-          ))}
+          )}
         </nav>
 
         <Separator className="my-2" />
@@ -74,6 +103,19 @@ export default function HeaderMobileMenu({ signedIn }: { signedIn: boolean }) {
             </form>
           ) : (
             <div className="flex flex-col gap-2">
+              <SheetClose
+                render={
+                  <Button
+                    size="lg"
+                    nativeButton={false}
+                    className="h-11 w-full gap-2 rounded-xl text-sm"
+                    render={<Link href="/signup?redirect=/dashboard/alerts/new" />}
+                  >
+                    <Bell className="size-4" />
+                    Get alerts free
+                  </Button>
+                }
+              />
               <SheetClose
                 render={
                   <Button
