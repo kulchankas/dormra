@@ -13,16 +13,37 @@ export { dormMatchesAlert, type AlertCriteria } from './alert-criteria'
 
 // move_in_before is stored on user_alerts and shown in the UI, but we do not match
 // on it yet — providers do not expose structured move-in dates in scraped data.
-// See README "Implemented vs planned" matrix.
 
 export async function matchAlertsForDorm(dorm: DormForAlertMatching): Promise<MatchingAlert[]> {
   const admin = createAdminClient()
 
-  const { data: alerts, error } = await admin
+  let query = admin
     .from('user_alerts')
     .select('id, user_id, price_max, districts, pets_required, couples, deposit_max, notify_email, locale')
     .eq('active', true)
     .eq('notify_email', true)
+
+  if (dorm.price_min != null) {
+    query = query.or(`price_max.is.null,price_max.gte.${dorm.price_min}`)
+  }
+
+  if (dorm.district != null) {
+    query = query.or(`districts.is.null,districts.eq.{},districts.cs.{${dorm.district}}`)
+  }
+
+  if (dorm.pets !== true) {
+    query = query.eq('pets_required', false)
+  }
+
+  if (dorm.couples !== true) {
+    query = query.eq('couples', false)
+  }
+
+  if (dorm.deposit_months != null) {
+    query = query.or(`deposit_max.is.null,deposit_max.gte.${dorm.deposit_months}`)
+  }
+
+  const { data: alerts, error } = await query
 
   if (error || !alerts) {
     console.error('[MATCH] Failed to fetch alerts:', error?.message)

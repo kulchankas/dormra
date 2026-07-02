@@ -107,13 +107,22 @@ export async function sendAlertsForDorm(
       })
 
       if (result.success) {
-        await admin.from('alert_log').insert({
+        const { error: logError } = await admin.from('alert_log').insert({
           user_id: alert.user_id,
           dorm_id: dormId,
           sent_at: new Date().toISOString(),
           channel: 'email',
           snapshot_id: snapshotId,
         })
+
+        if (logError?.code === '23505') {
+          console.log(`[DIFF] Dedup: user ${alert.user_id.slice(0, 8)} already notified this week for ${dorm.slug}`)
+          continue
+        }
+        if (logError) {
+          errors.push(logError.message)
+          continue
+        }
         sent++
       } else {
         errors.push(result.error ?? 'Unknown send error')

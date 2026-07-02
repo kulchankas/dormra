@@ -66,7 +66,13 @@ psql $DATABASE_URL -f supabase/migrations/20260605120000_enable_rls.sql
 # 3. Add alert locale column (for localized emails)
 psql $DATABASE_URL -f supabase/migrations/20260701120000_user_alerts_locale.sql
 
-# 4. Seed dorm listings
+# 4. Snapshot RPC + retention (performance)
+psql $DATABASE_URL -f supabase/migrations/20260701130000_snapshot_rpc_and_retention.sql
+
+# 5. Alert email dedup index
+psql $DATABASE_URL -f supabase/migrations/20260701140000_alert_log_dedup.sql
+
+# 6. Seed dorm listings
 psql $DATABASE_URL -f supabase/seeds/oead_vienna.sql
 psql $DATABASE_URL -f supabase/seeds/stuwo_vienna.sql
 psql $DATABASE_URL -f supabase/seeds/home4students_vienna.sql
@@ -110,7 +116,7 @@ messages/     en/de/ru translation files
 lib/          Supabase clients, diff engine, alert matching, types
 scrapers/     One scraper per provider + registry in index.ts
 supabase/     Migrations + seed SQL
-docs/         Project audit and roadmap (docs/PROJECT_AUDIT.md)
+docs/         Project audit (docs/PROJECT_AUDIT.md) + manual tasks (docs/MANUAL_TASKS.md)
 ```
 
 ## Internationalization
@@ -119,9 +125,10 @@ Supported locales: **English** (default), **German** (`/de`), **Russian** (`/ru`
 
 ## Audit & roadmap
 
-See [`docs/PROJECT_AUDIT.md`](docs/PROJECT_AUDIT.md) for the full project audit, known gaps, and prioritized roadmap.
+- [`docs/PROJECT_AUDIT.md`](docs/PROJECT_AUDIT.md) — full project audit and prioritized code roadmap
+- [`docs/MANUAL_TASKS.md`](docs/MANUAL_TASKS.md) — **operator checklist** (RLS, env vars, cron, Resend, smoke tests)
 
-## Roadmap
+## Product roadmap
 
 - **Phase 1** (current): Vienna dorm directory + email alerts
 - **Phase 2**: Apartment listings

@@ -5,6 +5,7 @@ import { ScrapeHtmlCache } from '@/lib/scrape-html-cache'
 import { getScraperForProvider, usesBrowser } from '@/scrapers'
 import { launchScraperBrowser } from '@/scrapers/browser'
 import { processSnapshot } from '@/lib/diff'
+import { pruneOldSnapshots } from '@/lib/snapshot-maintenance'
 
 export const maxDuration = 300
 
@@ -94,11 +95,14 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  const pruned = await pruneOldSnapshots()
+
   return Response.json({
     ok: true,
     scraped,
     errors,
     skipped,
+    pruned,
     byProvider,
     duration_ms: Date.now() - start,
   })

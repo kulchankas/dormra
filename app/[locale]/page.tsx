@@ -4,13 +4,14 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
 import { buildPageMetadata } from '@/lib/i18n-metadata'
 import { createClient } from '@/lib/supabase/server'
-import { getAvailabilityStatusBulk, type Dorm } from '@/lib/helpers'
+import { getAvailabilityStatusBulk } from '@/lib/availability'
+import { type Dorm } from '@/lib/helpers'
 import { localizeAvailabilityMap } from '@/lib/i18n-availability'
 import { Link } from '@/i18n/navigation'
 import HeroSearch from '@/components/HeroSearch'
 import DormraLogo from '@/components/DormraLogo'
 import DormCard from '@/components/DormCard'
-import ScanningPill from '@/components/ScanningPill'
+import ScanningPillServer from '@/components/ScanningPillServer'
 import UniversityLogos from '@/components/UniversityLogos'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
@@ -99,7 +100,7 @@ async function DormsPreview() {
 
   const previewDorms = (data ?? []) as Dorm[]
   const availabilityMap = localizeAvailabilityMap(
-    await getAvailabilityStatusBulk(previewDorms.map((d) => d.id)),
+    await getAvailabilityStatusBulk(previewDorms.map((d) => d.id), supabase),
     (key) => tAvail(key),
   )
 
@@ -204,7 +205,13 @@ export default async function HomePage({ params }: PageProps) {
             <LiveStats />
           </Suspense>
           <div className="mt-4 flex justify-center">
-            <ScanningPill />
+            <Suspense
+              fallback={
+                <span className="inline-flex h-8 w-48 animate-pulse rounded-full bg-muted/60" />
+              }
+            >
+              <ScanningPillServer />
+            </Suspense>
           </div>
         </div>
       </div>

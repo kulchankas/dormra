@@ -17,9 +17,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return buildPageMetadata(locale, '/dorms', t('dormsTitle'), t('dormsDescription'))
 }
 
-export default async function DormsPage({ params }: PageProps) {
-  const { locale } = await params
-  setRequestLocale(locale)
+async function DormsContent() {
   const tAvail = await getTranslations('availability')
 
   const supabase = await createClient()
@@ -39,9 +37,16 @@ export default async function DormsPage({ params }: PageProps) {
     (key) => tAvail(key),
   )
 
+  return <DormsDirectory dorms={dorms} availability={availability} />
+}
+
+export default async function DormsPage({ params }: PageProps) {
+  const { locale } = await params
+  setRequestLocale(locale)
+
   return (
     <Suspense fallback={<DormsLoading />}>
-      <DormsDirectory dorms={dorms} availability={availability} />
+      <DormsContent />
     </Suspense>
   )
 }
