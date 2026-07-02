@@ -28,7 +28,7 @@ Dormra is a well-structured beta: clear scraper → snapshot → diff → alert 
 | 2.5 | **Resend sandbox sender** | Manual | See [`MANUAL_TASKS.md`](./MANUAL_TASKS.md) §4 |
 | 2.6 | **No snapshot retention** | ✅ Done | `prune_old_snapshots` in cron |
 | 2.7 | **CI missing env vars** | ✅ Done | Full placeholder env in CI build |
-| 2.8 | **Test gaps** (diff, email, auth) | Partial | `cron-auth.test.ts` added; diff/email integration planned |
+| 2.8 | **Test gaps** (diff, email, auth) | ✅ Done | `sendAlertsForDorm`, auth callback, cron-auth tests |
 
 ## Phase 3 — Medium (quality & UX)
 
@@ -42,7 +42,7 @@ Dormra is a well-structured beta: clear scraper → snapshot → diff → alert 
 | 3.6 | No branded error/404 pages | ✅ Done | `[locale]/error.tsx` + `not-found.tsx` |
 | 3.7 | No dashboard loading skeletons | ✅ Done | `dashboard/loading.tsx` + alerts |
 | 3.8 | Legacy `lib/supabase.ts` singleton | ✅ Done | Availability uses server client |
-| 3.9 | Hand-maintained DB types | Open | Regenerate via Supabase CLI |
+| 3.9 | Hand-maintained DB types | ✅ Done | Synced with migrations (locale, RPC functions) |
 | 3.10 | No sitemap/robots.txt | ✅ Done | `app/sitemap.ts`, `app/robots.ts` |
 | 3.11 | Auth guard per-page not centralized | ✅ Done | Middleware redirects `/dashboard/*` |
 | 3.12 | Sign-out POST CSRF | ✅ Done | `signOutAction` server action |
@@ -53,7 +53,7 @@ Dormra is a well-structured beta: clear scraper → snapshot → diff → alert 
 |---|--------|-------|
 | 4.1 | ScanningPill is cosmetic | ✅ Done | `ScanningPillServer` + real `lastScrapedAt` |
 | 4.2 | Bot UA points to `/about` | ✅ Done | Now `/how-it-works` |
-| 4.3 | Skip-to-content link | ✅ Done | Locale layout |
+| 4.3 | Skip-to-content link | ✅ Done | Locale layout + i18n label |
 | 4.4 | No local Supabase config | ✅ Done | `supabase/config.toml` |
 
 ---
@@ -96,6 +96,7 @@ Users → Next.js [locale] → Supabase (RLS) → user_alerts, dorms
 
 | Date | Branch | Work |
 |------|--------|------|
+| 2026-07-01 | `cursor/project-audit-5868` | sendAlerts + auth callback tests, skip-link i18n |
 | 2026-07-01 | `cursor/project-audit-5868` | Phase 3.5, 3.12, 4.1, 4.4, LAUNCH_CHECKLIST, cron-auth tests |
 | 2026-07-01 | `cursor/project-audit-5868` | Phase 2.1–2.4, 2.6, 3.3, 3.7–3.11, 4.3, MANUAL_TASKS.md |
 | 2026-07-01 | `cursor/project-audit-5868` | Phase 1.2–1.4, 2.2, 2.7, 3.4, 3.6, 4.2, audit doc, README |
