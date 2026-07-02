@@ -9,6 +9,7 @@ import { formatDistrictLabel, formatPriceLabel } from '@/lib/i18n-labels'
 import { getAvailabilityStatusBulk } from '@/lib/availability'
 import { localizeAvailability } from '@/lib/i18n-availability'
 import AvailabilityBadge from '@/components/AvailabilityBadge'
+import DormLocationMap from '@/components/DormLocationMap'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Link } from '@/i18n/navigation'
@@ -154,6 +155,13 @@ export default async function DormDetailPage({ params }: PageProps) {
             </div>
           ))}
         </div>
+
+        {dorm.lat != null && dorm.lng != null && (
+          <div className="mb-6">
+            <h2 className="mb-2 text-sm font-medium text-foreground">{t('location')}</h2>
+            <DormLocationMap dorm={dorm} availability={availability} />
+          </div>
+        )}
 
         {dorm.notes && (
           <div className="card-elevated rounded-2xl bg-surface p-5 mb-6">
