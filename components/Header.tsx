@@ -56,7 +56,7 @@ export default async function Header() {
               </Button>
             </div>
           )}
-          <HeaderMobileMenu signedIn={!!userEmail} />
+          <HeaderMobileMenu signedIn={!!userEmail} showAdmin={showAdmin} />
         </div>
       </div>
     </header>

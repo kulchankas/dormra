@@ -119,7 +119,8 @@
     "findYourDorm": "Найти общежитие",
     "closeSearch": "Закрыть поиск",
     "clearDate": "Очистить дату",
-    "anyAmount": "Любая сумма"
+    "anyAmount": "Любая сумма",
+    "moveInPickerHint": "Необязательно — для алертов, фильтр позже"
   },
   "scanning": {
     "prefix": "Сканируем",
@@ -220,6 +221,9 @@
     "sortPrice": "цена",
     "sortSelection": "ваш выбор",
     "noListingsYet": "Объявлений пока нет",
+    "loadError": "Не удалось загрузить общежития",
+    "loadErrorHint": "Обычно это временно — попробуйте снова через минуту.",
+    "tryAgain": "Повторить",
     "noListingsHint": "Загляни позже — мы добавляем новые.",
     "noMatchExtended": "Убери фильтр или настрой алерт — сообщим, когда появится место.",
     "resetFilters": "Сбросить фильтры",
@@ -408,6 +412,7 @@
     "notifications": "Уведомления",
     "email": "Email",
     "emailHint": "Уведомления на email",
+    "emailRequiredHint": "Обязательно — пока единственный канал уведомлений",
     "telegram": "Telegram",
     "telegramHint": "Скоро — email-алерты уже работают",
     "telegramAria": "Telegram-уведомления скоро"

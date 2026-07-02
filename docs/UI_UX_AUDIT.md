@@ -42,28 +42,20 @@ Two High-priority items originally found in this pass were independently fixed b
 
 ### High priority
 
-**H3 — `/dorms` has no resilience to a Supabase outage**
-Unlike the homepage (`LiveStats` wraps its Supabase call in try/catch and falls back to static numbers), `app/[locale]/dorms/page.tsx`'s data fetch has no error handling. A network-level Supabase failure (not just an empty result) will propagate to `app/[locale]/error.tsx`'s generic "Something went wrong" screen instead of the branded empty state that already exists for zero results. Since `/dorms` is the core product page, a transient Supabase blip currently means the entire browsing experience 500s instead of degrading gracefully.
+**H3 — `/dorms` has no resilience to a Supabase outage** — ✅ Fixed. Branded error state with retry link instead of generic error page.
 
 ### Medium priority
 
-**M1 — Move-in date filter looks functional but silently does nothing**
-The hero search and `/dorms` both let users pick a move-in date, and `/dorms` shows a banner ("intake-date filtering isn't live yet") only *after* the user has already set the date and landed on results — the date field itself gives no upfront signal that it doesn't filter anything yet. A first-time user filling out the hero search reasonably expects the date to narrow results. *Recommendation: add a subtle "(optional — for alerts, not filtering yet)" hint directly on the date picker, not just a banner after the fact.* (Related to PROJECT_AUDIT 3.1/3.2.)
-
-**M2 — Sort-order label mismatch on the "no active filters" state**
-`t('allSorted', { sort: filters.sort === 'price_asc' ? t('sortPrice') : t('sortSelection') })` in `DormsDirectory.tsx` only special-cases `price_asc`; every other sort mode (`available_first`, `district_asc`, `created_desc`) falls back to the generic "sortSelection" copy even though the Select clearly shows the specific sort chosen. Minor, but it's an easy quick win to make this text mirror the actual selected `sortLabels` value now that a lookup map exists.
-
+**M1 — Move-in date filter looks functional but silently does nothing** — ✅ Partially fixed. Hero date picker now shows upfront hint; banner on `/dorms` unchanged.
+**M2 — Sort-order label mismatch** — ✅ Fixed. `allSorted` copy uses the same `sortLabels` map as the Select.
 **M3 — Dashboard "coming soon" cards are the least discoverable pattern for a beta**
 `Saved dorms` and `Application tracker` cards on `/dashboard` are dimmed with a small "Coming soon" label — good adherence to the project's own "no decorative controls" rule, but the cards are still large, prominent grid items competing visually with the one working feature (Alerts). *Recommendation: consider deprioritizing unshipped features to a single compact "What's next" row/list rather than three equal-weight grid cells, so the one functional card doesn't have to compete 1-of-3 for attention.*
 
 **M4 — ~~Dashboard has no loading skeleton~~ (resolved by the concurrent audit)**
-Tracked as PROJECT_AUDIT 3.7. `/dashboard` and `/dashboard/alerts` now have `loading.tsx` files, fixed by the concurrent `cursor/project-audit-5868` branch. `/dorms/[slug]` still has none — lower priority since it's a single-item fetch, but worth a follow-up.
+Tracked as PROJECT_AUDIT 3.7. `/dashboard` and `/dashboard/alerts` now have `loading.tsx` files. `/dorms/[slug]/loading.tsx` added in follow-up pass.
 
 **M5 — Alert list cards bury the "how many dorms match right now" signal**
 On `/dashboard/alerts`, the match-count pill (`{matchCount} dorms match`) is useful but sits below a wall of small badges (pets/couples/deposit/email), competing for attention. Given alerts exist specifically so users don't have to keep checking manually, surfacing "3 dorms match right now" more prominently (e.g., as a colored stat rather than a same-weight pill) would reinforce the core value prop every time a user opens the page.
-
-**M6 — Email-only notification toggle can look like a broken control**
-In `AlertForm`, the Telegram toggle is visibly `disabled` with "Coming soon" copy (good — follows the project's own rule of not decorating with dead controls), but the Email toggle can *also* be switched off, which then blocks submission with a toast ("Email notifications must stay on"). Since Telegram doesn't work yet and Email is the only channel, disabling Email effectively creates a "silent alert" state that's caught only at submit time. *Recommendation: disable the Email switch too (or clarify inline that at least one channel is required) rather than relying on a post-submit toast.*
 
 ### Low priority / polish
 

@@ -31,7 +31,7 @@ export async function sendAvailabilityAlert({
   const resolvedLocale = resolveLocale(locale)
   const t = getEmailMessages(resolvedLocale)
 
-  const from = 'Dormra <onboarding@resend.dev>'
+  const from = process.env.RESEND_FROM ?? 'Dormra <onboarding@resend.dev>'
   const subject = t.alertSubject.replace('{name}', dorm.name)
   const applyUrl = absoluteUrl(localePath(`/dorms/${dorm.slug}`, resolvedLocale))
   const manageUrl = absoluteUrl(localePath('/dashboard/alerts', resolvedLocale))

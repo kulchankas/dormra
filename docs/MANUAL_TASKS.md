@@ -81,6 +81,7 @@ Set for **Production** (and Preview if you test PRs):
 | `SUPABASE_SERVICE_ROLE_KEY` | **Server only** — never expose to client |
 | `CRON_SECRET` | Long random string (see below) |
 | `RESEND_API_KEY` | From [resend.com](https://resend.com) |
+| `RESEND_FROM` | Optional — `Dormra <alerts@dormra.eu>` after domain verify |
 | `NEXT_PUBLIC_SITE_URL` | `https://dormra.eu` |
 | `ADMIN_EMAILS` | Your email(s), comma-separated — enables `/admin` dashboard |
 
@@ -129,17 +130,44 @@ After adding/changing vars → **Redeploy** production.
 1. [Resend Dashboard](https://resend.com/domains) → **Add Domain** → `dormra.eu`
 2. Add DNS records (SPF, DKIM) at your DNS provider.
 3. Wait for verification (usually minutes to hours).
-4. Update `lib/email.ts`:
+4. Update sender via Vercel env var (no code change needed after deploy):
 
-   ```typescript
-   const from = 'Dormra <alerts@dormra.eu>'
    ```
+   RESEND_FROM=Dormra <alerts@dormra.eu>
+   ```
+
+   Or edit `lib/email.ts` if you prefer hardcoding. Default is `onboarding@resend.dev` (sandbox).
 
 5. Send a test alert (trigger a scrape transition or use Resend test send).
 
 ---
 
-## 5. Supabase Auth — redirect URLs
+## 5b. Google OAuth (optional)
+
+**If "Continue with Google" fails or redirects to localhost:**
+
+### Supabase URL Configuration
+
+Same as §5 — **Site URL** must be `https://dormra.eu` (not `localhost:3000`).
+
+### Enable Google provider
+
+**Supabase → Authentication → Providers → Google** → Enable, add Client ID + Secret.
+
+### Google Cloud Console
+
+**APIs & Services → Credentials → OAuth 2.0 Client ID (Web application)**
+
+| Field | Value |
+|-------|--------|
+| Authorized JavaScript origins | `https://dormra.eu`, `https://vmnnvtifpknakerduioq.supabase.co` |
+| Authorized redirect URIs | `https://vmnnvtifpknakerduioq.supabase.co/auth/v1/callback` |
+
+The redirect URI is **Supabase's callback**, not `dormra.eu/auth/callback`.
+
+---
+
+## 6. Supabase Auth — redirect URLs (email / magic link / password reset)
 
 **Where:** Supabase → Authentication → URL Configuration
 
@@ -156,7 +184,7 @@ Required for Google OAuth, magic links, and password reset.
 
 ---
 
-## 6. Post-deploy smoke tests
+## 7. Post-deploy smoke tests
 
 Run through once after deploy:
 
@@ -173,7 +201,7 @@ Run through once after deploy:
 
 ---
 
-## 7. Optional — monitoring
+## 8. Optional — monitoring
 
 - **Vercel Web Analytics**: `@vercel/analytics` is wired into `app/[locale]/layout.tsx` — no env vars needed, but it only reports data once **Analytics** is turned on for the project in Vercel Dashboard → your project → **Analytics** tab. Locally/in preview it runs in debug mode and logs to the browser console instead of sending data.
 
@@ -185,7 +213,7 @@ Not set up yet. Consider before scale:
 
 ---
 
-## 8. Admin dashboard & monitoring
+## 9. Admin dashboard & monitoring
 
 **In-app:** After setting `ADMIN_EMAILS`, log in and open `/admin` (or via header menu → Admin).
 
@@ -193,7 +221,7 @@ Not set up yet. Consider before scale:
 
 ---
 
-## 9. Troubleshooting
+## 10. Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|

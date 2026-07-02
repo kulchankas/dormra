@@ -119,7 +119,8 @@
     "findYourDorm": "Finde dein Heim",
     "closeSearch": "Suche schließen",
     "clearDate": "Datum löschen",
-    "anyAmount": "Beliebiger Betrag"
+    "anyAmount": "Beliebiger Betrag",
+    "moveInPickerHint": "Optional — für Alerts, noch kein Filter"
   },
   "scanning": {
     "prefix": "Scanne",
@@ -220,6 +221,9 @@
     "sortPrice": "Preis",
     "sortSelection": "deiner Auswahl",
     "noListingsYet": "Noch keine Heime gelistet",
+    "loadError": "Wohnheime konnten gerade nicht geladen werden",
+    "loadErrorHint": "Meist vorübergehend — bitte gleich nochmal versuchen.",
+    "tryAgain": "Erneut versuchen",
     "noListingsHint": "Schau bald wieder vorbei — wir fügen neue Einträge hinzu.",
     "noMatchExtended": "Entferne einen Filter oder richte einen Alert ein — wir benachrichtigen dich bei freien Zimmern.",
     "resetFilters": "Filter zurücksetzen",
@@ -408,6 +412,7 @@
     "notifications": "Benachrichtigungen",
     "email": "E-Mail",
     "emailHint": "Per E-Mail benachrichtigen",
+    "emailRequiredHint": "Pflicht — derzeit einziger Benachrichtigungskanal",
     "telegram": "Telegram",
     "telegramHint": "Demnächst — E-Mail-Alerts sind aktiv",
     "telegramAria": "Telegram-Benachrichtigungen demnächst"

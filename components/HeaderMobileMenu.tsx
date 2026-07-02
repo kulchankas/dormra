@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link, usePathname } from '@/i18n/navigation'
-import { Menu, LogIn, UserPlus, LogOut, Bell, LayoutDashboard } from 'lucide-react'
+import { Menu, LogIn, UserPlus, LogOut, Bell, LayoutDashboard, Shield } from 'lucide-react'
 import {
   Sheet,
   SheetClose,
@@ -24,7 +24,13 @@ const NAV = [
   { href: '/how-it-works' as const, key: 'howItWorks' as const },
 ]
 
-export default function HeaderMobileMenu({ signedIn }: { signedIn: boolean }) {
+export default function HeaderMobileMenu({
+  signedIn,
+  showAdmin = false,
+}: {
+  signedIn: boolean
+  showAdmin?: boolean
+}) {
   const t = useTranslations('nav')
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
@@ -75,6 +81,24 @@ export default function HeaderMobileMenu({ signedIn }: { signedIn: boolean }) {
               />
             )
           })}
+          {signedIn && showAdmin && (
+            <SheetClose
+              render={
+                <Link
+                  href="/admin"
+                  className={cn(
+                    'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
+                    pathname.startsWith('/admin')
+                      ? 'bg-brand-soft font-medium text-brand'
+                      : 'text-foreground hover:bg-muted',
+                  )}
+                >
+                  <Shield className="size-4 text-muted-foreground" />
+                  {t('admin')}
+                </Link>
+              }
+            />
+          )}
           {signedIn && (
             <SheetClose
               render={
