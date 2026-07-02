@@ -39,7 +39,9 @@
     "priceFrom": "От €{min} / мес.",
     "priceOnRequest": "Цена по запросу",
     "districtAnyHint": "Оставь пустым для любого района.",
-    "clearCount": "Сбросить ({count})"
+    "clearCount": "Сбросить ({count})",
+    "districtLegendAria": "Показать номера и названия всех районов Вены",
+    "districtLegendTitle": "Районы Вены"
   },
   "nav": {
     "skipToContent": "Перейти к содержимому",

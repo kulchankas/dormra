@@ -1,8 +1,10 @@
 'use client'
 
+import { Info } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { DISTRICT_NAMES } from '@/lib/helpers'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 export default function DistrictGrid({
   selected,
@@ -23,7 +25,30 @@ export default function DistrictGrid({
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-semibold text-foreground">{displayLabel}</span>
+        <div className="flex items-center gap-1">
+          <span className="text-xs font-semibold text-foreground">{displayLabel}</span>
+          <Popover>
+            <PopoverTrigger
+              render={
+                <button
+                  type="button"
+                  className="relative rounded-full p-0.5 text-muted-foreground/70 transition-colors hover:text-foreground after:absolute after:-inset-2"
+                  aria-label={t('districtLegendAria')}
+                />
+              }
+            >
+              <Info className="size-3.5" aria-hidden="true" />
+            </PopoverTrigger>
+            <PopoverContent align="start" className="max-h-72 w-64 overflow-y-auto">
+              <p className="mb-1.5 text-xs font-semibold text-foreground">{t('districtLegendTitle')}</p>
+              <ul className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                {Object.entries(DISTRICT_NAMES).map(([k, name]) => (
+                  <li key={k}>{k}. {name}</li>
+                ))}
+              </ul>
+            </PopoverContent>
+          </Popover>
+        </div>
         {selected.length > 0 && (
           <button
             type="button"
@@ -44,6 +69,7 @@ export default function DistrictGrid({
               key={n}
               type="button"
               title={`${n}. ${DISTRICT_NAMES[n]}`}
+              aria-label={`${n}. ${DISTRICT_NAMES[n]}`}
               aria-pressed={isSelected}
               onClick={() => toggle(n)}
               className={cn(
