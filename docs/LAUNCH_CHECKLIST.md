@@ -2,6 +2,7 @@
 
 **Your action list** — ordered by urgency. Maps to [`STRATEGY.md`](./STRATEGY.md) Phase 1 (prove the loop).
 
+**Your todo:** [`YOUR_TODO.md`](./YOUR_TODO.md)  
 Full operator steps (SQL, curl, DNS): [`MANUAL_TASKS.md`](./MANUAL_TASKS.md)  
 Day-to-day monitoring: [`MONITORING.md`](./MONITORING.md)
 

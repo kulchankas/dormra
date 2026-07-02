@@ -2,13 +2,15 @@
 
 Tasks that **cannot be done in code** or require access to external dashboards. Work through these before public launch or after merging audit PRs.
 
-**Quick path:** see [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md) for a one-page ordered checklist.
+**Quick path:** see [`YOUR_TODO.md`](./YOUR_TODO.md) for your personal checklist, or [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md) for launch order.
 
 ---
 
 ## Your action list (2026-07-02)
 
-Agent verified production after PRs #33–#39. **You still need to complete the unchecked items.**
+**Full checklist with checkboxes:** [`YOUR_TODO.md`](./YOUR_TODO.md)
+
+Agent verified production after PRs #33–#40. **You still need to complete the unchecked items in YOUR_TODO.md.**
 
 | # | Task | Status | Blocker? |
 |---|------|--------|----------|
@@ -353,6 +355,7 @@ Not set up yet. Consider before scale:
 
 ## Related docs
 
+- [`YOUR_TODO.md`](./YOUR_TODO.md) — **your personal checklist**
 - [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md) — one-page launch order
 - [`MONITORING.md`](./MONITORING.md) — where to watch activity
 - [`PROJECT_AUDIT.md`](./PROJECT_AUDIT.md) — full audit and code roadmap

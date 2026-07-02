@@ -101,29 +101,63 @@ export default async function AdminOverviewPage({ params }: PageProps) {
           {t('lastScrape')}: <span className="font-medium text-foreground">{lastScrape}</span>
         </p>
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[320px] text-left text-sm">
+          <table className="w-full min-w-[480px] text-left text-sm">
             <thead>
               <tr className="border-b border-border text-xs text-muted-foreground">
                 <th className="pb-2 pr-4 font-medium">{t('provider')}</th>
                 <th className="pb-2 pr-4 font-medium">{t('dormCount')}</th>
+                <th className="pb-2 pr-4 font-medium">{t('providerLastScrape')}</th>
                 <th className="pb-2 font-medium">{t('failures')}</th>
               </tr>
             </thead>
             <tbody>
-              {stats.providerStats.map(({ provider, dorms, failures }) => (
-                <tr key={provider} className="border-b border-border/50 last:border-0">
-                  <td className="py-2.5 pr-4 font-medium text-foreground">{provider}</td>
-                  <td className="py-2.5 pr-4 text-muted-foreground">{dorms}</td>
-                  <td className="py-2.5">
-                    <span className={failures > 0 ? 'font-medium text-amber-600' : 'text-muted-foreground'}>
-                      {failures}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {stats.providerStats.map(({ provider, dorms, failures, lastScrapedAt, staleCount }) => {
+                const providerLast = lastScrapedAt
+                  ? formatDistanceToNow(new Date(lastScrapedAt), {
+                      addSuffix: true,
+                      locale: dateLocale,
+                    })
+                  : t('never')
+                const isStale =
+                  !lastScrapedAt ||
+                  Date.now() - new Date(lastScrapedAt).getTime() > 6 * 60 * 60 * 1000
+
+                return (
+                  <tr key={provider} className="border-b border-border/50 last:border-0">
+                    <td className="py-2.5 pr-4 font-medium text-foreground">{provider}</td>
+                    <td className="py-2.5 pr-4 text-muted-foreground">{dorms}</td>
+                    <td className="py-2.5 pr-4">
+                      <span
+                        className={
+                          isStale ? 'font-medium text-amber-600' : 'text-muted-foreground'
+                        }
+                      >
+                        {providerLast}
+                      </span>
+                      {staleCount > 0 && (
+                        <span className="mt-0.5 block text-xs text-amber-600/80">
+                          {t('staleDorms', { count: staleCount })}
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-2.5">
+                      <span
+                        className={
+                          failures > 0 ? 'font-medium text-amber-600' : 'text-muted-foreground'
+                        }
+                      >
+                        {failures}
+                      </span>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
+        {stats.staleSnapshots > 0 && (
+          <p className="mt-3 text-xs text-amber-700">{t('cronSplitHint')}</p>
+        )}
         {(stats.scrapeFailures > 0 || stats.staleSnapshots > 0) && (
           <p className="mt-4">
             <Link href="/admin/dorms" className="text-sm font-medium text-brand hover:underline">

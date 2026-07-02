@@ -13,7 +13,13 @@ export type AdminOverview = {
   emailsToday: number
   emailsThisWeek: number
   lastScrapedAt: string | null
-  providerStats: { provider: string; dorms: number; failures: number }[]
+  providerStats: {
+    provider: string
+    dorms: number
+    failures: number
+    lastScrapedAt: string | null
+    staleCount: number
+  }[]
 }
 
 export type DormHealthRow = {
@@ -91,10 +97,18 @@ export async function getAdminOverview(): Promise<AdminOverview> {
   let availableNow = 0
   let scrapeFailures = 0
   let staleSnapshots = 0
-  const providerMap = new Map<string, { dorms: number; failures: number }>()
+  const providerMap = new Map<
+    string,
+    { dorms: number; failures: number; lastScrapedAt: string | null; staleCount: number }
+  >()
 
   for (const dorm of dormList) {
-    const entry = providerMap.get(dorm.provider) ?? { dorms: 0, failures: 0 }
+    const entry = providerMap.get(dorm.provider) ?? {
+      dorms: 0,
+      failures: 0,
+      lastScrapedAt: null,
+      staleCount: 0,
+    }
     entry.dorms++
     providerMap.set(dorm.provider, entry)
   }
@@ -110,12 +124,17 @@ export async function getAdminOverview(): Promise<AdminOverview> {
       if (status === 'failed') scrapeFailures++
       if (status === 'stale') staleSnapshots++
 
-      if (!row.scrape_ok) {
-        const dorm = dormList.find((d) => d.id === row.dorm_id)
-        if (dorm) {
-          const entry = providerMap.get(dorm.provider)!
-          entry.failures++
-        }
+      const dorm = dormList.find((d) => d.id === row.dorm_id)
+      if (!dorm) continue
+
+      const entry = providerMap.get(dorm.provider)!
+      if (!row.scrape_ok) entry.failures++
+      if (status === 'stale') entry.staleCount++
+      if (
+        row.scraped_at &&
+        (!entry.lastScrapedAt || row.scraped_at > entry.lastScrapedAt)
+      ) {
+        entry.lastScrapedAt = row.scraped_at
       }
     }
   }

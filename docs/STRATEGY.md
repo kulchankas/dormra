@@ -14,7 +14,7 @@ Operator checklist: [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md)
 | **Cron scheduler** | ⬜ **You** must enable 3 jobs on cron-job.org |
 | **Auth URLs** | ⬜ Supabase Site URL likely still `localhost` — fix manually |
 | **Alert E2E** | ✅ `/api/test-alert` route shipped |
-| **Next agent work** | h4s attribution verify, admin cron visibility |
+| **Next agent work** | Admin provider scrape times (in progress); h4s attribution after cron |
 
 ---
 
