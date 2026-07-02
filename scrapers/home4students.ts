@@ -5,8 +5,8 @@ import { BOT_UA, scrapeFailure } from './shared'
 const TIMEOUT_MS = 15_000
 const VACANCY_URL = 'https://www.home4students.at/en/vacancy/'
 
-// Address fragments used to locate a dorm block on the shared vacancy page.
-const DORM_ADDRESS_KEYWORDS: Record<string, string[]> = {
+/** Address fragments used to match a dorm to vacancy room cards or text windows. */
+export const DORM_ADDRESS_KEYWORDS: Record<string, string[]> = {
   'h4s-grosse-schiffgasse': ['Große Schiffgasse', 'Schiffgasse 12'],
   'h4s-schaeffergasse': ['Schäffergasse', 'Schaeffergasse'],
   'h4s-neudeggergasse': ['Neudeggergasse'],
@@ -15,9 +15,10 @@ const DORM_ADDRESS_KEYWORDS: Record<string, string[]> = {
   'h4s-sensengasse': ['Sensengasse'],
   'h4s-erlachplatz': ['Erlachplatz'],
   'h4s-ullmannstrasse': ['Ullmannstraße', 'Ullmannstrasse'],
+  // Front + back share one building listing on the vacancy page — same keywords, same availability.
   'h4s-doebling-front': ['Döblinger Hauptstraße', 'Doeblinger Hauptstrasse'],
   'h4s-doebling-back': ['Döblinger Hauptstraße', 'Doeblinger Hauptstrasse'],
-  'h4s-popup-seestadt': ['Sonnenallee 105', 'PopUp'],
+  'h4s-popup-seestadt': ['Sonnenallee 105', 'PopUp', 'Seestadt'],
 }
 
 const AVAILABILITY_KEYWORDS = [
@@ -40,6 +41,26 @@ const UNAVAILABLE_KEYWORDS = [
   'waitlist',
 ]
 
+export type RoomCard = { address: string; text: string }
+
+export function extractRoomCards(html: string): RoomCard[] {
+  const $ = cheerio.load(html)
+  const cards: RoomCard[] = []
+
+  $('.room-card').each((_, el) => {
+    const address = $(el).find('.room-card-h1').first().text().replace(/\s+/g, ' ').trim()
+    const text = $(el).find('.room-card-info').text().replace(/\s+/g, ' ').trim()
+    if (address) cards.push({ address, text })
+  })
+
+  return cards
+}
+
+export function addressMatchesKeywords(address: string, keywords: string[]): boolean {
+  const lower = address.toLowerCase()
+  return keywords.some((kw) => lower.includes(kw.toLowerCase()))
+}
+
 function textFromKeyword(fullText: string, keyword: string): string | null {
   const lower = fullText.toLowerCase()
   const idx = lower.indexOf(keyword.toLowerCase())
@@ -51,10 +72,43 @@ function textFromKeyword(fullText: string, keyword: string): string | null {
   return tail.slice(0, end).trim()
 }
 
+function parseFromTextWindow(rawFull: string, keywords: string[]): { available: boolean; rawText: string } {
+  let scope = rawFull
+  for (const keyword of keywords) {
+    const window = textFromKeyword(rawFull, keyword)
+    if (window) {
+      scope = window
+      break
+    }
+  }
+
+  const lower = scope.toLowerCase()
+  const unavailable = UNAVAILABLE_KEYWORDS.some((kw) => lower.includes(kw))
+  const available = !unavailable && AVAILABILITY_KEYWORDS.some((kw) => lower.includes(kw))
+
+  return { available, rawText: scope.slice(0, 500) }
+}
+
 export function parseHome4StudentsAvailability(
   html: string,
   dormSlug: string,
 ): { available: boolean; rawText: string } {
+  const keywords = DORM_ADDRESS_KEYWORDS[dormSlug]
+  const roomCards = extractRoomCards(html)
+
+  if (roomCards.length > 0 && keywords) {
+    const matching = roomCards.filter((card) => addressMatchesKeywords(card.address, keywords))
+    if (matching.length > 0) {
+      const rawText = matching.map((c) => c.address).join('; ').slice(0, 500)
+      return { available: true, rawText }
+    }
+    return {
+      available: false,
+      rawText: `No vacancy cards for ${keywords[0]}`,
+    }
+  }
+
+  // Fallback when page has no structured cards (or unknown slug).
   const $ = cheerio.load(html)
   $('nav, header, footer, script, style, noscript').remove()
 
@@ -65,27 +119,15 @@ export function parseHome4StudentsAvailability(
     $('body')
 
   const rawFull = contentEl.text().replace(/\s+/g, ' ').trim()
-  const keywords = DORM_ADDRESS_KEYWORDS[dormSlug]
-  let scope = rawFull
 
   if (keywords) {
-    for (const keyword of keywords) {
-      const window = textFromKeyword(rawFull, keyword)
-      if (window) {
-        scope = window
-        break
-      }
-    }
+    return parseFromTextWindow(rawFull, keywords)
   }
 
-  const lower = scope.toLowerCase()
+  const lower = rawFull.toLowerCase()
   const unavailable = UNAVAILABLE_KEYWORDS.some((kw) => lower.includes(kw))
   const available = !unavailable && AVAILABILITY_KEYWORDS.some((kw) => lower.includes(kw))
-
-  return {
-    available,
-    rawText: scope.slice(0, 500),
-  }
+  return { available, rawText: rawFull.slice(0, 500) }
 }
 
 export async function scrapeHome4Students(

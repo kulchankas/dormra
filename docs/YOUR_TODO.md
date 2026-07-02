@@ -3,7 +3,8 @@
 Personal operator checklist — things **only you** can do in external dashboards.  
 Agent work is tracked in [`PROJECT_AUDIT.md`](./PROJECT_AUDIT.md) § Agent schedule.
 
-**Last updated:** 2026-07-02
+**Last updated:** 2026-07-02  
+**Status:** Deferred — you'll return to these later. Agent continues code work in parallel.
 
 ---
 
