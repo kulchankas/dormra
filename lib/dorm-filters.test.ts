@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_FILTERS,
+  MIN_PRICE_FLOOR,
   applyFilters,
+  dormAllowsShortStay,
   dormWithinBudget,
   filtersToSearchParams,
+  haversineDistanceKm,
   parseFiltersFromParams,
 } from './dorm-filters'
 import type { Dorm } from './helpers'
@@ -32,21 +35,58 @@ const baseDorm = (overrides: Partial<Dorm>): Dorm => ({
   active: true,
   created_at: '2026-01-01T00:00:00Z',
   image_url: null,
+  lat: null,
+  lng: null,
   ...overrides,
 })
 
 describe('dormWithinBudget', () => {
   it('uses price_min when present', () => {
-    expect(dormWithinBudget(baseDorm({ price_min: 400, price_max: 700 }), 500)).toBe(true)
-    expect(dormWithinBudget(baseDorm({ price_min: 600, price_max: 700 }), 500)).toBe(false)
+    expect(dormWithinBudget(baseDorm({ price_min: 400, price_max: 700 }), MIN_PRICE_FLOOR, 500)).toBe(true)
+    expect(dormWithinBudget(baseDorm({ price_min: 600, price_max: 700 }), MIN_PRICE_FLOOR, 500)).toBe(false)
   })
 
   it('falls back to price_max when price_min is null', () => {
-    expect(dormWithinBudget(baseDorm({ price_min: null, price_max: 450 }), 500)).toBe(true)
+    expect(dormWithinBudget(baseDorm({ price_min: null, price_max: 450 }), MIN_PRICE_FLOOR, 500)).toBe(true)
   })
 
   it('keeps dorms with unknown pricing visible', () => {
-    expect(dormWithinBudget(baseDorm({ price_min: null, price_max: null }), 500)).toBe(true)
+    expect(dormWithinBudget(baseDorm({ price_min: null, price_max: null }), MIN_PRICE_FLOOR, 500)).toBe(true)
+  })
+
+  it('excludes dorms priced below the minimum', () => {
+    expect(dormWithinBudget(baseDorm({ price_min: 300, price_max: 350 }), 400, 1500)).toBe(false)
+    expect(dormWithinBudget(baseDorm({ price_min: 450, price_max: 500 }), 400, 1500)).toBe(true)
+  })
+})
+
+describe('dormAllowsShortStay', () => {
+  it('allows dorms with no minimum stay requirement', () => {
+    expect(dormAllowsShortStay(baseDorm({ min_stay_months: null }))).toBe(true)
+  })
+
+  it('allows dorms with a short minimum stay', () => {
+    expect(dormAllowsShortStay(baseDorm({ min_stay_months: 3 }))).toBe(true)
+  })
+
+  it('excludes dorms requiring a long minimum stay', () => {
+    expect(dormAllowsShortStay(baseDorm({ min_stay_months: 12 }))).toBe(false)
+  })
+})
+
+describe('haversineDistanceKm', () => {
+  it('returns ~0 for identical coordinates', () => {
+    const point = { lat: 48.2082, lng: 16.3738 }
+    expect(haversineDistanceKm(point, point)).toBeCloseTo(0, 3)
+  })
+
+  it('computes a plausible distance across Vienna', () => {
+    // TU Wien to Uni Wien — roughly 3km apart.
+    const tuWien = { lat: 48.1983, lng: 16.3695 }
+    const uniWien = { lat: 48.2131, lng: 16.3593 }
+    const km = haversineDistanceKm(tuWien, uniWien)
+    expect(km).toBeGreaterThan(1)
+    expect(km).toBeLessThan(5)
   })
 })
 
@@ -98,6 +138,31 @@ describe('applyFilters', () => {
     const result = applyFilters(priced, { ...DEFAULT_FILTERS, sort: 'price_asc' }, avail)
     expect(result.map((d) => d.id)).toEqual(['y', 'x'])
   })
+
+  it('filters by min price, excluding cheaper dorms', () => {
+    const result = applyFilters(dorms, { ...DEFAULT_FILTERS, minPrice: 420 }, availability)
+    expect(result.map((d) => d.id)).toEqual(['c', 'b'])
+  })
+
+  it('filters short-stay-friendly dorms', () => {
+    const mixed = [
+      baseDorm({ id: 'short', min_stay_months: 3 }),
+      baseDorm({ id: 'long', min_stay_months: 12 }),
+      baseDorm({ id: 'unset', min_stay_months: null }),
+    ]
+    const result = applyFilters(mixed, { ...DEFAULT_FILTERS, shortStayOk: true })
+    expect(result.map((d) => d.id).sort()).toEqual(['short', 'unset'])
+  })
+
+  it('sorts by distance when distance data is provided', () => {
+    const result = applyFilters(
+      dorms,
+      { ...DEFAULT_FILTERS, sort: 'distance' },
+      availability,
+      { a: 5, b: 1, c: 3 },
+    )
+    expect(result.map((d) => d.id)).toEqual(['b', 'c', 'a'])
+  })
 })
 
 describe('parseFiltersFromParams / filtersToSearchParams', () => {
@@ -117,5 +182,15 @@ describe('parseFiltersFromParams / filtersToSearchParams', () => {
     expect(params.get('available')).toBe('1')
     expect(params.get('moveIn')).toBe('2026-09-01')
     expect(params.get('q')).toBe('arsenal')
+  })
+
+  it('round-trips min price and short-stay params', () => {
+    const parsed = parseFiltersFromParams({ minPrice: '450', shortStay: '1' })
+    expect(parsed.minPrice).toBe(450)
+    expect(parsed.shortStayOk).toBe(true)
+
+    const params = filtersToSearchParams(parsed)
+    expect(params.get('minPrice')).toBe('450')
+    expect(params.get('shortStay')).toBe('1')
   })
 })
