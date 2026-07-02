@@ -82,6 +82,7 @@ Set for **Production** (and Preview if you test PRs):
 | `CRON_SECRET` | Long random string (see below) |
 | `RESEND_API_KEY` | From [resend.com](https://resend.com) |
 | `NEXT_PUBLIC_SITE_URL` | `https://dormra.eu` |
+| `ADMIN_EMAILS` | Your email(s), comma-separated — enables `/admin` dashboard |
 
 After adding/changing vars → **Redeploy** production.
 
@@ -184,7 +185,15 @@ Not set up yet. Consider before scale:
 
 ---
 
-## 8. Troubleshooting
+## 8. Admin dashboard & monitoring
+
+**In-app:** After setting `ADMIN_EMAILS`, log in and open `/admin` (or via header menu → Admin).
+
+**Full guide:** [`MONITORING.md`](./MONITORING.md) — Vercel logs, cron-job.org, Supabase, Resend.
+
+---
+
+## 9. Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -208,6 +217,7 @@ Not set up yet. Consider before scale:
 | CRON_SECRET + cron-job.org | You | **Yes** (stale data without) |
 | Resend domain verified | You | Recommended |
 | Auth redirect URLs | You | **Yes** (OAuth/reset) |
+| ADMIN_EMAILS set | You | Recommended (monitoring) |
 | Smoke tests | You | Recommended |
 
 ---
@@ -215,5 +225,6 @@ Not set up yet. Consider before scale:
 ## Related docs
 
 - [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md) — one-page launch order
+- [`MONITORING.md`](./MONITORING.md) — where to watch activity
 - [`PROJECT_AUDIT.md`](./PROJECT_AUDIT.md) — full audit and code roadmap
 - [`../README.md`](../README.md) — dev setup and architecture
