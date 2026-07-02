@@ -1,8 +1,8 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { Home } from 'lucide-react'
+import DormImage from '@/components/DormImage'
 import {
   formatDistrictLabel,
   formatPriceLabel,
@@ -60,12 +60,10 @@ export default function DormCard({ dorm, availability, variant = 'full' }: Props
           )}
         >
           {dorm.image_url ? (
-            <Image
+            <DormImage
               src={dorm.image_url}
               alt={`${dorm.name} dormitory`}
-              fill
               sizes={isCompact ? '(max-width: 768px) 100vw, 33vw' : '(max-width: 768px) 100vw, 50vw'}
-              className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             />
           ) : (
             <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-gradient-to-br from-brand-soft to-background">
