@@ -5,35 +5,17 @@
 Full operator steps (SQL, curl, DNS): [`MANUAL_TASKS.md`](./MANUAL_TASKS.md)  
 Day-to-day monitoring: [`MONITORING.md`](./MONITORING.md)
 
+**Last audit:** 2026-07-02 — cron endpoint verified; cron-job.org still needs your enable.
+
 ---
 
-## Do now — unblock live cron & auth
+## Do now — your manual steps
 
-Nothing else in Phase 1 counts until the scrape loop runs in production.
+Nothing in Phase 1 counts until cron runs continuously and auth URLs are fixed.
 
-### 1. Confirm deploy from PR #33
+### 1. cron-job.org — enable 3 jobs ⬜
 
-- [x] **PR #33 merged** — proxy fix for `/api/*`, `/auth/*`, metadata routes
-- [ ] Wait for Vercel production deploy, then verify (step 2)
-
-**Why:** Production was returning **404** for `/api/cron/scrape` and `/auth/callback`. cron-job.org disabled the job after repeated failures.
-
-### 2. Verify the scrape endpoint
-
-```bash
-curl -H "Authorization: Bearer YOUR_CRON_SECRET" https://dormra.eu/api/cron/scrape
-```
-
-| Response | Action |
-|----------|--------|
-| `{ "ok": true, ... }` | Working — continue |
-| **401** | `CRON_SECRET` mismatch — align Vercel and cron-job.org |
-| **404** | Deploy not finished or PR #33 not merged |
-| **500** | Check Vercel logs; likely missing `SUPABASE_SERVICE_ROLE_KEY` |
-
-### 3. Re-enable cron-job.org (3 jobs)
-
-Disabled jobs stay off until you turn them back on. One job times out (504); use **three split jobs**:
+The scrape **endpoint works**; the **scheduler is still off** until you enable it.
 
 - [ ] Open [cron-job.org](https://console.cron-job.org/) → disable/delete old single job
 - [ ] **Job 1** — `GET https://dormra.eu/api/cron/scrape?providers=stuwo,home4students&prune=1` — `*/15 * * * *`
@@ -42,49 +24,58 @@ Disabled jobs stay off until you turn them back on. One job times out (504); use
 - [ ] All jobs: header `Authorization: Bearer <CRON_SECRET>`, timeout **300s**
 - [ ] **Enable** all three; confirm execution history shows **HTTP 200**
 
-Or run `./scripts/setup-cron-jobs.sh` with `CRON_JOB_ORG_API_KEY` + `CRON_SECRET` (see [`MANUAL_TASKS.md`](./MANUAL_TASKS.md) §3).
+Or: `CRON_JOB_ORG_API_KEY=... CRON_SECRET=... ./scripts/setup-cron-jobs.sh`
 
-### 4. Fix Supabase auth URLs
-
-In Supabase → **Authentication** → **URL Configuration**:
+### 2. Supabase auth URLs ⬜
 
 - [ ] **Site URL:** `https://dormra.eu` (not `localhost:3000`)
 - [ ] **Redirect URLs:** `https://dormra.eu/auth/callback`, `http://localhost:3000/auth/callback`
 
-Without this, password reset and Google OAuth redirect to localhost.
+### 3. Rotate secrets ⬜ (if exposed in chat)
 
-### 5. Google OAuth (if using “Continue with Google”)
+- [ ] New `CRON_SECRET` in Vercel + all 3 cron-job.org jobs
+- [ ] New Supabase service role key
+- [ ] New `RESEND_API_KEY` → redeploy
 
-- [ ] Google Cloud → OAuth redirect URI: `https://vmnnvtifpknakerduioq.supabase.co/auth/v1/callback`
-- [ ] Supabase → Authentication → Providers → Google: enable + paste Client ID/Secret
+### 4. RLS smoke test ⬜
 
-Details: [`MANUAL_TASKS.md`](./MANUAL_TASKS.md) §5b
+- [ ] Anon key must **not** return other users' alerts — [`MANUAL_TASKS.md`](./MANUAL_TASKS.md) §1.1
+
+### 5. Google OAuth ⬜ (optional)
+
+Only if using “Continue with Google” — [`MANUAL_TASKS.md`](./MANUAL_TASKS.md) §5b
 
 ---
 
-## Already done — skip unless something broke
+## Agent verified — production ready
 
 ### Code merged to `main`
 
 - [x] i18n (DE/RU UI, localized emails, hreflang)
 - [x] Audit + admin dashboard (`/admin`, cron fail-closed, alert validation, snapshot RPC, email dedup)
 - [x] UX polish (dorms error fallback, mobile admin, `RESEND_FROM` env support)
-- [x] `feature/wire-email-engine` — **fully absorbed into `main`** (branch has 0 unique commits; safe to ignore)
-- [x] Auth hardening + RLS migration **in code** (see Supabase section below)
-- [x] Per-dorm “Alert me” button on `/dorms/[slug]` and directory
-- [x] 3 live scrapers: OeAD (26 dorms), home4students (11), STUWO
+- [x] Proxy fix PR #33 — `/api/*`, `/auth/*` no longer 404
+- [x] Playwright on Vercel PR #36–37 — Chromium pack URL
+- [x] **Cron split PR #39** — provider batches avoid 504 timeout
+- [x] **`/api/test-alert`** — E2E alert test route (CRON_SECRET auth)
+- [x] 3 live scrapers: OeAD (26), home4students (11), STUWO (12)
+
+### Cron endpoint (tested 2026-07-02)
+
+- [x] Fast scrape `?providers=stuwo,home4students` → **200** ~20s, 26 dorms
+- [x] OeAD batch 0 → **200** ~125s, 13 dorms
+- [x] Unauthorized → **401** quickly
 
 ### Vercel env (you confirmed)
 
 - [x] `ADMIN_EMAILS=kulchankas@gmail.com`
 - [x] `CRON_SECRET`, Supabase keys, `RESEND_API_KEY`
+- [ ] `NEXT_PUBLIC_SITE_URL=https://dormra.eu` — confirm set
 
 ### Supabase (applied via SQL Editor)
 
 - [x] RLS enabled on public tables
-- [x] Migrations: `user_alerts_locale`, `snapshot_rpc_and_retention`, `alert_log_dedup`
-
-- [ ] **Verify RLS** — anon key must not return other users' alerts ([`MANUAL_TASKS.md`](./MANUAL_TASKS.md) §1.1 smoke test)
+- [x] Migrations: locale, snapshot RPC, alert dedup
 
 ---
 
@@ -95,43 +86,49 @@ Details: [`MANUAL_TASKS.md`](./MANUAL_TASKS.md) §5b
 - [ ] Log in as `kulchankas@gmail.com`
 - [ ] Open https://dormra.eu/admin
 - [ ] **Dorm health** — last scrape times update every ~15 min
-- [ ] **Email log** — entries appear when availability transitions fire alerts
+- [ ] **Email log** — entries when availability transitions fire alerts
 
-### 7. Resend production sender
+### 7. Test alert email (optional, before real transition)
+
+```bash
+curl -H "Authorization: Bearer YOUR_CRON_SECRET" \
+  "https://dormra.eu/api/test-alert?slug=oead-guadenzdorf&email=kulchankas@gmail.com"
+```
+
+- [ ] Email received; Resend dashboard shows delivery
+
+### 8. Resend production sender
 
 - [ ] [Resend](https://resend.com/domains) → verify `dormra.eu` (DNS SPF/DKIM)
 - [ ] Vercel: `RESEND_FROM=Dormra <alerts@dormra.eu>`
 - [ ] Redeploy
 
-### 8. End-user smoke test
+### 9. End-user smoke test
 
 - [ ] Homepage → `/dorms` search (budget filter works)
 - [ ] Sign up / log in
 - [ ] Create alert on dashboard
 - [ ] Password reset email → link lands on `dormra.eu`
-- [ ] Google sign-in (if enabled)
 
-Details: [`MANUAL_TASKS.md`](./MANUAL_TASKS.md) §6
-
-### 9. Rotate Resend key (if ever exposed)
-
-- [ ] Generate new key in Resend dashboard
-- [ ] Update `RESEND_API_KEY` in Vercel → redeploy
-- [ ] Revoke old key
+Details: [`MANUAL_TASKS.md`](./MANUAL_TASKS.md) §7
 
 ---
 
-## Phase 1 product gaps — after ops are green
+## Phase 1 product gaps — agent backlog
 
-These are the remaining **Phase 1 strategy** items. See [`STRATEGY.md`](./STRATEGY.md) for rationale.
+| Item | Status | Owner | Next step |
+|------|--------|-------|-----------|
+| Live cron for 7 days | ⬜ Blocked on you | You | Enable 3 cron-job.org jobs |
+| `/api/test-alert` E2E route | ✅ Done | Agent | You run curl in §7 |
+| Hero `moveIn` filter | ⚠️ Partial | Agent | No scraped move-in dates — banner + alert CTA only |
+| home4students shared-URL attribution | ⚠️ Partial | Agent | Verify in `/admin` after cron runs |
+| Zero false/missed alerts (1 week) | ⬜ Not measured | You + agent | Watch admin after cron restored |
 
-| Item | Status | Next step |
-|------|--------|-----------|
-| Live cron for 7 days | ❌ Blocked | Complete steps 1–3 above |
-| `/api/test-alert` E2E test route | ❌ Not built | Add dev-only route to fire a real alert against prod Supabase |
-| Hero `moveIn` filter | ⚠️ Partial | Search navigates to `/dorms?moveIn=…` but **does not filter** — banner says “not live yet” |
-| home4students shared-URL attribution | ⚠️ Partial | Fetch dedup done; `h4s-doebling-front` / `h4s-doebling-back` share address keywords — verify in admin after cron runs |
-| Zero false/missed alerts (1 week) | ❌ Not measured | Watch admin Dorm health + Email log after cron restored |
+### Agent next (Phase 1 code)
+
+1. **home4students attribution audit** — verify Döbling front/back in admin after live cron
+2. **Admin cron status widget** — surface last split-job durations from scrape metadata
+3. **move_in_before** — keep stored but documented until providers expose dates
 
 ---
 
@@ -141,9 +138,9 @@ Hold until Phase 1 success metric is met (one real student, one correct alert, o
 
 | Phase | Goal | Status |
 |-------|------|--------|
-| **2 — Widen moat** | 3 → 9 scrapers; any Vienna dorm searchable | 3/9 scrapers live |
-| **3 — Acquisition** | Telegram, SEO, community; no Stripe yet | Telegram UI only; SEO not started |
-| **4 — Expansion** | Graz after Vienna flywheel works | Not started |
+| **2 — Widen moat** | 3 → 9 scrapers | 3/9 live |
+| **3 — Acquisition** | Telegram, SEO | Telegram UI only |
+| **4 — Expansion** | Graz after Vienna | Not started |
 
 Full roadmap: [`STRATEGY.md`](./STRATEGY.md)
 
@@ -151,11 +148,11 @@ Full roadmap: [`STRATEGY.md`](./STRATEGY.md)
 
 ## Post-launch monitoring
 
-- [ ] cron-job.org — execution history (200, not 404/401)
-- [ ] Vercel logs — filter `path:/api/cron/scrape`
+- [ ] cron-job.org — 3 jobs, execution history **200**
+- [ ] Vercel logs — `path:/api/cron/scrape`
 - [ ] `/admin` → Dorm health + Email log
-- [ ] Supabase — `availability_snapshots` growth (~5k rows/day; 30-day prune in cron)
-- [ ] Resend — delivery status vs admin Email log
+- [ ] Supabase — snapshot growth (~5k rows/day; prune in fast job)
+- [ ] Resend — delivery vs admin Email log
 
 ---
 
@@ -163,8 +160,8 @@ Full roadmap: [`STRATEGY.md`](./STRATEGY.md)
 
 | Doc | Purpose |
 |-----|---------|
-| [`STRATEGY.md`](./STRATEGY.md) | Business thesis + phases vs current status |
+| [`STRATEGY.md`](./STRATEGY.md) | Business thesis + phases vs status |
 | [`MANUAL_TASKS.md`](./MANUAL_TASKS.md) | Step-by-step SQL, curl, DNS |
 | [`MONITORING.md`](./MONITORING.md) | Where to watch cron, emails, DB |
-| [`PROJECT_AUDIT.md`](./PROJECT_AUDIT.md) | Code audit items (mostly ✅) |
+| [`PROJECT_AUDIT.md`](./PROJECT_AUDIT.md) | Code audit + agent schedule |
 | [`../README.md`](../README.md) | Local dev setup |

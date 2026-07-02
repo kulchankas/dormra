@@ -5,6 +5,19 @@ Operator checklist: [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md)
 
 ---
 
+## Current status snapshot (2026-07-02)
+
+| Area | State |
+|------|--------|
+| **Phase** | Still **Phase 1** — prove the loop |
+| **Cron code** | ✅ Split scrape live (PR #39); fast ~20s, OeAD batch ~125s |
+| **Cron scheduler** | ⬜ **You** must enable 3 jobs on cron-job.org |
+| **Auth URLs** | ⬜ Supabase Site URL likely still `localhost` — fix manually |
+| **Alert E2E** | ✅ `/api/test-alert` route shipped |
+| **Next agent work** | h4s attribution verify, admin cron visibility |
+
+---
+
 ## Core thesis
 
 Vienna has multiple independent dormitory providers (OeAD, home4students, and others), each running their own siloed booking/availability system. No student-facing layer aggregates them. That gap is the entire business. The moat isn't the tech — it's **coverage**: being the only place a student can check every dorm's real-time availability in one search.
@@ -29,20 +42,20 @@ Everything else — design, branding, monetization — is secondary until those 
 | Item | Plan | Status | Notes |
 |------|------|--------|-------|
 | Merge `feature/wire-email-engine` | Stop branch divergence | ✅ **Done** | Branch fully absorbed into `main` (0 unique commits on `feature/wire-email-engine`) |
-| End-to-end test via `/api/test-alert` | Real Supabase, not fixtures | ❌ **Not built** | No route exists; add when ops are stable |
-| Fix hero search | Homepage must search | ⚠️ **Partial** | Budget + navigation work; `moveIn` param passed but **not filtered** on `/dorms` |
-| Fix home4students shared-URL attribution | Wrong attribution kills trust | ⚠️ **Partial** | `ScrapeHtmlCache` dedupes fetches; per-slug keyword windows exist; **Döbling front/back share keywords** — needs live verification in `/admin` |
-| Rotate exposed Resend key | Security hygiene | ⏳ **Manual** | Only if key was ever committed or leaked |
-| Cron running every 15 min | Data stays fresh | ⚠️ **Deploying** | PR #33 merged; verify endpoint returns 401/200 (not 404), then re-enable cron-job.org |
-| Auth flows (login, reset, Google) | Users can sign up | ⚠️ **Deploying** | `/auth/callback` fixed in PR #33; still need Supabase Site URL → `https://dormra.eu` |
+| End-to-end test via `/api/test-alert` | Real Supabase, not fixtures | ✅ **Done** | `GET /api/test-alert?slug=…&dryRun=1` or `&email=ADMIN` |
+| Fix hero search | Homepage must search | ⚠️ **Partial** | Budget + navigation work; `moveIn` param passed but **not filtered** (no provider move-in data) |
+| Fix home4students shared-URL attribution | Wrong attribution kills trust | ⚠️ **Partial** | Dedup + keyword windows in code; **verify in `/admin` after cron runs** |
+| Rotate exposed secrets | Security hygiene | ⬜ **Manual** | CRON, Supabase service role, Resend — see MANUAL_TASKS §2.1 |
+| Cron running every 15 min | Data stays fresh | ⚠️ **Code ready** | Endpoint 200; **cron-job.org disabled** — enable 3 split jobs |
+| Auth flows (login, reset, Google) | Users can sign up | ⚠️ **Partial** | Callback route fixed; **Supabase Site URL → dormra.eu** still manual |
 | RLS + auth hardening | Before real users | ✅ **Done in code** | Migration applied; middleware guards `/dashboard` and `/admin` |
 | Admin observability | Trust the data | ✅ **Done** | `/admin` — dorm health, email log, alert stats |
 
 ### Phase 1 verdict
 
-**You are still in Phase 1.** The product demo exists; the **live loop is not proven** until cron runs for a week with correct alerts. Ops fixes (PR #33, cron-job.org, Supabase URLs) come before new features.
+**You are still in Phase 1.** Cron **code** is proven; the **scheduler and auth URLs** are not. Enable cron-job.org, fix Supabase URLs, run one week of alert watch — then declare Phase 1 done.
 
-*Rationale:* Every week spent on design or naming instead of this is a week the core promise (accurate real-time alerts) stays unproven. Until this works, Dormra is a demo, not a product.
+*Rationale:* Every week spent on design or naming instead of this is a week the core promise (accurate real-time alerts) stays unproven. Until cron runs continuously, Dormra is a demo, not a product.
 
 ---
 
@@ -106,31 +119,39 @@ Everything else — design, branding, monetization — is secondary until those 
 | No new feature branches without merge cadence | ⚠️ **Ongoing** | Many `cursor/*` branches merged; keep merging within days |
 | Design/branding exploration capped | ✅ **Aligned** | Sunset Coral / clean direction retained; avoid detours |
 | Alert changes tested for first-scrape + scraper-recovery edge cases | ⚠️ **Partial** | Tests for diff, cron-auth, callback; add before alert logic changes |
-| Data trust over features | ⚠️ **At risk** | Cron 404 means stale availability — fix before marketing |
+| Data trust over features | ⚠️ **At risk** | Cron scheduler off — enable cron-job.org before marketing |
 
 ---
 
 ## What to do right now
 
-See [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md) — summary:
+**You (manual):** see [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md) § “Do now”
 
-1. Confirm **PR #33 deploy** — `curl` to `/api/cron/scrape` returns 401/200 (not 404)
-2. Re-enable **cron-job.org**
-3. Fix Supabase **Site URL** + redirect URLs
-4. Confirm `/admin` shows fresh scrape times
-5. Run one-week **false/missed alert** watch — then declare Phase 1 done
+1. Enable **3 cron-job.org jobs** (or run `./scripts/setup-cron-jobs.sh`)
+2. Fix Supabase **Site URL** + redirect URLs
+3. Rotate secrets if exposed
+4. RLS anon smoke test
+5. Run `/api/test-alert` curl → confirm email delivery
+
+**Agent (code):** after you enable cron
+
+1. Verify home4students attribution in `/admin` dorm health
+2. Improve admin cron observability (last run per provider batch)
+3. Hold new scrapers until Phase 1 metric met
 
 ---
 
 ## Architecture (reference)
 
 ```
-cron-job.org → GET /api/cron/scrape
+cron-job.org (3 jobs)
+  → GET /api/cron/scrape?providers=… | ?provider=oead&batch=N
   → scrapers (OeAD/Playwright, STUWO, home4students/Cheerio)
   → processSnapshot() → availability_snapshots
   → on false→true: matchAlertsForDorm() → sendAvailabilityAlert() → alert_log
 
-Users → Next.js [locale] → Supabase (RLS) → user_alerts, dorms
+Operator test:
+  GET /api/test-alert?slug=…&dryRun=1 | &email=ADMIN@…
 ```
 
 Technical audit detail: [`PROJECT_AUDIT.md`](./PROJECT_AUDIT.md)

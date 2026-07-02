@@ -1,10 +1,10 @@
 # Dormra Project Audit & Roadmap
 
-Last updated: 2026-07-01
+Last updated: 2026-07-02
 
 ## Executive summary
 
-Dormra is a well-structured beta: clear scraper → snapshot → diff → alert pipeline, honest README about planned features, and solid RLS policy design. Main risks are **operational** (RLS applied in prod?, env vars set?, email domain verified?) and **a few broken/incomplete user flows** (password reset). Scale issues (snapshot growth, alert matching) matter before traffic grows.
+Dormra is a well-structured beta: clear scraper → snapshot → diff → alert pipeline, honest README about planned features, and solid RLS policy design. **Production cron code is working** (split jobs, Playwright on Vercel); remaining blockers are **operator tasks** (cron-job.org enable, Supabase auth URLs, secret rotation, Resend domain).
 
 ---
 
@@ -12,7 +12,9 @@ Dormra is a well-structured beta: clear scraper → snapshot → diff → alert 
 
 | # | Issue | Status | Notes |
 |---|--------|--------|-------|
-| 1.1 | **RLS not verified in production** | Manual | See [`MANUAL_TASKS.md`](./MANUAL_TASKS.md) §1 |
+| 1.1 | **RLS not verified in production** | Manual | Anon smoke test — [`MANUAL_TASKS.md`](./MANUAL_TASKS.md) §1.1 |
+| 1.5 | **Cron 504 on full scrape** | ✅ Done | PR #39 split by provider + batch; 3 cron-job.org jobs |
+| 1.6 | **No E2E alert test route** | ✅ Done | `GET /api/test-alert` (CRON_SECRET auth) |
 | 1.2 | **Password reset broken** | ✅ Done | `/reset-password` page + callback recovery redirect |
 | 1.3 | **Cron auth fails open** if `CRON_SECRET` unset | ✅ Done | `lib/cron-auth.ts` fail-closed + timing-safe compare |
 | 1.4 | **No server-side alert validation** | ✅ Done | `lib/alert-schema.ts` + server actions |
@@ -34,8 +36,8 @@ Dormra is a well-structured beta: clear scraper → snapshot → diff → alert 
 
 | # | Issue | Status | Notes |
 |---|--------|--------|-------|
-| 3.1 | Hero `moveIn` param doesn't filter | Open | Banner says "not live yet" — OK for beta |
-| 3.2 | `move_in_before` not matched | Open | Documented; hide field when ready |
+| 3.1 | Hero `moveIn` param doesn't filter | Open | No scraped move-in dates — banner + alert CTA; matching deferred |
+| 3.2 | `move_in_before` not matched | Open | Documented; field stored for future use |
 | 3.3 | Hardcoded English in helpers | ✅ Done | `lib/i18n-labels.ts` + DistrictGrid |
 | 3.4 | Inactive dorms reachable by URL | ✅ Done | Detail page checks `active = true` |
 | 3.5 | `/dorms` Suspense ineffective | ✅ Done | Data fetch in async `DormsContent` child |
@@ -61,15 +63,42 @@ Dormra is a well-structured beta: clear scraper → snapshot → diff → alert 
 
 ---
 
+## Agent schedule (post-audit 2026-07-02)
+
+Priority order — **do not start Phase 2 scrapers until Phase 1 metric met.**
+
+| Priority | Task | Rationale | Depends on |
+|----------|------|-----------|------------|
+| P0 | *(blocked)* home4students attribution verify | Data trust — Döbling front/back share URL | You enable cron |
+| P1 | Admin cron health — per-provider last scrape | Ops visibility for 3-job split | Cron running |
+| P2 | `/api/test-alert` polish | ✅ Shipped this sprint | — |
+| P3 | move_in filtering | Blocked — providers don't expose dates | Scraper data model |
+| Hold | New scrapers (ÖJAB, WIHAST, …) | Phase 2 gate | Phase 1 week clean |
+
+**Your manual schedule (parallel):**
+
+| When | Task |
+|------|------|
+| **Today** | Enable 3 cron-job.org jobs; fix Supabase Site URL |
+| **Today** | Rotate secrets if exposed; RLS smoke test |
+| **This week** | Resend domain verify; end-user smoke tests |
+| **Day 1–7 after cron** | Watch `/admin` for false/missed alerts |
+| **Day 7** | Declare Phase 1 done or file bugs |
+
+---
+
 ## Architecture reference
 
 ```
-cron-job.org → GET /api/cron/scrape
+cron-job.org (3 jobs)
+  → GET /api/cron/scrape?providers=stuwo,home4students&prune=1
+  → GET /api/cron/scrape?provider=oead&batch=0|1&batches=2
   → scrapers (OeAD/Playwright, STUWO, home4students/Cheerio)
   → processSnapshot() → availability_snapshots
   → on false→true: matchAlertsForDorm() → sendAvailabilityAlert() → alert_log
 
 Users → Next.js [locale] → Supabase (RLS) → user_alerts, dorms
+Operator → GET /api/test-alert?slug=…&dryRun=1|email=…
 ```
 
 ## Environment checklist
@@ -108,4 +137,6 @@ Users → Next.js [locale] → Supabase (RLS) → user_alerts, dorms
 | 2026-07-01 | `cursor/project-audit-5868` | Phase 1.2–1.4, 2.2, 2.7, 3.4, 3.6, 4.2, audit doc, README |
 | 2026-07-01 | `cursor/i18n-de-ru-5868` | Full i18n stages 1–5, typography, language switcher |
 | 2026-07-02 | `cursor/ux-polish-next-5868` | H3 dorms error UI, M1/M2/M6 UX, mobile admin, slug loading, RESEND_FROM |
-| 2026-07-02 | `main` | Admin dashboard merge, Vercel Analytics |
+| 2026-07-02 | `main` | PR #33–37 ops fixes (proxy, Playwright, Chromium pack) |
+| 2026-07-02 | `cursor/cron-split-providers-5868` | PR #39 cron split; setup-cron-jobs.sh; MONITORING docs |
+| 2026-07-02 | `cursor/test-alert-and-docs-5868` | `/api/test-alert`; manual tasks + strategy audit refresh |

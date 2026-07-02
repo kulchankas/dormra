@@ -110,6 +110,15 @@ All jobs: `Authorization: Bearer $CRON_SECRET`, request timeout 300s.
 
 Automated setup: `./scripts/setup-cron-jobs.sh` (needs `CRON_JOB_ORG_API_KEY` + `CRON_SECRET`).
 
+**Test alert pipeline** (same `CRON_SECRET`):
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" \
+  "https://dormra.eu/api/test-alert?slug=oead-guadenzdorf&dryRun=1"
+curl -H "Authorization: Bearer $CRON_SECRET" \
+  "https://dormra.eu/api/test-alert?slug=oead-guadenzdorf&email=YOUR_ADMIN_EMAIL"
+```
+
 Response JSON includes `scraped`, `errors`, `skipped`, `byProvider`, and `duration_ms`.
 
 ## Project structure

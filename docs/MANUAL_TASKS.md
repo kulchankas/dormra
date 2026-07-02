@@ -4,7 +4,31 @@ Tasks that **cannot be done in code** or require access to external dashboards. 
 
 **Quick path:** see [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md) for a one-page ordered checklist.
 
-Check off items as you complete them.
+---
+
+## Your action list (2026-07-02)
+
+Agent verified production after PRs #33–#39. **You still need to complete the unchecked items.**
+
+| # | Task | Status | Blocker? |
+|---|------|--------|----------|
+| 1 | **cron-job.org** — create/enable **3 split jobs** (§3) | ⬜ **You** | **Yes** — data goes stale without cron |
+| 2 | **Supabase Site URL** → `https://dormra.eu` + redirect URLs (§6) | ⬜ **You** | **Yes** — OAuth/reset broken until fixed |
+| 3 | **RLS smoke test** with anon key (§1.1 step 4) | ⬜ **You** | **Yes** — confirm no data leak |
+| 4 | **Rotate exposed secrets** (§2.1) — CRON, Supabase service role, Resend | ⬜ **You** | **Yes** if keys were pasted in chat |
+| 5 | **Resend domain** verify `dormra.eu` + `RESEND_FROM` (§4) | ⬜ **You** | Recommended |
+| 6 | **Post-deploy smoke tests** (§7) — signup, alert, reset | ⬜ **You** | Recommended |
+| 7 | **Google OAuth** if using “Continue with Google” (§5b) | ⬜ **You** | Only if using Google login |
+
+**Already done (agent / code):**
+
+- [x] Cron endpoint live — split URLs return **200** (fast ~20s, OeAD batch ~125s)
+- [x] PR #33 proxy fix, PR #36–37 Playwright/Chromium, PR #39 cron split
+- [x] Vercel env: `ADMIN_EMAILS`, `CRON_SECRET`, Supabase, Resend keys set
+- [x] RLS migration + other SQL applied in Supabase (you confirmed)
+- [x] `/api/test-alert` route for E2E email testing (§3.1)
+
+Check off items below as you complete them.
 
 ---
 
@@ -87,6 +111,17 @@ Set for **Production** (and Preview if you test PRs):
 
 After adding/changing vars → **Redeploy** production.
 
+### 2.1 Rotate secrets (if exposed)
+
+If `CRON_SECRET`, Supabase service role key, or `RESEND_API_KEY` were ever pasted in chat, tickets, or commits:
+
+1. Generate new values (see §3 for `CRON_SECRET`).
+2. Update **Vercel** production env vars.
+3. Update **cron-job.org** auth header on all 3 jobs.
+4. Rotate Supabase service role key in Supabase → Settings → API.
+5. Revoke old Resend key in Resend dashboard.
+6. Redeploy Vercel.
+
 ---
 
 ## 3. cron-job.org — scrape scheduler
@@ -144,6 +179,33 @@ Update Vercel **and** all three cron-job.org jobs.
 - `500` → missing `SUPABASE_SERVICE_ROLE_KEY` or DB error
 - `504 Gateway Timeout` → job URL too broad; use the split URLs above
 - Job **disabled automatically** on cron-job.org → too many consecutive failures. Fix the error, then re-enable (or run the setup script).
+
+### 3.1 Verify cron + test alert (curl)
+
+Replace `YOUR_CRON_SECRET` with the Vercel value.
+
+**Fast job (should return 200 in ~30s):**
+
+```bash
+curl -sS -H "Authorization: Bearer YOUR_CRON_SECRET" \
+  "https://dormra.eu/api/cron/scrape?providers=stuwo,home4students"
+```
+
+**Dry-run alert match (no email sent):**
+
+```bash
+curl -sS -H "Authorization: Bearer YOUR_CRON_SECRET" \
+  "https://dormra.eu/api/test-alert?slug=oead-guadenzdorf&dryRun=1"
+```
+
+**Send one test email to your admin address:**
+
+```bash
+curl -sS -H "Authorization: Bearer YOUR_CRON_SECRET" \
+  "https://dormra.eu/api/test-alert?slug=oead-guadenzdorf&email=kulchankas@gmail.com"
+```
+
+`email` must match `ADMIN_EMAILS`. Check inbox + Resend dashboard + `/admin` → Email log.
 
 ---
 
@@ -223,7 +285,8 @@ Run through once after deploy:
 | Create alert | `/dashboard/alerts/new` | Saves, redirects to list |
 | Log out / in | Header menu | Session persists |
 | Password reset | Login → Forgot → email → `/reset-password` | New password works |
-| Cron | Wait 15 min or manual GET with Bearer | `ok: true` in logs |
+| Cron | Split jobs (§3.1 curl) or wait 15 min | `ok: true`; admin shows fresh scrape times |
+| Test alert email | §3.1 curl with `email=` | Email arrives; Resend + `/admin` log |
 
 ---
 
@@ -257,7 +320,8 @@ Not set up yet. Consider before scale:
 | Alerts empty for anon curl | RLS working correctly | Use authenticated session to test |
 | Emails not arriving | Resend sandbox / spam | Verify domain (§4), check Resend logs |
 | German/Russian 404 | i18n PR not merged | Merge `cursor/i18n-de-ru-5868` |
-| Stale availability | Cron not running | Check cron-job.org history + Vercel logs |
+| Stale availability | Cron not running | Enable 3 jobs on cron-job.org (§3) |
+| Cron returns `504` | Single full scrape job | Use split URLs (§3) — merged in PR #39 |
 
 ---
 
