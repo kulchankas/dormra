@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { getMessages, setRequestLocale } from 'next-intl/server'
-import { Poppins } from 'next/font/google'
+import { Onest, Poppins } from 'next/font/google'
 import Header from '@/components/Header'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -11,6 +11,13 @@ import '../globals.css'
 const poppins = Poppins({
   variable: '--font-poppins',
   subsets: ['latin', 'latin-ext'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+})
+
+const onest = Onest({
+  variable: '--font-onest',
+  subsets: ['latin', 'cyrillic'],
   weight: ['400', '500', '600', '700'],
   display: 'swap',
 })
@@ -32,7 +39,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   const messages = await getMessages()
 
   return (
-    <html lang={locale} className={`${poppins.variable} h-full antialiased`}>
+    <html lang={locale} className={`${poppins.variable} ${onest.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <TooltipProvider>

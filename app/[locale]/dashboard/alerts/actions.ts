@@ -1,14 +1,10 @@
 'use server'
 
-import { redirect } from 'next/navigation'
 import { getLocale } from 'next-intl/server'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { routing } from '@/i18n/routing'
-
-function localePath(path: string, locale: string) {
-  return locale === routing.defaultLocale ? path : `/${locale}${path}`
-}
+import { redirect } from '@/i18n/navigation'
+import { resolveLocale } from '@/lib/i18n-email'
 
 export type AlertPayload = {
   price_max: number | null
@@ -27,6 +23,8 @@ export async function createAlert(payload: AlertPayload): Promise<{ error?: stri
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
 
+  const locale = resolveLocale(await getLocale())
+
   const { error } = await supabase.from('user_alerts').insert({
     user_id: user.id,
     price_max: payload.price_max,
@@ -38,6 +36,7 @@ export async function createAlert(payload: AlertPayload): Promise<{ error?: stri
     notify_email: payload.notify_email,
     notify_telegram: payload.notify_telegram,
     telegram_chat_id: payload.telegram_chat_id || null,
+    locale,
     active: true,
   })
 
@@ -45,13 +44,16 @@ export async function createAlert(payload: AlertPayload): Promise<{ error?: stri
 
   revalidatePath('/dashboard/alerts')
   revalidatePath('/dashboard')
-  redirect(localePath('/dashboard/alerts', await getLocale()))
+  redirect({ href: '/dashboard/alerts', locale })
+  return {}
 }
 
 export async function updateAlert(id: string, payload: AlertPayload): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
+
+  const locale = resolveLocale(await getLocale())
 
   const { error } = await supabase
     .from('user_alerts')
@@ -65,6 +67,7 @@ export async function updateAlert(id: string, payload: AlertPayload): Promise<{ 
       notify_email: payload.notify_email,
       notify_telegram: payload.notify_telegram,
       telegram_chat_id: payload.telegram_chat_id || null,
+      locale,
     })
     .eq('id', id)
     .eq('user_id', user.id)
@@ -73,7 +76,8 @@ export async function updateAlert(id: string, payload: AlertPayload): Promise<{ 
 
   revalidatePath('/dashboard/alerts')
   revalidatePath('/dashboard')
-  redirect(localePath('/dashboard/alerts', await getLocale()))
+  redirect({ href: '/dashboard/alerts', locale })
+  return {}
 }
 
 export async function toggleAlertActive(id: string, active: boolean): Promise<{ error?: string }> {

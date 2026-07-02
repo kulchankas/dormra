@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/lib/i18n-metadata'
 import { createClient } from '@/lib/supabase/server'
 import AlertForm from '@/components/AlertForm'
 import type { AlertPayload } from '@/app/[locale]/dashboard/alerts/actions'
@@ -10,9 +11,9 @@ import { Link, redirect } from '@/i18n/navigation'
 type PageProps = { params: Promise<{ locale: string; id: string }> }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { locale } = await params
+  const { locale, id } = await params
   const t = await getTranslations({ locale, namespace: 'metadata' })
-  return { title: t('editAlertPageTitle') }
+  return buildPageMetadata(locale, `/dashboard/alerts/${id}`, t('editAlertPageTitle'))
 }
 
 export default async function EditAlertPage({ params }: PageProps) {

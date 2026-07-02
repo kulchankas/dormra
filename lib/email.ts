@@ -1,9 +1,8 @@
 import { Resend } from 'resend'
 import type { DormAlertInfo } from './types/dorm'
+import { getEmailMessages, resolveLocale } from './i18n-email'
+import { absoluteUrl, localePath } from './i18n-path'
 
-// Lazy instantiation: constructing Resend at module-load time crashes the
-// build during page-data collection if RESEND_API_KEY is unset (Next.js
-// evaluates the cron route's import graph during `next build`).
 let _resend: Resend | undefined
 function getResend(): Resend {
   if (!_resend) {
@@ -19,27 +18,38 @@ interface SendAlertParams {
   userName: string | null
   dorm: DormAlertInfo
   alertId: string
+  locale?: string | null
 }
 
-export async function sendAvailabilityAlert({ to, userName, dorm, alertId }: SendAlertParams): Promise<{ success: boolean; error?: string }> {
-  // TODO: switch from: to "Dormra <alerts@dormra.eu>" once domain is verified
+export async function sendAvailabilityAlert({
+  to,
+  userName,
+  dorm,
+  alertId,
+  locale,
+}: SendAlertParams): Promise<{ success: boolean; error?: string }> {
+  const resolvedLocale = resolveLocale(locale)
+  const t = getEmailMessages(resolvedLocale)
+
   const from = 'Dormra <onboarding@resend.dev>'
-  const subject = `🏠 A room just opened at ${dorm.name}`
-  const applyUrl = `https://dormra.eu/dorms/${dorm.slug}`
-  const manageUrl = 'https://dormra.eu/dashboard/alerts'
+  const subject = t.alertSubject.replace('{name}', dorm.name)
+  const applyUrl = absoluteUrl(localePath(`/dorms/${dorm.slug}`, resolvedLocale))
+  const manageUrl = absoluteUrl(localePath('/dashboard/alerts', resolvedLocale))
 
   const priceRange = dorm.price_min && dorm.price_max
-    ? `€${dorm.price_min} – €${dorm.price_max}/mo`
+    ? t.priceRange.replace('{min}', String(dorm.price_min)).replace('{max}', String(dorm.price_max))
     : dorm.price_min
-      ? `From €${dorm.price_min}/mo`
+      ? t.priceFrom.replace('{min}', String(dorm.price_min))
       : dorm.price_max
-        ? `Up to €${dorm.price_max}/mo`
-        : 'Price not listed'
+        ? t.priceUpTo.replace('{max}', String(dorm.price_max))
+        : t.priceNotListed
 
-  const greeting = userName ? `Hi ${userName},` : 'Hi,'
+  const greeting = userName
+    ? t.greetingNamed.replace('{name}', userName)
+    : t.greetingAnonymous
 
   const html = `<!DOCTYPE html>
-<html lang="en">
+<html lang="${resolvedLocale}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -51,14 +61,13 @@ export async function sendAvailabilityAlert({ to, userName, dorm, alertId }: Sen
       <td align="center">
         <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
 
-          <!-- Header -->
           <tr>
             <td style="padding-bottom:24px;text-align:center;">
               <table cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
                 <tr>
                   <td style="padding-right:10px;vertical-align:middle;">
                     <div style="width:36px;height:36px;border-radius:10px;background-color:#F9E8E2;border:1px solid rgba(184,56,26,0.12);text-align:center;line-height:36px;">
-                      <img src="https://dormra.eu/icon.svg" width="20" height="20" alt="" style="vertical-align:middle;display:inline-block;" />
+                      <img src="${absoluteUrl('/icon.svg')}" width="20" height="20" alt="" style="vertical-align:middle;display:inline-block;" />
                     </div>
                   </td>
                   <td style="vertical-align:middle;font-size:22px;font-weight:600;color:#B8381A;letter-spacing:-0.3px;">Dormra</td>
@@ -67,43 +76,39 @@ export async function sendAvailabilityAlert({ to, userName, dorm, alertId }: Sen
             </td>
           </tr>
 
-          <!-- Body card -->
           <tr>
             <td style="background-color:#ffffff;border-radius:12px;padding:32px;border:1px solid #FFE4D6;">
               <p style="margin:0 0 8px;font-size:16px;color:#1A1410;">${greeting}</p>
-              <p style="margin:0 0 24px;font-size:16px;color:#1A1410;">Good news! A dorm matching your alert just became available:</p>
+              <p style="margin:0 0 24px;font-size:16px;color:#1A1410;">${t.bodyIntro}</p>
 
-              <!-- Dorm card -->
               <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FFF8F4;border-radius:8px;border:1px solid #FFE4D6;margin-bottom:24px;">
                 <tr>
                   <td style="padding:20px;">
                     <p style="margin:0 0 4px;font-size:20px;font-weight:700;color:#1A1410;">${dorm.name}</p>
                     <p style="margin:0 0 12px;font-size:13px;color:#6B5C53;text-transform:uppercase;letter-spacing:0.5px;">${dorm.provider}</p>
                     <table cellpadding="0" cellspacing="0">
-                      ${dorm.district !== null ? `<tr><td style="padding:2px 0;font-size:14px;color:#6B5C53;">District:&nbsp;</td><td style="padding:2px 0;font-size:14px;color:#1A1410;font-weight:500;">${dorm.district}</td></tr>` : ''}
-                      <tr><td style="padding:2px 0;font-size:14px;color:#6B5C53;">Price:&nbsp;</td><td style="padding:2px 0;font-size:14px;color:#1A1410;font-weight:500;">${priceRange}</td></tr>
-                      ${dorm.address ? `<tr><td style="padding:2px 0;font-size:14px;color:#6B5C53;">Address:&nbsp;</td><td style="padding:2px 0;font-size:14px;color:#1A1410;">${dorm.address}</td></tr>` : ''}
+                      ${dorm.district !== null ? `<tr><td style="padding:2px 0;font-size:14px;color:#6B5C53;">${t.district}:&nbsp;</td><td style="padding:2px 0;font-size:14px;color:#1A1410;font-weight:500;">${dorm.district}</td></tr>` : ''}
+                      <tr><td style="padding:2px 0;font-size:14px;color:#6B5C53;">${t.price}:&nbsp;</td><td style="padding:2px 0;font-size:14px;color:#1A1410;font-weight:500;">${priceRange}</td></tr>
+                      ${dorm.address ? `<tr><td style="padding:2px 0;font-size:14px;color:#6B5C53;">${t.address}:&nbsp;</td><td style="padding:2px 0;font-size:14px;color:#1A1410;">${dorm.address}</td></tr>` : ''}
                     </table>
                   </td>
                 </tr>
               </table>
 
-              <!-- CTA button -->
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center">
-                    <a href="${applyUrl}" style="display:inline-block;background-color:#C2401E;color:#ffffff;text-decoration:none;font-size:16px;font-weight:600;padding:14px 32px;border-radius:8px;">View &amp; apply →</a>
+                    <a href="${applyUrl}" style="display:inline-block;background-color:#C2401E;color:#ffffff;text-decoration:none;font-size:16px;font-weight:600;padding:14px 32px;border-radius:8px;">${t.cta}</a>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- Footer -->
           <tr>
             <td style="padding-top:24px;text-align:center;">
-              <p style="margin:0 0 8px;font-size:12px;color:#6B5C53;">You're receiving this because you set up an alert on Dormra.</p>
-              <a href="${manageUrl}" style="font-size:12px;color:#C2401E;">Manage your alerts</a>
+              <p style="margin:0 0 8px;font-size:12px;color:#6B5C53;">${t.footerReason}</p>
+              <a href="${manageUrl}" style="font-size:12px;color:#C2401E;">${t.manageAlerts}</a>
             </td>
           </tr>
 
@@ -116,17 +121,17 @@ export async function sendAvailabilityAlert({ to, userName, dorm, alertId }: Sen
 
   const text = `${greeting}
 
-Good news! A dorm matching your alert just became available:
+${t.bodyIntro}
 
 ${dorm.name}
-Provider: ${dorm.provider}${dorm.district !== null ? `\nDistrict: ${dorm.district}` : ''}
-Price: ${priceRange}${dorm.address ? `\nAddress: ${dorm.address}` : ''}
+${dorm.provider}${dorm.district !== null ? `\n${t.district}: ${dorm.district}` : ''}
+${t.price}: ${priceRange}${dorm.address ? `\n${t.address}: ${dorm.address}` : ''}
 
-View & apply: ${applyUrl}
+${t.cta} ${applyUrl}
 
 ---
-You're receiving this because you set up an alert on Dormra.
-Manage your alerts: ${manageUrl}`
+${t.footerReason}
+${t.manageAlerts}: ${manageUrl}`
 
   try {
     const { error } = await getResend().emails.send({ from, to, subject, html, text })

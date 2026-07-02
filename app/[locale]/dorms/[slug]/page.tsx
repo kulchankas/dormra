@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, Bell, ExternalLink } from 'lucide-react'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/lib/i18n-metadata'
 import { createClient } from '@/lib/supabase/server'
 import { formatDistrictLabel, formatPriceLabel, getAvailabilityStatusBulk } from '@/lib/helpers'
 import { localizeAvailability } from '@/lib/i18n-availability'
@@ -18,11 +19,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const supabase = await createClient()
   const { data } = await supabase.from('dorms').select('name, provider, district').eq('slug', slug).single()
   const t = await getTranslations({ locale, namespace: 'metadata' })
-  if (!data) return { title: t('dormNotFound') }
-  return {
-    title: t('dormDetailTitle', { name: data.name }),
-    description: t('dormDetailDescription', { provider: data.provider }),
-  }
+  if (!data) return buildPageMetadata(locale, `/dorms/${slug}`, t('dormNotFound'))
+  return buildPageMetadata(
+    locale,
+    `/dorms/${slug}`,
+    t('dormDetailTitle', { name: data.name }),
+    t('dormDetailDescription', { provider: data.provider }),
+  )
 }
 
 function alertHref(dorm: { district: number | null; price_max: number | null; price_min: number | null }) {

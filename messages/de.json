@@ -415,5 +415,21 @@
     "serviceBody": "Dormra aggregiert öffentlich gelistete Verfügbarkeit von Drittanbietern und benachrichtigt dich bei passenden Zimmern. Wir sind kein Wohnungsanbieter und bearbeiten keine Buchungen oder Zahlungen.",
     "accuracyTitle": "Genauigkeit der Verfügbarkeit",
     "accuracyBody": "Wir aktualisieren alle 15 Minuten, können aber nicht garantieren, dass ein Zimmer beim Kontakt noch frei ist. Verfügbarkeit kann sich in Minuten ändern — bestätige immer direkt beim Anbieter."
+  },
+  "email": {
+    "alertSubject": "Ein Zimmer ist frei geworden: {name}",
+    "greetingNamed": "Hallo {name},",
+    "greetingAnonymous": "Hallo,",
+    "bodyIntro": "Gute Nachrichten! Ein Heim, das zu deinem Alert passt, ist gerade verfügbar geworden:",
+    "district": "Bezirk",
+    "price": "Preis",
+    "address": "Adresse",
+    "priceFrom": "Ab €{min}/Monat",
+    "priceUpTo": "Bis €{max}/Monat",
+    "priceRange": "€{min} – €{max}/Monat",
+    "priceNotListed": "Preis nicht angegeben",
+    "cta": "Ansehen & bewerben →",
+    "footerReason": "Du erhältst diese E-Mail, weil du einen Alert auf Dormra eingerichtet hast.",
+    "manageAlerts": "Alerts verwalten"
   }
 }

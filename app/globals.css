@@ -106,6 +106,16 @@
     font-family: var(--font-poppins), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
+  html[lang="ru"] {
+    --font-sans: var(--font-onest);
+    --font-heading: var(--font-onest);
+  }
+  html[lang="ru"] body,
+  html[lang="ru"] h1,
+  html[lang="ru"] h2,
+  html[lang="ru"] h3 {
+    font-family: var(--font-onest), system-ui, sans-serif;
+  }
   html {
     @apply font-sans;
   }
@@ -116,6 +126,9 @@
 }
 
 @layer utilities {
+  .font-onest {
+    font-family: var(--font-onest), system-ui, sans-serif;
+  }
   .hero-glow {
     background:
       radial-gradient(ellipse 90% 70% at 50% -20%, rgb(232 93 59 / 0.14), transparent 55%),
