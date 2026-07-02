@@ -40,6 +40,11 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet'
+import {
+  DISTRICT_PRESETS,
+  districtsMatch,
+  toggleDistrictPreset,
+} from '@/lib/district-presets'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -123,13 +128,22 @@ function FilterChips({
       onRemove: () => onChange({ ...filters, providers: filters.providers.filter((x) => x !== p) }),
     })
   })
-  filters.districts.forEach((d) => {
+  const activePreset = DISTRICT_PRESETS.find((preset) => districtsMatch(filters.districts, preset.districts))
+  if (activePreset) {
     chips.push({
-      key: `dist-${d}`,
-      label: `${d}. ${DISTRICT_NAMES[d]}`,
-      onRemove: () => onChange({ ...filters, districts: filters.districts.filter((x) => x !== d) }),
+      key: `preset-${activePreset.id}`,
+      label: activePreset.label,
+      onRemove: () => onChange({ ...filters, districts: [] }),
     })
-  })
+  } else {
+    filters.districts.forEach((d) => {
+      chips.push({
+        key: `dist-${d}`,
+        label: `${d}. ${DISTRICT_NAMES[d]}`,
+        onRemove: () => onChange({ ...filters, districts: filters.districts.filter((x) => x !== d) }),
+      })
+    })
+  }
   if (filters.pets) chips.push({ key: 'pets', label: 'Pets allowed', onRemove: () => onChange({ ...filters, pets: false }) })
   if (filters.couples) chips.push({ key: 'couples', label: 'Couples allowed', onRemove: () => onChange({ ...filters, couples: false }) })
   if (filters.furnished) chips.push({ key: 'furnished', label: 'Furnished', onRemove: () => onChange({ ...filters, furnished: false }) })
@@ -464,25 +478,55 @@ export default function DormsDirectory({ dorms, availability }: Props) {
 
           <div className="flex-1 min-w-0">
             <div className="mb-5 space-y-3">
-              <div className="flex flex-wrap items-center gap-2">
-                {QUICK_FILTERS.map((quick) => {
-                  const isActive = quick.isActive(filters)
-                  return (
-                    <button
-                      key={quick.id}
-                      type="button"
-                      onClick={() => setFilters(quick.toggle(filters))}
-                      className={cn(
-                        'rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
-                        isActive
-                          ? 'bg-brand text-white shadow-sm'
-                          : 'bg-surface text-muted-foreground ring-1 ring-border hover:text-foreground',
-                      )}
-                    >
-                      {quick.label}
-                    </button>
-                  )
-                })}
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  {QUICK_FILTERS.map((quick) => {
+                    const isActive = quick.isActive(filters)
+                    return (
+                      <button
+                        key={quick.id}
+                        type="button"
+                        onClick={() => setFilters(quick.toggle(filters))}
+                        className={cn(
+                          'rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                          isActive
+                            ? 'bg-brand text-white shadow-sm'
+                            : 'bg-surface text-muted-foreground ring-1 ring-border hover:text-foreground',
+                        )}
+                      >
+                        {quick.label}
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/70">
+                    Near
+                  </span>
+                  {DISTRICT_PRESETS.map((preset) => {
+                    const isActive = districtsMatch(filters.districts, preset.districts)
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() =>
+                          setFilters({
+                            ...filters,
+                            districts: toggleDistrictPreset(filters, preset),
+                          })
+                        }
+                        className={cn(
+                          'rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                          isActive
+                            ? 'bg-brand-soft text-brand ring-1 ring-brand/25'
+                            : 'bg-surface text-muted-foreground ring-1 ring-border hover:text-foreground',
+                        )}
+                      >
+                        {preset.label}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
