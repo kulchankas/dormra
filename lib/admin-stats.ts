@@ -19,6 +19,7 @@ export type AdminOverview = {
     failures: number
     lastScrapedAt: string | null
     staleCount: number
+    stale: boolean
   }[]
 }
 
@@ -140,7 +141,14 @@ export async function getAdminOverview(): Promise<AdminOverview> {
   }
 
   const providerStats = [...providerMap.entries()]
-    .map(([provider, stats]) => ({ provider, ...stats }))
+    .map(([provider, stats]) => ({
+      provider,
+      ...stats,
+      // Computed here (not in the admin page component) because calling
+      // Date.now() during render is flagged as an impure render by
+      // react-hooks/purity.
+      stale: !stats.lastScrapedAt || now - new Date(stats.lastScrapedAt).getTime() > STALE_MS,
+    }))
     .sort((a, b) => a.provider.localeCompare(b.provider))
 
   return {

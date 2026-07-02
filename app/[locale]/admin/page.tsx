@@ -111,16 +111,13 @@ export default async function AdminOverviewPage({ params }: PageProps) {
               </tr>
             </thead>
             <tbody>
-              {stats.providerStats.map(({ provider, dorms, failures, lastScrapedAt, staleCount }) => {
+              {stats.providerStats.map(({ provider, dorms, failures, lastScrapedAt, staleCount, stale: isStale }) => {
                 const providerLast = lastScrapedAt
                   ? formatDistanceToNow(new Date(lastScrapedAt), {
                       addSuffix: true,
                       locale: dateLocale,
                     })
                   : t('never')
-                const isStale =
-                  !lastScrapedAt ||
-                  Date.now() - new Date(lastScrapedAt).getTime() > 6 * 60 * 60 * 1000
 
                 return (
                   <tr key={provider} className="border-b border-border/50 last:border-0">
