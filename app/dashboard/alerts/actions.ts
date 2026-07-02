@@ -70,6 +70,24 @@ export async function updateAlert(id: string, payload: AlertPayload): Promise<{ 
   redirect('/dashboard/alerts')
 }
 
+export async function toggleAlertActive(id: string, active: boolean): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { error } = await supabase
+    .from('user_alerts')
+    .update({ active })
+    .eq('id', id)
+    .eq('user_id', user.id)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/dashboard/alerts')
+  revalidatePath('/dashboard')
+  return {}
+}
+
 export async function deleteAlert(id: string): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
