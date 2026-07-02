@@ -16,7 +16,8 @@
     "signupPageTitle": "Registrieren — Dormra",
     "newAlertPageTitle": "Neuer Alert — Dormra",
     "editAlertPageTitle": "Alert bearbeiten — Dormra",
-    "resetPasswordPageTitle": "Passwort zurücksetzen — Dormra"
+    "resetPasswordPageTitle": "Passwort zurücksetzen — Dormra",
+    "adminTitle": "Admin — Dormra"
   },
   "errors": {
     "notFoundTitle": "Seite nicht gefunden",
@@ -56,6 +57,7 @@
     "mobileNav": "Mobile Navigation",
     "footerNav": "Footer-Links",
     "skipToContent": "Zum Inhalt springen",
+    "admin": "Admin",
     "privacy": "Datenschutz",
     "terms": "AGB"
   },
@@ -456,5 +458,65 @@
     "cta": "Ansehen & bewerben →",
     "footerReason": "Du erhältst diese E-Mail, weil du einen Alert auf Dormra eingerichtet hast.",
     "manageAlerts": "Alerts verwalten"
+  },
+  "admin": {
+    "badge": "Betrieb",
+    "title": "Admin-Dashboard",
+    "navAria": "Admin-Bereiche",
+    "tabs": {
+      "overview": "Übersicht",
+      "dorms": "Dorm-Status",
+      "deliveries": "E-Mail-Log",
+      "alerts": "Alerts"
+    },
+    "overviewSection": "Auf einen Blick",
+    "activeDorms": "Aktive Wohnheime",
+    "availableNow": "{count} jetzt verfügbar",
+    "scrapeIssues": "Scrape-Probleme",
+    "scrapeIssuesHint": "{failed} fehlgeschlagen · {stale} veraltet",
+    "activeAlerts": "Aktive Alerts",
+    "totalAlerts": "{count} gesamt",
+    "emailsThisWeek": "E-Mails diese Woche",
+    "emailsToday": "{count} heute gesendet",
+    "scraperHealth": "Scraper-Status nach Anbieter",
+    "lastScrape": "Letzter globaler Scrape",
+    "never": "nie",
+    "provider": "Anbieter",
+    "dormCount": "Wohnheime",
+    "failures": "Fehler",
+    "viewDormHealth": "Dorm-Details anzeigen",
+    "externalMonitoring": "Externes Monitoring",
+    "externalMonitoringHint": "Nutze diese Dashboards zusätzlich zu dieser Seite:",
+    "monitorVercel": "Function-Logs, Cron-Fehler, Deploys",
+    "monitorSupabase": "DB-Größe, Auth-Nutzer, SQL",
+    "monitorCron": "Scrape-Job-Verlauf und HTTP-Status",
+    "monitorResend": "E-Mail-Zustellung und Bounces",
+    "monitoringDoc": "Vollständige Anleitung:",
+    "dormsTitle": "Scrape-Gesundheit",
+    "dormsSubtitle": "{total} aktiv · {issues} mit Problemen",
+    "dorm": "Wohnheim",
+    "status": "Status",
+    "lastCheck": "Letzter Check",
+    "error": "Fehler",
+    "statusLabels": {
+      "available": "Verfügbar",
+      "booked": "Ausgebucht",
+      "unknown": "Unbekannt",
+      "failed": "Fehlgeschlagen",
+      "stale": "Veraltet"
+    },
+    "deliveriesTitle": "Letzte Alert-E-Mails",
+    "deliveriesSubtitle": "Letzte 100 Einträge aus alert_log",
+    "noDeliveries": "Noch keine Alert-E-Mails gesendet.",
+    "sentAt": "Gesendet",
+    "channel": "Kanal",
+    "userId": "Nutzer",
+    "alertsTitle": "Alert-Statistik",
+    "alertsSubtitle": "Aggregierte Alert-Daten (keine PII)",
+    "totalAlertsLabel": "Alerts gesamt",
+    "created7d": "Erstellt (7 Tage)",
+    "created30d": "Erstellt (30 Tage)",
+    "byLocale": "Nach Sprache",
+    "noAlertsYet": "Noch keine Alerts erstellt."
   }
 }

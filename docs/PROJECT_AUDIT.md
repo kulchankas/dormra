@@ -79,6 +79,7 @@ Users → Next.js [locale] → Supabase (RLS) → user_alerts, dorms
 | `CRON_SECRET` | Yes | ✅ |
 | `RESEND_API_KEY` | Yes | ✅ |
 | `NEXT_PUBLIC_SITE_URL` | Recommended | ✅ |
+| `ADMIN_EMAILS` | Admin dashboard | ✅ |
 
 ## Migrations checklist
 
@@ -96,6 +97,7 @@ Users → Next.js [locale] → Supabase (RLS) → user_alerts, dorms
 
 | Date | Branch | Work |
 |------|--------|------|
+| 2026-07-01 | `cursor/project-audit-5868` | Admin dashboard `/admin`, MONITORING.md, ADMIN_EMAILS gate |
 | 2026-07-01 | `cursor/project-audit-5868` | sendAlerts + auth callback tests, skip-link i18n |
 | 2026-07-01 | `cursor/project-audit-5868` | Phase 3.5, 3.12, 4.1, 4.4, LAUNCH_CHECKLIST, cron-auth tests |
 | 2026-07-01 | `cursor/project-audit-5868` | Phase 2.1–2.4, 2.6, 3.3, 3.7–3.11, 4.3, MANUAL_TASKS.md |

@@ -16,7 +16,8 @@
     "signupPageTitle": "Sign up — Dormra",
     "newAlertPageTitle": "New alert — Dormra",
     "editAlertPageTitle": "Edit alert — Dormra",
-    "resetPasswordPageTitle": "Reset password — Dormra"
+    "resetPasswordPageTitle": "Reset password — Dormra",
+    "adminTitle": "Admin — Dormra"
   },
   "errors": {
     "notFoundTitle": "Page not found",
@@ -56,6 +57,7 @@
     "mobileNav": "Mobile navigation",
     "footerNav": "Footer links",
     "skipToContent": "Skip to content",
+    "admin": "Admin",
     "privacy": "Privacy",
     "terms": "Terms"
   },
@@ -456,5 +458,65 @@
     "cta": "View & apply →",
     "footerReason": "You're receiving this because you set up an alert on Dormra.",
     "manageAlerts": "Manage your alerts"
+  },
+  "admin": {
+    "badge": "Operator",
+    "title": "Admin dashboard",
+    "navAria": "Admin sections",
+    "tabs": {
+      "overview": "Overview",
+      "dorms": "Dorm health",
+      "deliveries": "Email log",
+      "alerts": "Alerts"
+    },
+    "overviewSection": "At a glance",
+    "activeDorms": "Active dorms",
+    "availableNow": "{count} available now",
+    "scrapeIssues": "Scrape issues",
+    "scrapeIssuesHint": "{failed} failed · {stale} stale",
+    "activeAlerts": "Active alerts",
+    "totalAlerts": "{count} total saved",
+    "emailsThisWeek": "Emails this week",
+    "emailsToday": "{count} sent today",
+    "scraperHealth": "Scraper health by provider",
+    "lastScrape": "Last global scrape",
+    "never": "never",
+    "provider": "Provider",
+    "dormCount": "Dorms",
+    "failures": "Failures",
+    "viewDormHealth": "View dorm health details",
+    "externalMonitoring": "External monitoring",
+    "externalMonitoringHint": "Use these dashboards alongside this page for full visibility:",
+    "monitorVercel": "function logs, cron errors, deploy history",
+    "monitorSupabase": "database size, auth users, SQL queries",
+    "monitorCron": "scrape job run history and HTTP status",
+    "monitorResend": "email delivery status and bounces",
+    "monitoringDoc": "Full guide:",
+    "dormsTitle": "Dorm scrape health",
+    "dormsSubtitle": "{total} active dorms · {issues} with issues",
+    "dorm": "Dorm",
+    "status": "Status",
+    "lastCheck": "Last check",
+    "error": "Error",
+    "statusLabels": {
+      "available": "Available",
+      "booked": "Booked",
+      "unknown": "Unknown",
+      "failed": "Failed",
+      "stale": "Stale"
+    },
+    "deliveriesTitle": "Recent alert emails",
+    "deliveriesSubtitle": "Last 100 entries from alert_log",
+    "noDeliveries": "No alert emails sent yet.",
+    "sentAt": "Sent",
+    "channel": "Channel",
+    "userId": "User",
+    "alertsTitle": "Alert statistics",
+    "alertsSubtitle": "Aggregated user alert data (no PII)",
+    "totalAlertsLabel": "Total alerts",
+    "created7d": "Created last 7 days",
+    "created30d": "Created last 30 days",
+    "byLocale": "By locale",
+    "noAlertsYet": "No alerts created yet."
   }
 }

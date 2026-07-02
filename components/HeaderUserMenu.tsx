@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
-import { LogOut, LayoutDashboard, Bell } from 'lucide-react'
+import { LogOut, LayoutDashboard, Bell, Shield } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import {
   DropdownMenu,
@@ -15,7 +15,13 @@ import { Button } from '@/components/ui/button'
 import { Link } from '@/i18n/navigation'
 import { signOutAction } from '@/lib/auth-actions'
 
-export default function HeaderUserMenu({ email }: { email: string }) {
+export default function HeaderUserMenu({
+  email,
+  showAdmin = false,
+}: {
+  email: string
+  showAdmin?: boolean
+}) {
   const t = useTranslations('nav')
   const tDash = useTranslations('dashboard')
   const formRef = useRef<HTMLFormElement>(null)
@@ -55,6 +61,12 @@ export default function HeaderUserMenu({ email }: { email: string }) {
             <Bell className="size-4" />
             {t('myAlerts')}
           </DropdownMenuItem>
+          {showAdmin && (
+            <DropdownMenuItem nativeButton={false} render={<Link href="/admin" />}>
+              <Shield className="size-4" />
+              {t('admin')}
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"
