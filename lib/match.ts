@@ -1,20 +1,6 @@
 import { createAdminClient } from './supabase/admin'
 import { dormMatchesAlert } from './alert-criteria'
-
-interface Dorm {
-  id: string
-  slug: string
-  name: string
-  provider: string
-  address: string | null
-  district: number | null
-  price_min: number | null
-  price_max: number | null
-  pets: boolean | null
-  couples: boolean | null
-  deposit_months: number | null
-  apply_url: string | null
-}
+import type { DormForAlertMatching } from './types/dorm'
 
 interface MatchingAlert {
   id: string
@@ -24,7 +10,11 @@ interface MatchingAlert {
 
 export { dormMatchesAlert, type AlertCriteria } from './alert-criteria'
 
-export async function matchAlertsForDorm(dorm: Dorm): Promise<MatchingAlert[]> {
+// move_in_before is stored on user_alerts and shown in the UI, but we do not match
+// on it yet — providers do not expose structured move-in dates in scraped data.
+// See README "Implemented vs planned" matrix.
+
+export async function matchAlertsForDorm(dorm: DormForAlertMatching): Promise<MatchingAlert[]> {
   const admin = createAdminClient()
 
   const { data: alerts, error } = await admin
@@ -41,6 +31,7 @@ export async function matchAlertsForDorm(dorm: Dorm): Promise<MatchingAlert[]> {
   const matched: MatchingAlert[] = []
 
   for (const alert of alerts) {
+    if (!alert.user_id) continue
     if (!dormMatchesAlert(dorm, alert)) continue
 
     matched.push({ id: alert.id, user_id: alert.user_id, notify_email: alert.notify_email })

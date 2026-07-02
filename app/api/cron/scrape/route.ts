@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getScrapableProviders, getScraperForProvider, usesBrowser } from '@/scrapers'
+import { getScraperForProvider, usesBrowser } from '@/scrapers'
 import { launchScraperBrowser } from '@/scrapers/browser'
 import { processSnapshot } from '@/lib/diff'
 
@@ -21,48 +21,68 @@ export async function GET(request: NextRequest) {
   const start = Date.now()
   let scraped = 0
   let errors = 0
-  const byProvider: Record<string, { scraped: number; errors: number }> = {}
+  let skipped = 0
+  const byProvider: Record<string, { scraped: number; errors: number; skipped: number }> = {}
 
   const admin = createAdminClient()
-  type DormRow = { id: string; slug: string; scrape_url: string | null; provider: string }
 
-  for (const provider of getScrapableProviders()) {
-    byProvider[provider] = { scraped: 0, errors: 0 }
+  const { data: dorms, error: fetchError } = await admin
+    .from('dorms')
+    .select('id, slug, scrape_url, provider')
+    .eq('active', true)
+    .not('scrape_url', 'is', null)
 
-    const scraper = getScraperForProvider(provider)
-    if (!scraper) continue
+  if (fetchError || !dorms) {
+    console.error('[CRON] Failed to fetch dorms:', fetchError?.message)
+    return Response.json({ ok: false, error: fetchError?.message }, { status: 500 })
+  }
 
-    const { data: dorms, error: fetchError } = await admin
-      .from('dorms')
-      .select('id, slug, scrape_url, provider')
-      .ilike('provider', provider)
-      .not('scrape_url', 'is', null)
+  // Group by provider so browser scrapers launch once per provider batch.
+  const byProviderDorms = new Map<string, typeof dorms>()
+  for (const dorm of dorms) {
+    const key = dorm.provider.toLowerCase()
+    const list = byProviderDorms.get(key) ?? []
+    list.push(dorm)
+    byProviderDorms.set(key, list)
+  }
 
-    if (fetchError || !dorms) {
-      console.error(`[CRON] Failed to fetch ${provider} dorms:`, fetchError?.message)
-      return Response.json({ ok: false, error: fetchError?.message }, { status: 500 })
+  for (const [providerKey, providerDorms] of byProviderDorms) {
+    const scraper = getScraperForProvider(providerKey)
+    byProvider[providerKey] = { scraped: 0, errors: 0, skipped: 0 }
+
+    if (!scraper) {
+      console.warn(
+        `[CRON] No scraper registered for provider "${providerDorms[0]?.provider}" — skipping ${providerDorms.length} dorm(s)`,
+      )
+      skipped += providerDorms.length
+      byProvider[providerKey].skipped = providerDorms.length
+      continue
     }
 
-    const browser = usesBrowser(provider) ? await launchScraperBrowser() : null
+    const browser = usesBrowser(providerKey) ? await launchScraperBrowser() : null
 
     try {
-      for (const dorm of dorms as DormRow[]) {
+      for (const dorm of providerDorms) {
         try {
-          const result = await scraper(dorm.slug, dorm.scrape_url as string, browser ?? undefined)
+          const result = await scraper.scrape(
+            dorm.slug,
+            dorm.scrape_url as string,
+            browser ?? undefined,
+          )
           await processSnapshot(dorm.id, result)
 
           if (!result.scrapeOk) {
             console.warn(`[CRON] Scrape soft-failed for ${dorm.slug}: ${result.errorMsg}`)
             errors++
-            byProvider[provider].errors++
+            byProvider[providerKey].errors++
           } else {
             scraped++
-            byProvider[provider].scraped++
+            byProvider[providerKey].scraped++
           }
         } catch (err) {
           console.error(`[CRON] Unhandled error for ${dorm.slug}:`, err)
           errors++
-          byProvider[provider].errors++
+          byProvider[providerKey].errors++
         }
 
         await delay(DELAY_MS)
@@ -76,6 +96,7 @@ export async function GET(request: NextRequest) {
     ok: true,
     scraped,
     errors,
+    skipped,
     byProvider,
     duration_ms: Date.now() - start,
   })

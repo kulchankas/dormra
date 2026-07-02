@@ -2,6 +2,7 @@ import type { Browser } from 'playwright-core'
 import type { ScraperResult } from './types'
 import { scrapeHome4Students } from './home4students'
 import { scrapeOeAD } from './oead'
+import { scrapeStuwo } from './stuwo'
 
 export type ScraperFn = (
   dormSlug: string,
@@ -9,20 +10,31 @@ export type ScraperFn = (
   browser?: Browser,
 ) => Promise<ScraperResult>
 
-/** Maps normalized provider name → scraper function. */
-const SCRAPERS: Record<string, ScraperFn> = {
-  home4students: scrapeHome4Students,
-  oead: scrapeOeAD,
+export interface Scraper {
+  scrape: ScraperFn
+  usesBrowser: boolean
 }
 
-export function getScraperForProvider(provider: string): ScraperFn | null {
+/** Maps normalized provider name → scraper implementation. */
+const SCRAPERS: Record<string, Scraper> = {
+  home4students: { scrape: scrapeHome4Students, usesBrowser: false },
+  oead: { scrape: scrapeOeAD, usesBrowser: true },
+  stuwo: { scrape: scrapeStuwo, usesBrowser: false },
+}
+
+export function getScraperForProvider(provider: string): Scraper | null {
   return SCRAPERS[provider.toLowerCase()] ?? null
 }
 
-export function getScrapableProviders(): string[] {
+export function getRegisteredProviders(): string[] {
   return Object.keys(SCRAPERS)
 }
 
 export function usesBrowser(provider: string): boolean {
-  return provider.toLowerCase() === 'oead'
+  return getScraperForProvider(provider)?.usesBrowser ?? false
+}
+
+/** @deprecated Use getRegisteredProviders() */
+export function getScrapableProviders(): string[] {
+  return getRegisteredProviders()
 }

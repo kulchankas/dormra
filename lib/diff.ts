@@ -4,19 +4,14 @@ import { sendAvailabilityAlert } from './email'
 import { isNewlyAvailableTransition } from './availability-transition'
 import type { ScraperResult } from '@/scrapers/types'
 
-type InsertedRow = { id: string; scraped_at: string }
-type PreviousRow = { available: boolean; scraped_at: string }
-
 export async function processSnapshot(dormId: string, result: ScraperResult): Promise<void> {
   // Snapshot writes use the service-role client so they bypass RLS. Once RLS is
   // enabled (supabase/migrations/20260605120000_enable_rls.sql), the anon key
   // has no insert policy on availability_snapshots — only the cron, via the
-  // service role, may write. The previous-snapshot read also goes through it.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = createAdminClient() as any
+  // service role, may write.
+  const db = createAdminClient()
 
-  // 1. Insert the new snapshot (regardless of scrape_ok — we always record what happened)
-  const { data: inserted, error: insertError } = (await db
+  const { data: inserted, error: insertError } = await db
     .from('availability_snapshots')
     .insert({
       dorm_id: dormId,
@@ -27,22 +22,17 @@ export async function processSnapshot(dormId: string, result: ScraperResult): Pr
       error_msg: result.errorMsg,
     })
     .select('id, scraped_at')
-    .single()) as { data: InsertedRow | null; error: { message: string } | null }
+    .single()
 
   if (insertError || !inserted) {
     console.error(`[SNAPSHOT] Insert failed for dorm ${dormId}:`, insertError?.message)
     return
   }
 
-  // BUG FIX (audit P0 — recovery false-positive):
   // A failed scrape carries no signal about availability. Never alert on it.
   if (!result.scrapeOk) return
 
-  // 2. Fetch the most recent *successful* prior snapshot for comparison.
-  // BUG FIX (audit P0 — recovery false-positive): filter scrape_ok=true so we
-  // don't read a failure row (which is stored as available=false) as the
-  // "previous" state and then interpret recovery as a transition.
-  const { data: previous } = (await db
+  const { data: previous } = await db
     .from('availability_snapshots')
     .select('available, scraped_at')
     .eq('dorm_id', dormId)
@@ -50,23 +40,20 @@ export async function processSnapshot(dormId: string, result: ScraperResult): Pr
     .lt('scraped_at', inserted.scraped_at)
     .order('scraped_at', { ascending: false })
     .limit(1)
-    .maybeSingle()) as { data: PreviousRow | null; error: unknown }
+    .maybeSingle()
 
-  // BUG FIX (audit P0 — first-scrape blast):
-  // If we have no prior *successful* snapshot, this is effectively the first
-  // observation of this dorm. Don't blast every matching alert — we have
-  // nothing to compare against.
+  // No prior successful snapshot — first observation; don't blast every alert.
   if (!previous) return
 
-  // 3. Detect newly-available transitions: previous was false, current is true.
   if (isNewlyAvailableTransition(previous, result)) {
     console.log(`[DIFF] ${dormId} became available — fetching dorm and matching alerts`)
-    await sendAlertsForDorm(dormId)
+    await sendAlertsForDorm(dormId, inserted.id)
   }
 }
 
 export async function sendAlertsForDorm(
   dormId: string,
+  snapshotId: string,
 ): Promise<{ matched: number; sent: number; errors: string[] }> {
   const admin = createAdminClient()
 
@@ -90,20 +77,18 @@ export async function sendAlertsForDorm(
 
   for (const alert of matchingAlerts) {
     try {
-      // Dedup: skip if already sent for this alert+dorm in the last 7 days.
-      // BUG FIX (audit P2): maybeSingle() — single() errors on zero rows
-      // (the common, expected case for first send) and logs noise.
+      // Dedup: one email per user+dorm per week (alert_log has no alert_id column).
       const { data: existing } = await admin
         .from('alert_log')
         .select('id')
-        .eq('alert_id', alert.id)
+        .eq('user_id', alert.user_id)
         .eq('dorm_id', dormId)
         .gte('sent_at', sevenDaysAgo)
         .limit(1)
         .maybeSingle()
 
       if (existing) {
-        console.log(`[DIFF] Alert ${alert.id} already sent for ${dorm.slug} — skipping`)
+        console.log(`[DIFF] User ${alert.user_id.slice(0, 8)} already notified for ${dorm.slug} — skipping`)
         continue
       }
 
@@ -121,9 +106,13 @@ export async function sendAlertsForDorm(
       })
 
       if (result.success) {
-        await admin
-          .from('alert_log')
-          .insert({ alert_id: alert.id, dorm_id: dormId, sent_at: new Date().toISOString() })
+        await admin.from('alert_log').insert({
+          user_id: alert.user_id,
+          dorm_id: dormId,
+          sent_at: new Date().toISOString(),
+          channel: 'email',
+          snapshot_id: snapshotId,
+        })
         sent++
       } else {
         errors.push(result.error ?? 'Unknown send error')

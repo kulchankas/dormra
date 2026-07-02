@@ -6,44 +6,110 @@
 
 ## What it does
 
-Dormra aggregates real-time dorm availability across all major Vienna student housing providers (OeAD, STUWO, home4students, ÖJAB, Akademikerhilfe, WIHAST, Viennabase, The Fizz, and more) into one searchable directory. Users filter by budget, district, deposit, and amenities, get instant email or Telegram alerts when matching rooms become available, and track their applications through a personal kanban.
+Dormra aggregates dorm availability across Vienna student housing providers into one searchable directory. Users filter by budget, district, deposit, and amenities, and get email alerts when matching rooms become available.
+
+## Implemented vs planned
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Dorm directory + filters | ✅ Live | SSR at `/dorms`, shareable URL params |
+| Email alerts | ✅ Live | Resend via `onboarding@resend.dev` until domain verified |
+| OeAD scraper | ✅ Live | Playwright, 26 Vienna residences seeded |
+| home4students scraper | ✅ Live | Cheerio |
+| STUWO scraper | 🔧 Stub | Registered in cron; returns `scrapeOk: false` |
+| Other providers (ÖJAB, WIHAST, …) | ❌ Not started | No scraper registered yet |
+| Telegram notifications | ❌ UI only | Form field disabled; no dispatcher |
+| Application tracker (kanban) | ❌ UI only | Dashboard card shows "Coming soon" |
+| `move_in_before` alert matching | ❌ Not matched | Stored in DB + shown in UI; providers don't expose move-in dates in scraped data |
+| Stripe payments | ❌ Not started | — |
 
 ## Why it exists
 
-Vienna has 70+ dorm buildings across 8+ providers. Each has its own website, its own application process, and its own availability calendar. International students arriving for the first time face a fragmented, multilingual, scam-prone market with no aggregator. Rooms appear and disappear within hours during peak intake (August–October). Dormra fixes this with automated availability monitoring and smart alerts.
+Vienna has 70+ dorm buildings across 8+ providers. Each has its own website, application process, and availability calendar. Rooms appear and vanish within hours during peak intake (August–October). Dormra watches them so you don't have to.
 
 ## How it works
 
-Scrapers visit each provider's website every 15 minutes and extract availability data into Supabase. A diff engine compares each new snapshot to the previous one — if availability changed, it triggers an alert. The alert dispatcher matches the change against every user's saved criteria and sends notifications via email or Telegram.
+Scrapers visit each provider's website every 15 minutes and write availability snapshots to Supabase. A diff engine compares each new snapshot to the previous one — on a newly-available transition, it matches active user alerts and sends email via Resend.
 
 ## Tech stack
 
 - **Framework**: Next.js 16 (App Router) + TypeScript
 - **Database & Auth**: Supabase (PostgreSQL, EU region)
-- **Styling**: Tailwind CSS
-- **Scraping**: Cheerio for static sites, Playwright for JavaScript-rendered pages (OeAD)
-- **Cron**: cron-job.org running every 15 minutes
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Scraping**: Cheerio (static), Playwright (OeAD)
+- **Cron**: cron-job.org → `GET /api/cron/scrape` every 15 min
 - **Email**: Resend
-- **Notifications**: Telegram Bot API
-- **Payments**: Stripe
 - **Hosting**: Vercel
 
-## Status
+## Environment variables
 
-Currently in development. Targeting launch for the August 2026 intake season.
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Browser + RSC reads (RLS-protected) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Cron scraper + alert dispatch (bypasses RLS) |
+| `CRON_SECRET` | Yes | Bearer token for `/api/cron/scrape` |
+| `RESEND_API_KEY` | Yes | Email alert delivery |
 
-## Roadmap
+See `.env.example` for a copy-paste template.
 
-- **Phase 1** (current): Vienna dorm directory + alerts + tracker
-- **Phase 2**: Apartment listings for students who don't get a dorm
-- **Phase 3**: Expand to Graz, Salzburg, Innsbruck, Linz
-- **Phase 4**: Berlin, Munich, Prague, Amsterdam
-- **Phase 5**: Universal application layer — apply to any dorm directly through Dormra
+## Database setup
 
-## Project structure
+```bash
+# 1. Apply baseline schema (idempotent)
+psql $DATABASE_URL -f supabase/migrations/00000000000000_schema.sql
 
-The app/ directory contains pages and API routes, lib/ holds shared utilities (Supabase client, diff engine, alert dispatchers), scrapers/ contains one scraper file per provider, and public/ holds static assets.
+# 2. Enable RLS policies
+psql $DATABASE_URL -f supabase/migrations/20260605120000_enable_rls.sql
+
+# 3. Seed OeAD Vienna residences
+psql $DATABASE_URL -f supabase/seeds/oead_vienna.sql
+```
+
+Regenerate TypeScript types after schema changes:
+
+```bash
+npx supabase gen types typescript --project-id <ref> > lib/database.types.ts
+```
 
 ## Local development
 
 Requires Node.js 21+ and a Supabase project.
+
+```bash
+cp .env.example .env.local   # fill in values
+npm install
+npm run dev
+```
+
+## Cron
+
+Point cron-job.org at:
+
+```
+GET https://dormra.eu/api/cron/scrape
+Authorization: Bearer $CRON_SECRET
+```
+
+Every 15 minutes. Response JSON includes `scraped`, `errors`, `skipped`, and per-provider breakdown.
+
+## Project structure
+
+```
+app/          Pages + API routes (App Router)
+lib/          Supabase clients, diff engine, alert matching, types
+scrapers/     One scraper per provider + registry in index.ts
+supabase/     Migrations + seed SQL
+```
+
+## Roadmap
+
+- **Phase 1** (current): Vienna dorm directory + email alerts
+- **Phase 2**: Apartment listings
+- **Phase 3**: Graz, Salzburg, Innsbruck, Linz
+- **Phase 4**: Berlin, Munich, Prague, Amsterdam
+- **Phase 5**: Universal application layer
+
+## Status
+
+Private beta — targeting August 2026 intake season.
