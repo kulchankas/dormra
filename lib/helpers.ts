@@ -1,6 +1,10 @@
 import { supabase } from './supabase'
+import {
+  getAvailabilityStatusBulk as fetchAvailabilityStatusBulk,
+  type AvailabilityStatus,
+} from './availability'
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+export type { AvailabilityStatus } from './availability'
 
 export interface Dorm {
   id: string
@@ -28,52 +32,11 @@ export interface Dorm {
   image_url?: string | null
 }
 
-// ─── Availability ─────────────────────────────────────────────────────────────
-
-export type AvailabilityStatus = {
-  status: 'available' | 'fully_booked' | 'unknown'
-  label: string
-}
-
-const UNKNOWN: AvailabilityStatus = { status: 'unknown', label: 'Status unknown' }
-const STALE_MS = 6 * 60 * 60 * 1000 // treat snapshots older than 6 h as stale
-
 export async function getAvailabilityStatusBulk(
   dormIds: string[],
 ): Promise<Map<string, AvailabilityStatus>> {
-  const map = new Map<string, AvailabilityStatus>()
-  if (dormIds.length === 0) return map
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = supabase as any
-  type SnapshotRow = { dorm_id: string; available: boolean; scrape_ok: boolean; scraped_at: string }
-  const { data, error } = (await db
-    .from('availability_snapshots')
-    .select('dorm_id, available, scrape_ok, scraped_at')
-    .in('dorm_id', dormIds)
-    .order('scraped_at', { ascending: false })) as { data: SnapshotRow[] | null; error: unknown }
-
-  if (error || !data) return map
-
-  const now = Date.now()
-  for (const row of data) {
-    if (map.has(row.dorm_id)) continue
-
-    const stale = now - new Date(row.scraped_at).getTime() > STALE_MS
-    if (stale || !row.scrape_ok) {
-      map.set(row.dorm_id, UNKNOWN)
-      continue
-    }
-    map.set(row.dorm_id, row.available
-      ? { status: 'available', label: 'Available' }
-      : { status: 'fully_booked', label: 'Fully booked' },
-    )
-  }
-
-  return map
+  return fetchAvailabilityStatusBulk(dormIds, supabase)
 }
-
-// ─── Chances rating ───────────────────────────────────────────────────────────
 
 export type ChancesRating = {
   emoji: string
