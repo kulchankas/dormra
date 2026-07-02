@@ -73,7 +73,7 @@ export default async function DashboardPage() {
             <Bell className="mx-auto mb-3 size-8 text-muted-foreground/40" />
             <p className="text-sm font-medium text-foreground">No alerts yet</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Set up an alert and we'll notify you the moment a matching room opens.
+              Set up an alert and we&apos;ll notify you the moment a matching room opens.
             </p>
             <Button
               size="sm"

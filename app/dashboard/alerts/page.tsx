@@ -81,7 +81,7 @@ export default async function AlertsPage() {
             <Bell className="mx-auto mb-3 size-8 text-muted-foreground/40" />
             <p className="text-sm font-medium text-foreground">No alerts yet</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Create an alert and we'll ping you the moment a matching room opens.
+              Create an alert and we&apos;ll ping you the moment a matching room opens.
             </p>
             <Button
               size="sm"
