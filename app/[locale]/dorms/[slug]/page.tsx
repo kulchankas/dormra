@@ -45,7 +45,7 @@ export default async function DormDetailPage({ params }: PageProps) {
   const tAvail = await getTranslations('availability')
 
   const supabase = await createClient()
-  const { data: dorm } = await supabase.from('dorms').select('*').eq('slug', slug).single()
+  const { data: dorm } = await supabase.from('dorms').select('*').eq('slug', slug).eq('active', true).single()
   if (!dorm) notFound()
 
   const availabilityMap = await getAvailabilityStatusBulk([dorm.id])

@@ -15,7 +15,16 @@
     "loginPageTitle": "Вход — Dormra",
     "signupPageTitle": "Регистрация — Dormra",
     "newAlertPageTitle": "Новый алерт — Dormra",
-    "editAlertPageTitle": "Редактировать алерт — Dormra"
+    "editAlertPageTitle": "Редактировать алерт — Dormra",
+    "resetPasswordPageTitle": "Сброс пароля — Dormra"
+  },
+  "errors": {
+    "notFoundTitle": "Страница не найдена",
+    "notFoundBody": "Эта страница не существует или была перемещена.",
+    "errorTitle": "Что-то пошло не так",
+    "errorBody": "Произошла непредвиденная ошибка. Попробуй снова или вернись на главную.",
+    "backHome": "На главную",
+    "tryAgain": "Попробовать снова"
   },
   "language": {
     "switch": "Сменить язык",
@@ -306,7 +315,13 @@
     "termsLink": "Условия",
     "and": "и",
     "privacyLink": "Политику конфиденциальности",
-    "signupSuccessInbox": "Проверь почту для подтверждения email."
+    "signupSuccessInbox": "Проверь почту для подтверждения email.",
+    "resetPasswordTitle": "Новый пароль",
+    "resetPasswordSubtitle": "Выбери пароль минимум из 8 символов.",
+    "newPassword": "Новый пароль",
+    "updatePassword": "Обновить пароль",
+    "passwordUpdated": "Пароль обновлён. Теперь можно войти.",
+    "resetSessionExpired": "Ссылка истекла. Запроси новую на странице входа."
   },
   "dashboard": {
     "title": "Панель",

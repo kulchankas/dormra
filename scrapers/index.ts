@@ -1,5 +1,6 @@
 import type { Browser } from 'playwright-core'
 import type { ScraperResult } from './types'
+import type { ScrapeHtmlCache } from '@/lib/scrape-html-cache'
 import { scrapeHome4Students } from './home4students'
 import { scrapeOeAD } from './oead'
 import { scrapeStuwo } from './stuwo'
@@ -8,6 +9,7 @@ export type ScraperFn = (
   dormSlug: string,
   scrapeUrl: string,
   browser?: Browser,
+  htmlCache?: ScrapeHtmlCache,
 ) => Promise<ScraperResult>
 
 export interface Scraper {

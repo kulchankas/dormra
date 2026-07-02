@@ -32,7 +32,10 @@ export async function GET(request: NextRequest) {
     if (!error) return NextResponse.redirect(`${base}${next}`)
   } else if (tokenHash && type) {
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash })
-    if (!error) return NextResponse.redirect(`${base}${next}`)
+    if (!error) {
+      const destination = type === 'recovery' ? '/reset-password' : next
+      return NextResponse.redirect(`${base}${destination}`)
+    }
   }
 
   return NextResponse.redirect(`${base}/login?error=callback_failed`)

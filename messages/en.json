@@ -15,7 +15,16 @@
     "loginPageTitle": "Log in — Dormra",
     "signupPageTitle": "Sign up — Dormra",
     "newAlertPageTitle": "New alert — Dormra",
-    "editAlertPageTitle": "Edit alert — Dormra"
+    "editAlertPageTitle": "Edit alert — Dormra",
+    "resetPasswordPageTitle": "Reset password — Dormra"
+  },
+  "errors": {
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "This page doesn't exist or was moved.",
+    "errorTitle": "Something went wrong",
+    "errorBody": "An unexpected error occurred. Try again or go back home.",
+    "backHome": "Back to home",
+    "tryAgain": "Try again"
   },
   "language": {
     "switch": "Change language",
@@ -306,7 +315,13 @@
     "termsLink": "Terms",
     "and": "and",
     "privacyLink": "Privacy Policy",
-    "signupSuccessInbox": "Check your inbox to confirm your email."
+    "signupSuccessInbox": "Check your inbox to confirm your email.",
+    "resetPasswordTitle": "Set a new password",
+    "resetPasswordSubtitle": "Choose a password with at least 8 characters.",
+    "newPassword": "New password",
+    "updatePassword": "Update password",
+    "passwordUpdated": "Password updated. You can log in now.",
+    "resetSessionExpired": "This reset link has expired. Request a new one from the login page."
   },
   "dashboard": {
     "title": "Dashboard",

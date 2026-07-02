@@ -50,6 +50,7 @@ Scrapers visit each provider's website every 15 minutes and write availability s
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes | Cron scraper + alert dispatch (bypasses RLS) |
 | `CRON_SECRET` | Yes | Bearer token for `/api/cron/scrape` |
 | `RESEND_API_KEY` | Yes | Email alert delivery |
+| `NEXT_PUBLIC_SITE_URL` | Recommended | Canonical URLs, hreflang, email links |
 
 See `.env.example` for a copy-paste template.
 
@@ -59,10 +60,13 @@ See `.env.example` for a copy-paste template.
 # 1. Apply baseline schema (idempotent)
 psql $DATABASE_URL -f supabase/migrations/00000000000000_schema.sql
 
-# 2. Enable RLS policies
+# 2. Enable RLS policies (required before production)
 psql $DATABASE_URL -f supabase/migrations/20260605120000_enable_rls.sql
 
-# 3. Seed dorm listings
+# 3. Add alert locale column (for localized emails)
+psql $DATABASE_URL -f supabase/migrations/20260701120000_user_alerts_locale.sql
+
+# 4. Seed dorm listings
 psql $DATABASE_URL -f supabase/seeds/oead_vienna.sql
 psql $DATABASE_URL -f supabase/seeds/stuwo_vienna.sql
 psql $DATABASE_URL -f supabase/seeds/home4students_vienna.sql
@@ -99,11 +103,23 @@ Every 15 minutes. Response JSON includes `scraped`, `errors`, `skipped`, and per
 ## Project structure
 
 ```
-app/          Pages + API routes (App Router)
+app/          Pages + API routes (App Router, locale-prefixed)
+components/   UI components (shadcn + custom)
+i18n/         next-intl routing, navigation, request config
+messages/     en/de/ru translation files
 lib/          Supabase clients, diff engine, alert matching, types
 scrapers/     One scraper per provider + registry in index.ts
 supabase/     Migrations + seed SQL
+docs/         Project audit and roadmap (docs/PROJECT_AUDIT.md)
 ```
+
+## Internationalization
+
+Supported locales: **English** (default), **German** (`/de`), **Russian** (`/ru`). Alert emails use the locale active when the alert was created/updated.
+
+## Audit & roadmap
+
+See [`docs/PROJECT_AUDIT.md`](docs/PROJECT_AUDIT.md) for the full project audit, known gaps, and prioritized roadmap.
 
 ## Roadmap
 
