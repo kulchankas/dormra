@@ -385,6 +385,8 @@
     "maxDeposit": "Max deposit (months)",
     "maxDepositPlaceholder": "e.g. 2",
     "districts": "Districts",
+    "districtsHint": "Leave empty to match any district.",
+    "districtsClear": "Clear ({count})",
     "moveInDate": "Move-in date",
     "moveInBy": "I need to move in by",
     "moveInHint": "Saved for your reference — move-in filtering is coming soon.",

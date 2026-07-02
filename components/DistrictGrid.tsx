@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { DISTRICT_NAMES } from '@/lib/helpers'
 
@@ -7,31 +8,32 @@ import { DISTRICT_NAMES } from '@/lib/helpers'
 export default function DistrictGrid({
   selected,
   onChange,
-  label = 'District',
+  label,
 }: {
   selected: number[]
   onChange: (d: number[]) => void
   label?: string
 }) {
+  const t = useTranslations('alertForm')
   const toggle = (d: number) =>
     onChange(selected.includes(d) ? selected.filter((x) => x !== d) : [...selected, d])
 
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-semibold text-foreground">{label}</span>
+        <span className="text-xs font-semibold text-foreground">{label ?? t('districts')}</span>
         {selected.length > 0 && (
           <button
             type="button"
             onClick={() => onChange([])}
-            className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+            className="relative text-[11px] text-muted-foreground hover:text-foreground transition-colors after:absolute after:-inset-2"
           >
-            Clear ({selected.length})
+            {t('districtsClear', { count: selected.length })}
           </button>
         )}
       </div>
-      <p className="mb-2 text-xs text-muted-foreground">Leave empty to match any district.</p>
-      <div className="grid grid-cols-5 gap-1 sm:grid-cols-6">
+      <p className="mb-2 text-xs text-muted-foreground">{t('districtsHint')}</p>
+      <div className="grid grid-cols-5 gap-1.5 sm:grid-cols-6">
         {Object.keys(DISTRICT_NAMES).map((k) => {
           const n = Number(k)
           const isSelected = selected.includes(n)
@@ -40,9 +42,10 @@ export default function DistrictGrid({
               key={n}
               type="button"
               title={`${n}. ${DISTRICT_NAMES[n]}`}
+              aria-pressed={isSelected}
               onClick={() => toggle(n)}
               className={cn(
-                'h-8 w-full rounded-lg text-xs font-medium transition-all',
+                'h-11 w-full rounded-lg text-xs font-medium transition-all',
                 isSelected
                   ? 'bg-brand text-white'
                   : 'bg-muted text-muted-foreground hover:bg-brand-soft hover:text-brand',

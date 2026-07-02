@@ -385,6 +385,8 @@
     "maxDeposit": "Max. Kaution (Monate)",
     "maxDepositPlaceholder": "z. B. 2",
     "districts": "Bezirke",
+    "districtsHint": "Leer lassen, um jeden Bezirk zu berücksichtigen.",
+    "districtsClear": "Leeren ({count})",
     "moveInDate": "Einzugsdatum",
     "moveInBy": "Ich muss einziehen bis",
     "moveInHint": "Nur zur Info — Einzugsfilter kommt demnächst.",
