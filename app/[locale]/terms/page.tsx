@@ -34,6 +34,10 @@ export default async function TermsPage({ params }: PageProps) {
             <h2 className="mb-2 text-base font-medium text-foreground">{t('accuracyTitle')}</h2>
             <p>{t('accuracyBody')}</p>
           </section>
+          <section>
+            <h2 className="mb-2 text-base font-medium text-foreground">{t('communityTitle')}</h2>
+            <p>{t('communityBody')}</p>
+          </section>
         </div>
       </article>
     </main>

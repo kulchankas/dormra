@@ -74,6 +74,7 @@ Priority order — **do not start Phase 2 scrapers until Phase 1 metric met.**
 | P1 | Admin per-provider last scrape | ✅ Shipped PR #42 (CI fix in follow-up PR #45) | — |
 | P1 | Account settings page | ✅ This sprint | — |
 | P2 | Saved dorms + application tracker | ✅ This sprint — bookmark toggle + status tracker at `/dashboard/saved`, reuses existing `tracker` table/RLS | — |
+| P2 | The Grapevine — anonymous dorm reviews & ratings | ✅ This sprint — per-dorm reviews/ratings with per-review pseudonyms, report button, `/admin/reviews` moderation queue. See `docs/COMMUNITY_REVIEWS.md` | — |
 | Hold | New scrapers (ÖJAB, WIHAST, …) | Phase 2 gate | Phase 1 week clean |
 
 **Your manual schedule (parallel):**
@@ -122,6 +123,9 @@ Operator → GET /api/test-alert?slug=…&dryRun=1|email=…
 3. `20260701120000_user_alerts_locale.sql` — alert email locale
 4. `20260701130000_snapshot_rpc_and_retention.sql` — RPC + prune
 5. `20260701140000_alert_log_dedup.sql` — weekly dedup index
+6. `20260702150000_dorm_coordinates.sql` — dorm lat/lng
+7. `20260702160000_dorm_images.sql` — photo galleries
+8. `20260703000000_dorm_reviews.sql` — Grapevine reviews + reports
 
 **Manual steps:** [`MANUAL_TASKS.md`](./MANUAL_TASKS.md)
 
@@ -147,3 +151,4 @@ Operator → GET /api/test-alert?slug=…&dryRun=1|email=…
 | 2026-07-02 | `cursor/saved-dorms-tracker-fc38` | Saved dorms + status tracker (P2) — bookmark toggle, `/dashboard/saved`, dashboard card |
 | 2026-07-02 | `cursor/dorms-pages-improvements-fc38` | Photo gallery (OeAD), university proximity, save button in grid, JSON-LD, similar dorms |
 | 2026-07-02 | `cursor/dorms-pages-improvements-fc38` | Map fixes: switched CARTO→OSM tiles (too pale + commercial-use ToS issue), added a loading spinner, and a layout overhaul — persistent sticky split-view map on desktop (visible by default, no longer hidden behind a tab) and a floating button opening a true fullscreen map sheet on mobile/tablet |
+| 2026-07-03 | `cursor/dorm-community-reviews-fc38` | The Grapevine: anonymous per-dorm reviews + ratings (fresh pseudonym per review, one-review-per-dorm), report button, `/admin/reviews` moderation queue, rating badges on cards/detail, ToS update — see `docs/COMMUNITY_REVIEWS.md` |

@@ -313,6 +313,51 @@
     "confirmRemove": "Entfernen bestätigen",
     "removeConfirm": "Entfernen?"
   },
+  "reviews": {
+    "sectionTitle": "Der Buschfunk",
+    "sectionSubtitle": "Ehrliche Erfahrungen von anderen Studierenden — anonym und ungefiltert.",
+    "yourRating": "Deine Bewertung",
+    "starLabel": "{n} von 5 Sternen bewerten",
+    "ratingAria": "Bewertet mit {rating} von 5",
+    "bodyLabel": "Deine Bewertung",
+    "bodyPlaceholder": "Wie ist es wirklich, hier zu wohnen? Lärm, Personal, Reparaturen, Nachbarn — raus damit.",
+    "anonymityHint": "Wird anonym unter einem zufälligen Namen veröffentlicht — nie unter deinem Konto.",
+    "submitting": "Wird veröffentlicht…",
+    "postReview": "Bewertung veröffentlichen",
+    "saveChanges": "Änderungen speichern",
+    "cancel": "Abbrechen",
+    "alreadyReviewed": "Du hast dieses Wohnheim bereits bewertet — bearbeite stattdessen deine Bewertung.",
+    "submitError": "Deine Bewertung konnte nicht gespeichert werden. Versuch es gleich noch einmal.",
+    "postedToast": "Bewertung anonym veröffentlicht",
+    "updatedToast": "Bewertung aktualisiert",
+    "deletedToast": "Bewertung gelöscht",
+    "yourReview": "Deine Bewertung",
+    "editReview": "Bewertung bearbeiten",
+    "deleteReview": "Bewertung löschen",
+    "pendingReviewNotice": "Diese Bewertung ist für andere ausgeblendet, bis sie geprüft wurde.",
+    "editedTag": "bearbeitet",
+    "loginPrompt": "Melde dich an, um deine Erfahrung mit diesem Wohnheim zu teilen.",
+    "loginCta": "Zum Bewerten anmelden",
+    "beFirst": "Noch keine Bewertungen — teile als Erste:r deine Erfahrung.",
+    "noReviewsYet": "Noch keine Bewertungen",
+    "reviewCount": "{count} Bewertung",
+    "reviewCountPlural": "{count} Bewertungen",
+    "reportAria": "Diese Bewertung melden",
+    "reportTitle": "Diese Bewertung melden",
+    "reportDescription": "Sag uns, was nicht stimmt. Meldungen sind für andere Nutzer:innen anonym — nur Moderator:innen sehen sie.",
+    "reasonSpam": "Spam oder Werbung",
+    "reasonHarassment": "Belästigung oder Hassrede",
+    "reasonFalseInfo": "Falsche Informationen",
+    "reasonOffTopic": "Bezieht sich nicht auf dieses Wohnheim",
+    "reasonOther": "Etwas anderes",
+    "reportDetailsPlaceholder": "Details hinzufügen (optional)",
+    "reportSubmit": "Meldung absenden",
+    "reportThanksTitle": "Danke für die Meldung",
+    "reportThanksBody": "Ein:e Moderator:in wird das in Kürze prüfen.",
+    "close": "Schließen",
+    "alreadyReported": "Du hast diese Bewertung bereits gemeldet.",
+    "reportError": "Deine Meldung konnte nicht gesendet werden. Versuch es gleich noch einmal."
+  },
   "howItWorks": {
     "badge": "So funktioniert Dormra",
     "title": "Eine Suche. Jedes Wiener Studentenheim.",
@@ -521,11 +566,13 @@
   "terms": {
     "back": "← Zur Startseite",
     "title": "Nutzungsbedingungen",
-    "updated": "Zuletzt aktualisiert: 17.05.2026",
+    "updated": "Zuletzt aktualisiert: 03.07.2026",
     "serviceTitle": "Der Dienst",
     "serviceBody": "Dormra aggregiert öffentlich gelistete Verfügbarkeit von Drittanbietern und benachrichtigt dich bei passenden Zimmern. Wir sind kein Wohnungsanbieter und bearbeiten keine Buchungen oder Zahlungen.",
     "accuracyTitle": "Genauigkeit der Verfügbarkeit",
-    "accuracyBody": "Wir aktualisieren alle 15 Minuten, können aber nicht garantieren, dass ein Zimmer beim Kontakt noch frei ist. Verfügbarkeit kann sich in Minuten ändern — bestätige immer direkt beim Anbieter."
+    "accuracyBody": "Wir aktualisieren alle 15 Minuten, können aber nicht garantieren, dass ein Zimmer beim Kontakt noch frei ist. Verfügbarkeit kann sich in Minuten ändern — bestätige immer direkt beim Anbieter.",
+    "communityTitle": "Community-Inhalte (Der Buschfunk)",
+    "communityBody": "Du kannst Bewertungen zu Wohnheimen posten, mit denen du eigene Erfahrungen gemacht hast. Bewertungen erscheinen unter einem zufällig generierten anonymen Namen — nie unter deinem Kontonamen oder deiner E-Mail. Du musst aber angemeldet sein, um zu posten; intern speichern wir eine Verknüpfung zwischen Konto und Bewertung, um diese Bedingungen durchzusetzen und auf Meldungen zu reagieren. Poste nichts Falsches, Verleumderisches, Belästigendes oder Themenfremdes. Jede Bewertung hat eine Meldefunktion; Meldungen gehen nur an unsere Moderator:innen. Wir können Inhalte, die gegen diese Bedingungen verstoßen, ausblenden oder entfernen und dokumentieren dabei immer den Grund. Hältst du Inhalte über dich oder deine Organisation für rechtswidrig, kontaktiere uns — wir prüfen das zeitnah."
   },
   "email": {
     "alertSubject": "Ein Zimmer ist frei geworden: {name}",
@@ -550,6 +597,7 @@
     "tabs": {
       "overview": "Übersicht",
       "dorms": "Dorm-Status",
+      "reviews": "Bewertungen",
       "deliveries": "E-Mail-Log",
       "alerts": "Alerts"
     },
@@ -604,6 +652,25 @@
     "created7d": "Erstellt (7 Tage)",
     "created30d": "Erstellt (30 Tage)",
     "byLocale": "Nach Sprache",
-    "noAlertsYet": "Noch keine Alerts erstellt."
+    "noAlertsYet": "Noch keine Alerts erstellt.",
+    "pendingReviewReports": "Gemeldete Bewertungen",
+    "pendingReviewReportsHint": "Warten auf Prüfung",
+    "viewReviewReports": "Gemeldete Bewertungen ansehen",
+    "reviewsTitle": "Gemeldete Bewertungen",
+    "reviewsSubtitle": "{count} Bewertung mit mindestens einer Meldung",
+    "noReports": "Keine gemeldeten Bewertungen — der Buschfunk ist ruhig.",
+    "reviewCurrentlyHidden": "Aktuell ausgeblendet",
+    "reportCount": "{count} Meldung",
+    "reportReasons": {
+      "spam": "Spam oder Werbung",
+      "harassment": "Belästigung oder Hassrede",
+      "false_info": "Falsche Informationen",
+      "off_topic": "Bezieht sich nicht auf dieses Wohnheim",
+      "other": "Etwas anderes"
+    },
+    "hideReview": "Bewertung ausblenden",
+    "restoreReview": "Bewertung wiederherstellen",
+    "reviewHiddenToast": "Bewertung ausgeblendet",
+    "reviewRestoredToast": "Bewertung wiederhergestellt"
   }
 }

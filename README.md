@@ -6,7 +6,7 @@
 
 ## What it does
 
-Dormra aggregates dorm availability across Vienna student housing providers into one searchable directory. Users filter by budget, district, deposit, amenities, and stay length, browse results on a list or an interactive map, and get email alerts when matching rooms become available.
+Dormra aggregates dorm availability across Vienna student housing providers into one searchable directory. Users filter by budget, district, deposit, amenities, and stay length, browse results on a list or an interactive map, and get email alerts when matching rooms become available. Each dorm also has "The Grapevine" — anonymous student reviews and ratings — so Dormra doubles as a community, not just a listings feed.
 
 ## Implemented vs planned
 
@@ -22,6 +22,7 @@ Dormra aggregates dorm availability across Vienna student housing providers into
 | Other providers (ÖJAB, WIHAST, …) | ❌ Not started | No scraper registered yet |
 | Telegram notifications | ❌ UI only | Form field disabled; no dispatcher |
 | Saved dorms + application tracker | ✅ Live | Bookmark a dorm from its detail page; track status (Interested/Applied/Accepted/Rejected) at `/dashboard/saved`. List-based, not a drag-and-drop kanban board |
+| The Grapevine (anonymous reviews) | ✅ Live | Per-dorm 1-5★ reviews under a fresh random pseudonym per post (not a persistent handle); report button + `/admin/reviews` moderation queue. See `docs/COMMUNITY_REVIEWS.md` |
 | `move_in_before` alert matching | ❌ Not matched | Stored in DB + shown in UI; providers don't expose move-in dates in scraped data |
 | Stripe payments | ❌ Not started | — |
 

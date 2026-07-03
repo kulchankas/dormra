@@ -313,6 +313,51 @@
     "confirmRemove": "Confirm remove",
     "removeConfirm": "Remove?"
   },
+  "reviews": {
+    "sectionTitle": "The Grapevine",
+    "sectionSubtitle": "Real talk from other students — anonymous, unfiltered.",
+    "yourRating": "Your rating",
+    "starLabel": "Rate {n} out of 5",
+    "ratingAria": "Rated {rating} out of 5",
+    "bodyLabel": "Your review",
+    "bodyPlaceholder": "What's it actually like living here? Noise, staff, repairs, neighbors — spill it.",
+    "anonymityHint": "Posted anonymously under a random name — never your account.",
+    "submitting": "Posting…",
+    "postReview": "Post review",
+    "saveChanges": "Save changes",
+    "cancel": "Cancel",
+    "alreadyReviewed": "You've already reviewed this dorm — edit your review instead.",
+    "submitError": "Couldn't save your review. Try again in a moment.",
+    "postedToast": "Review posted anonymously",
+    "updatedToast": "Review updated",
+    "deletedToast": "Review deleted",
+    "yourReview": "Your review",
+    "editReview": "Edit your review",
+    "deleteReview": "Delete your review",
+    "pendingReviewNotice": "This review is hidden from other users pending moderation.",
+    "editedTag": "edited",
+    "loginPrompt": "Sign in to share your experience with this dorm.",
+    "loginCta": "Sign in to review",
+    "beFirst": "No reviews yet — be the first to share your experience.",
+    "noReviewsYet": "No reviews yet",
+    "reviewCount": "{count} review",
+    "reviewCountPlural": "{count} reviews",
+    "reportAria": "Report this review",
+    "reportTitle": "Report this review",
+    "reportDescription": "Tell us what's wrong. Reports are anonymous to other users — only moderators see them.",
+    "reasonSpam": "Spam or advertising",
+    "reasonHarassment": "Harassment or hate speech",
+    "reasonFalseInfo": "False information",
+    "reasonOffTopic": "Not about this dorm",
+    "reasonOther": "Something else",
+    "reportDetailsPlaceholder": "Add details (optional)",
+    "reportSubmit": "Submit report",
+    "reportThanksTitle": "Thanks for the report",
+    "reportThanksBody": "A moderator will review this shortly.",
+    "close": "Close",
+    "alreadyReported": "You've already reported this review.",
+    "reportError": "Couldn't submit your report. Try again in a moment."
+  },
   "howItWorks": {
     "badge": "How Dormra works",
     "title": "One search. Every Vienna student dorm.",
@@ -521,11 +566,13 @@
   "terms": {
     "back": "← Back to home",
     "title": "Terms of Service",
-    "updated": "Last updated: 2026-05-17",
+    "updated": "Last updated: 2026-07-03",
     "serviceTitle": "The service",
     "serviceBody": "Dormra aggregates publicly listed student dorm availability from third-party providers and notifies you when matching rooms become available. We are not a housing provider and do not handle bookings or payments between you and any provider.",
     "accuracyTitle": "Availability accuracy",
-    "accuracyBody": "We strive to keep listings current by re-scraping every 15 minutes, but we cannot guarantee a room will still be available at the exact moment you contact the provider. Availability can change within minutes — always confirm directly with the provider before relying on a listing."
+    "accuracyBody": "We strive to keep listings current by re-scraping every 15 minutes, but we cannot guarantee a room will still be available at the exact moment you contact the provider. Availability can change within minutes — always confirm directly with the provider before relying on a listing.",
+    "communityTitle": "Community content (The Grapevine)",
+    "communityBody": "You may post reviews and ratings about dorms you have direct experience with. Reviews are shown under a randomly generated anonymous name and never your account name or email — but you must be signed in to post, and we retain a link between your account and your reviews internally so we can enforce these terms and respond to reports. Don't post anything false, defamatory, harassing, or unrelated to the dorm being reviewed. Every review has a report button; reports go to our moderators, not to other users. We may hide or remove content that violates these terms, and we'll always record why. If you believe content about you or your organization is illegal, contact us and we'll review it promptly."
   },
   "email": {
     "alertSubject": "A room just opened at {name}",
@@ -550,6 +597,7 @@
     "tabs": {
       "overview": "Overview",
       "dorms": "Dorm health",
+      "reviews": "Reviews",
       "deliveries": "Email log",
       "alerts": "Alerts"
     },
@@ -604,6 +652,25 @@
     "created7d": "Created last 7 days",
     "created30d": "Created last 30 days",
     "byLocale": "By locale",
-    "noAlertsYet": "No alerts created yet."
+    "noAlertsYet": "No alerts created yet.",
+    "pendingReviewReports": "Reported reviews",
+    "pendingReviewReportsHint": "Awaiting moderation",
+    "viewReviewReports": "View review reports",
+    "reviewsTitle": "Reported reviews",
+    "reviewsSubtitle": "{count} review with at least one report",
+    "noReports": "No reported reviews — The Grapevine is quiet.",
+    "reviewCurrentlyHidden": "Currently hidden",
+    "reportCount": "{count} report",
+    "reportReasons": {
+      "spam": "Spam or advertising",
+      "harassment": "Harassment or hate speech",
+      "false_info": "False information",
+      "off_topic": "Not about this dorm",
+      "other": "Something else"
+    },
+    "hideReview": "Hide review",
+    "restoreReview": "Restore review",
+    "reviewHiddenToast": "Review hidden",
+    "reviewRestoredToast": "Review restored"
   }
 }
