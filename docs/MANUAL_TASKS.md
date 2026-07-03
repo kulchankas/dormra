@@ -20,7 +20,7 @@ Agent verified production after PRs #33–#40. **You still need to complete the 
 | 4 | **Rotate exposed secrets** (§2.1) — CRON, Supabase service role, Resend | ⬜ **You** | **Yes** if keys were pasted in chat |
 | 5 | **Resend domain** verify `dormra.eu` + `RESEND_FROM` (§4) | ⬜ **You** | Recommended |
 | 6 | **Post-deploy smoke tests** (§7) — signup, alert, reset | ⬜ **You** | Recommended |
-| 7 | **Google OAuth** if using “Continue with Google” (§5b) | ⬜ **You** | Only if using Google login |
+| 7 | **Google OAuth** — enable provider + Google Cloud credentials (§5b) | ⬜ **You** | **Yes** if using “Continue with Google” (currently **disabled** in Supabase) |
 
 **Already done (agent / code):**
 
@@ -254,7 +254,9 @@ curl -sS -H "Authorization: Bearer YOUR_CRON_SECRET" \
 
 ---
 
-## 5b. Google OAuth (optional)
+## 5b. Google OAuth (required for “Continue with Google”)
+
+**Verified 2026-07-03:** Supabase auth logs show `provider is not enabled` and `/auth/v1/settings` returns `"google": false`. The app code is ready; you must enable the provider in Supabase.
 
 **If "Continue with Google" fails or redirects to localhost:**
 

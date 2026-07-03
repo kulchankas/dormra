@@ -1,8 +1,9 @@
 import { setRequestLocale, getTranslations } from 'next-intl/server'
 import { formatDistanceToNow } from 'date-fns'
 import { de, ru, enGB } from 'date-fns/locale'
-import { Activity, Bell, Building2, Mail, AlertTriangle } from 'lucide-react'
+import { Activity, Bell, Building2, Mail, AlertTriangle, ShieldCheck } from 'lucide-react'
 import { getAdminOverview, getRecentCronRuns } from '@/lib/admin-stats'
+import { getAdminAuthStatus } from '@/lib/admin-auth-status'
 import { Link } from '@/i18n/navigation'
 
 const DATE_LOCALES = { en: enGB, de, ru } as const
@@ -51,6 +52,7 @@ export default async function AdminOverviewPage({ params }: PageProps) {
 
   const stats = await getAdminOverview()
   const cronRuns = await getRecentCronRuns(8)
+  const authStatus = await getAdminAuthStatus()
 
   const lastScrape = stats.lastScrapedAt
     ? formatDistanceToNow(new Date(stats.lastScrapedAt), { addSuffix: true, locale: dateLocale })
@@ -91,6 +93,37 @@ export default async function AdminOverviewPage({ params }: PageProps) {
             hint={t('emailsToday', { count: stats.emailsToday })}
           />
         </div>
+      </section>
+
+      <section className="card-elevated rounded-2xl bg-surface p-5">
+        <div className="mb-1 flex items-center gap-2">
+          <ShieldCheck className="size-4 text-brand" />
+          <h2 className="text-sm font-semibold text-foreground">{t('authStatusTitle')}</h2>
+        </div>
+        <p className="mb-4 text-xs text-muted-foreground">{t('authStatusSubtitle')}</p>
+        <dl className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-border/60 px-4 py-3">
+            <dt className="text-xs text-muted-foreground">{t('googleOAuth')}</dt>
+            <dd
+              className={
+                authStatus.googleEnabled
+                  ? 'mt-1 text-sm font-medium text-emerald-600'
+                  : 'mt-1 text-sm font-medium text-amber-600'
+              }
+            >
+              {authStatus.googleEnabled ? t('authEnabled') : t('authDisabled')}
+            </dd>
+          </div>
+          <div className="rounded-xl border border-border/60 px-4 py-3">
+            <dt className="text-xs text-muted-foreground">{t('emailAuth')}</dt>
+            <dd className="mt-1 text-sm font-medium text-emerald-600">
+              {authStatus.emailEnabled ? t('authEnabled') : t('authDisabled')}
+            </dd>
+          </div>
+        </dl>
+        {!authStatus.googleEnabled && (
+          <p className="mt-4 text-xs text-muted-foreground">{t('authSetupHint')}</p>
+        )}
       </section>
 
       <section className="card-elevated rounded-2xl bg-surface p-5">
