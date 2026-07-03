@@ -1,4 +1,4 @@
-import { ArrowLeft, BookmarkCheck, Search } from 'lucide-react'
+import { ArrowLeft, BookmarkCheck, Lightbulb, Search } from 'lucide-react'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
 import { buildPageMetadata } from '@/lib/i18n-metadata'
@@ -82,6 +82,11 @@ export default async function SavedDormsPage({ params }: PageProps) {
   }
 
   const total = trackerRows.length
+  // Vienna dorms are first-come-first-served with long waitlists — the #1
+  // tip from real student housing discussions is to apply to a few
+  // providers in parallel. Nudge users who've only applied to one so far.
+  const appliedCount = byStatus.get('applied')?.length ?? 0
+  const showApplyTip = appliedCount === 1
 
   return (
     <main className="min-h-screen bg-background">
@@ -104,6 +109,19 @@ export default async function SavedDormsPage({ params }: PageProps) {
                 : t('subtitlePlural', { count: total })}
           </p>
         </div>
+
+        {showApplyTip && (
+          <div className="mb-6 flex items-start gap-3 rounded-2xl border border-brand/20 bg-brand-soft/40 p-4">
+            <Lightbulb className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">{t('applyTipTitle')}</p>
+              <p className="mt-0.5 text-sm text-muted-foreground">{t('applyTipBody')}</p>
+              <Link href="/dorms" className="mt-1.5 inline-block text-sm font-medium text-brand hover:underline">
+                {t('applyTipCta')} →
+              </Link>
+            </div>
+          </div>
+        )}
 
         {total === 0 ? (
           <div className="rounded-2xl border border-dashed border-border bg-surface-soft/50 p-12 text-center">

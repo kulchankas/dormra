@@ -42,6 +42,8 @@ export default async function HowItWorksPage({ params }: PageProps) {
     { q: t('faq3q'), a: t('faq3a') },
     { q: t('faq4q'), a: t('faq4a') },
     { q: t('faq5q'), a: t('faq5a') },
+    { q: t('faq6q'), a: t('faq6a') },
+    { q: t('faq7q'), a: t('faq7a') },
   ]
 
   return (
