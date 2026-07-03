@@ -1,4 +1,4 @@
-import { Bell, BookmarkCheck, TrendingUp, Plus, Search, Settings } from 'lucide-react'
+import { Bell, Plus, Search, Settings } from 'lucide-react'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
 import { buildPageMetadata } from '@/lib/i18n-metadata'
@@ -47,7 +47,7 @@ export default async function DashboardPage({ params }: PageProps) {
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2">
           <Link
             href="/dashboard/alerts"
             className="card-elevated group rounded-2xl bg-surface p-5 transition-all hover:-translate-y-0.5"
@@ -82,34 +82,11 @@ export default async function DashboardPage({ params }: PageProps) {
             <p className="text-sm font-semibold text-foreground">{t('settings')}</p>
             <p className="mt-0.5 text-xs text-muted-foreground">{t('settingsHint')}</p>
           </Link>
+        </div>
 
-          <div
-            className="rounded-2xl bg-surface-soft/80 p-5 opacity-60"
-            title={t('savedDormsTooltip')}
-          >
-            <div className="mb-3 grid size-10 place-items-center rounded-xl bg-muted">
-              <BookmarkCheck className="size-4 text-muted-foreground" />
-            </div>
-            <p className="text-sm font-semibold text-foreground">{t('savedDorms')}</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">{t('savedDormsHint')}</p>
-            <p className="mt-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
-              {t('comingSoon')}
-            </p>
-          </div>
-
-          <div
-            className="rounded-2xl bg-surface-soft/80 p-5 opacity-60"
-            title={t('applicationTrackerTooltip')}
-          >
-            <div className="mb-3 grid size-10 place-items-center rounded-xl bg-muted">
-              <TrendingUp className="size-4 text-muted-foreground" />
-            </div>
-            <p className="text-sm font-semibold text-foreground">{t('applicationTracker')}</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">{t('applicationTrackerHint')}</p>
-            <p className="mt-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
-              {t('comingSoon')}
-            </p>
-          </div>
+        <div className="mt-3 rounded-xl border border-dashed border-border/70 bg-surface-soft/40 px-4 py-3">
+          <p className="text-xs font-medium text-muted-foreground">{t('whatsNext')}</p>
+          <p className="mt-1 text-xs text-muted-foreground/90">{t('comingSoonFeatures')}</p>
         </div>
 
         {count === 0 && (

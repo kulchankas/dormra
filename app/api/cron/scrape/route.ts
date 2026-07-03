@@ -7,6 +7,7 @@ import { getScraperForProvider, usesBrowser } from '@/scrapers'
 import { launchScraperBrowser } from '@/scrapers/browser'
 import { processSnapshot } from '@/lib/diff'
 import { pruneOldSnapshots } from '@/lib/snapshot-maintenance'
+import { logCronRun } from '@/lib/cron-runs'
 
 export const maxDuration = 300
 
@@ -51,6 +52,19 @@ export async function GET(request: NextRequest) {
 
   if (fetchError || !dorms) {
     console.error('[CRON] Failed to fetch dorms:', fetchError?.message)
+    await logCronRun({
+      durationMs: Date.now() - start,
+      ok: false,
+      errorMessage: fetchError?.message ?? 'Failed to fetch dorms',
+      providers: params.providers,
+      batch: params.batch,
+      batches: params.batches,
+      scraped: 0,
+      errors: 0,
+      skipped: 0,
+      pruned: 0,
+      byProvider: {},
+    })
     return Response.json({ ok: false, error: fetchError?.message }, { status: 500 })
   }
 
@@ -129,6 +143,20 @@ export async function GET(request: NextRequest) {
   }
 
   const pruned = params.prune ? await pruneOldSnapshots() : 0
+  const durationMs = Date.now() - start
+
+  await logCronRun({
+    durationMs,
+    ok: true,
+    providers: params.providers,
+    batch: params.batch,
+    batches: params.batches,
+    scraped,
+    errors,
+    skipped,
+    pruned,
+    byProvider,
+  })
 
   return Response.json({
     ok: true,
@@ -140,6 +168,6 @@ export async function GET(request: NextRequest) {
     batch: params.batch,
     batches: params.batches,
     byProvider,
-    duration_ms: Date.now() - start,
+    duration_ms: durationMs,
   })
 }
