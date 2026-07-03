@@ -23,18 +23,7 @@ Rough tasks you jot down during the day. A **scheduled night agent** reads the *
 
 Write messy bullets here. One `## Draft — YYYY-MM-DD` section per day.
 
-### Draft — 2026-07-03
-
-- [ ]  put more info about the dorm on dorm page 
-- [ ] dashboard/user page not opening when i click on my email in top right corner when logged in ( maybe change it on icon) 
-- [ ] is it possible to apply through the dormra website without redirecting to provider website. if yes - work on it 
-- [ ] ability to log out 
-- [ ] copy filter options from other providers websites 
-- [ ] add other dorms 
-- [ ] write down list of students groups/ chats and so on where i can in fiture promote/ post info about dormra
-- [ ] search bar - strings layout (somewhere middle/ somewhere from the lest - correct) 
-- [ ] research if i need to start company if i add subscriptions in austria 
-- [ ] make custom map instead of open source one with our brand design 
+<!-- Draft cleared 2026-07-03 — see nightly report and Done archive -->
 
 ---
 
@@ -42,11 +31,63 @@ Write messy bullets here. One `## Draft — YYYY-MM-DD` section per day.
 
 Completed items moved here by the night agent (newest date first).
 
+### From draft — 2026-07-03
+
+- [x] put more info about the dorm on dorm page
+- [x] dashboard/user page not opening when i click on my email in top right corner when logged in ( maybe change it on icon)
+- [x] is it possible to apply through the dormra website without redirecting to provider website. if yes - work on it
+- [x] ability to log out
+- [x] copy filter options from other providers websites
+- [x] add other dorms
+- [x] write down list of students groups/ chats and so on where i can in fiture promote/ post info about dormra
+- [x] search bar - strings layout (somewhere middle/ somewhere from the lest - correct)
+- [x] research if i need to start company if i add subscriptions in austria
+- [x] make custom map instead of open source one with our brand design
+
 ---
 
 ## Nightly reports
 
 Newest report at the top. The agent adds one block per run.
+
+## Nightly report — 2026-07-03
+
+**Branch(es) / PR(s):** `cursor/dormra-nightly-agent-queue-7dd3` → main
+
+### Summary
+
+Processed all 10 draft items. Shipped UX fixes (header dashboard link, sign-out, hero search alignment), richer dorm detail pages with application tracker, expanded filter quick-chips, branded map tiles, ÖJAB seed data (15 Vienna dorms), and three operator docs (apply flow, promotion channels, Austria subscriptions research).
+
+### Completed
+
+- **Dorm detail page** — “At a glance” card (provider, district, address, availability), price/deposit breakdown, provider info section, logged-in application tracker panel (`DormTrackerPanel`)
+- **Header** — Avatar + email now link directly to `/dashboard`; chevron opens account menu; desktop sign-out icon button added
+- **Apply-through-Dormra** — Researched: not feasible without provider APIs. Documented in `docs/APPLY_FLOW.md`; shipped in-app tracker UX instead
+- **Log out** — More discoverable via header icon + existing dropdown/mobile menu/settings
+- **Filters** — Added quick chips: Under €400, Furnished, Short stay OK, Deposit ≤2 mo
+- **ÖJAB dorms** — `supabase/seeds/ojab_vienna.sql` (15 buildings, geocoded; no scraper yet — availability stays unknown)
+- **Promotion channels** — `docs/PROMOTION_CHANNELS.md` (Facebook, Reddit, Telegram, ÖH/ESN, timing)
+- **Hero search** — Unified `SearchSegment` layout so labels/values align consistently
+- **Austria subscriptions** — `docs/SUBSCRIPTIONS_AUSTRIA.md` (Einzelunternehmen vs GmbH, VAT, checklist)
+- **Branded map** — Carto Voyager tiles + warm CSS tint (replaces raw OSM)
+- Lint warnings only (pre-existing); **98 tests pass**; **build succeeds**
+
+### Issues / blockers
+
+- None. All draft items completed.
+
+### Ideas for later
+
+- ÖJAB scraper registration (seed data exists but no live availability)
+- Wire hero `moveIn` date to actual dorm filtering (currently display-only on `/dorms`)
+- Full custom map style (Mapbox/MapLibre style JSON) if Carto tint is not enough
+- “Application checklist” wizard that opens provider tabs step-by-step
+
+### Manual tasks for you
+
+- [ ] Apply ÖJAB seed to production Supabase: `psql $DATABASE_URL -f supabase/seeds/ojab_vienna.sql` (see [`docs/MANUAL_TASKS.md`](./MANUAL_TASKS.md))
+- [ ] Review `docs/SUBSCRIPTIONS_AUSTRIA.md` with a Steuerberater before enabling paid tiers
+- [ ] Merge PR when happy with preview deploy
 
 <!-- Agent template:
 
