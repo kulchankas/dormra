@@ -25,11 +25,16 @@ Write messy bullets here. One `## Draft — YYYY-MM-DD` section per day.
 
 ### Draft — 2026-07-03
 
-<!-- Example — delete or replace (top = highest priority):
-1. fix thing on mobile
-2. geocode remaining dorms (oejab, kolping) — see seeds
-3. don't touch auth
--->
+- [ ]  put more info about the dorm on dorm page 
+- [ ] dashboard/user page not opening when i click on my email in top right corner when logged in ( maybe change it on icon) 
+- [ ] is it possible to apply through the dormra website without redirecting to provider website. if yes - work on it 
+- [ ] ability to log out 
+- [ ] copy filter options from other providers websites 
+- [ ] add other dorms 
+- [ ] write down list of students groups/ chats and so on where i can in fiture promote/ post info about dormra
+- [ ] search bar - strings layout (somewhere middle/ somewhere from the lest - correct) 
+- [ ] research if i need to start company if i add subscriptions in austria 
+- [ ] make custom map instead of open source one with our brand design 
 
 ---
 
