@@ -1,4 +1,4 @@
-import { Bell, Plus, Search, Settings } from 'lucide-react'
+import { Bell, BookmarkCheck, Plus, Search, Settings } from 'lucide-react'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
 import { buildPageMetadata } from '@/lib/i18n-metadata'
@@ -28,13 +28,20 @@ export default async function DashboardPage({ params }: PageProps) {
     return
   }
 
-  const { count: alertCount } = await supabase
-    .from('user_alerts')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-    .eq('active', true)
+  const [{ count: alertCount }, { count: savedCountRaw }] = await Promise.all([
+    supabase
+      .from('user_alerts')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('active', true),
+    supabase
+      .from('tracker')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id),
+  ])
 
   const count = alertCount ?? 0
+  const savedCount = savedCountRaw ?? 0
 
   return (
     <main className="min-h-screen bg-background">
@@ -47,7 +54,7 @@ export default async function DashboardPage({ params }: PageProps) {
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Link
             href="/dashboard/alerts"
             className="card-elevated group rounded-2xl bg-surface p-5 transition-all hover:-translate-y-0.5"
@@ -73,8 +80,32 @@ export default async function DashboardPage({ params }: PageProps) {
           </Link>
 
           <Link
-            href="/dashboard/settings"
+            href="/dashboard/saved"
             className="card-elevated group rounded-2xl bg-surface p-5 transition-all hover:-translate-y-0.5"
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <div className="grid size-10 place-items-center rounded-xl bg-brand-soft transition-colors group-hover:bg-brand/10">
+                <BookmarkCheck className="size-4 text-brand" />
+              </div>
+              {savedCount > 0 && (
+                <span className="rounded-full bg-brand px-2 py-0.5 text-[11px] font-semibold text-white">
+                  {savedCount}
+                </span>
+              )}
+            </div>
+            <p className="text-sm font-semibold text-foreground">{t('savedDorms')}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {savedCount === 0
+                ? t('savedDormsHint')
+                : savedCount === 1
+                  ? t('savedDormsCount', { count: savedCount })
+                  : t('savedDormsCountPlural', { count: savedCount })}
+            </p>
+          </Link>
+
+          <Link
+            href="/dashboard/settings"
+            className="card-elevated group rounded-2xl bg-surface p-5 transition-all hover:-translate-y-0.5 sm:col-span-2 lg:col-span-1"
           >
             <div className="mb-3 grid size-10 place-items-center rounded-xl bg-brand-soft transition-colors group-hover:bg-brand/10">
               <Settings className="size-4 text-brand" />
@@ -82,11 +113,6 @@ export default async function DashboardPage({ params }: PageProps) {
             <p className="text-sm font-semibold text-foreground">{t('settings')}</p>
             <p className="mt-0.5 text-xs text-muted-foreground">{t('settingsHint')}</p>
           </Link>
-        </div>
-
-        <div className="mt-3 rounded-xl border border-dashed border-border/70 bg-surface-soft/40 px-4 py-3">
-          <p className="text-xs font-medium text-muted-foreground">{t('whatsNext')}</p>
-          <p className="mt-1 text-xs text-muted-foreground/90">{t('comingSoonFeatures')}</p>
         </div>
 
         {count === 0 && (
