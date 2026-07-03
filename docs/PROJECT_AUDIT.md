@@ -145,3 +145,5 @@ Operator → GET /api/test-alert?slug=…&dryRun=1|email=…
 | 2026-07-02 | `cursor/add-dorms-map-and-filters-fc38` | `/dorms` map view + geocoded coordinates; rent range, short-stay, near-me filters |
 | 2026-07-02 | `cursor/fix-admin-purity-lint-fc38` | Fixed `main` CI break from PR #42 (Date.now in render) |
 | 2026-07-02 | `cursor/saved-dorms-tracker-fc38` | Saved dorms + status tracker (P2) — bookmark toggle, `/dashboard/saved`, dashboard card |
+| 2026-07-02 | `cursor/dorms-pages-improvements-fc38` | Photo gallery (OeAD), university proximity, save button in grid, JSON-LD, similar dorms |
+| 2026-07-02 | `cursor/dorms-pages-improvements-fc38` | Map fixes: switched CARTO→OSM tiles (too pale + commercial-use ToS issue), added a loading spinner, and a layout overhaul — persistent sticky split-view map on desktop (visible by default, no longer hidden behind a tab) and a floating button opening a true fullscreen map sheet on mobile/tablet |
