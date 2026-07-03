@@ -4,7 +4,7 @@
  * Regenerate when the live schema changes:
  *   npx supabase gen types typescript --project-id <ref> > lib/database.types.ts
  *
- * Last verified against production schema: 2026-07-02
+ * Last verified against production schema: 2026-07-03
  */
 
 export type Json =
@@ -182,6 +182,72 @@ export interface Database {
           dorm_id?: string
           url?: string
           sort_order?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
+      dorm_reviews: {
+        Row: {
+          id: string
+          dorm_id: string
+          user_id: string
+          pseudonym: string
+          rating: number
+          body: string
+          hidden: boolean
+          hidden_reason: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          dorm_id: string
+          user_id: string
+          pseudonym: string
+          rating: number
+          body: string
+          hidden?: boolean
+          hidden_reason?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          dorm_id?: string
+          user_id?: string
+          pseudonym?: string
+          rating?: number
+          body?: string
+          hidden?: boolean
+          hidden_reason?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dorm_review_reports: {
+        Row: {
+          id: string
+          review_id: string
+          reporter_user_id: string
+          reason: string
+          details: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          review_id: string
+          reporter_user_id: string
+          reason: string
+          details?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          review_id?: string
+          reporter_user_id?: string
+          reason?: string
+          details?: string | null
           created_at?: string
         }
         Relationships: []
