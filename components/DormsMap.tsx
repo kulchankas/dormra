@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import { Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { type Dorm } from '@/lib/helpers'
@@ -11,6 +12,7 @@ import type { AvailabilityStatus } from '@/lib/availability'
 import { formatPriceLabel } from '@/lib/i18n-labels'
 import AvailabilityBadge from '@/components/AvailabilityBadge'
 import { UNIVERSITIES } from '@/lib/universities'
+import { cn } from '@/lib/utils'
 
 type LatLng = { lat: number; lng: number }
 type LocatedDorm = Dorm & { lat: number; lng: number }
@@ -24,6 +26,10 @@ interface Props {
   /** Shows small pins for Vienna's main universities. Defaults to on for the
    * full directory map, off for compact single-dorm previews. */
   showUniversities?: boolean
+  /** Overrides the default height classes — used by the sticky desktop
+   * column and the fullscreen mobile sheet, which each need a different,
+   * often 100%-of-parent height rather than a viewport-relative one. */
+  heightClassName?: string
 }
 
 const STATUS_COLORS: Record<AvailabilityStatus['status'], string> = {
@@ -97,16 +103,19 @@ function FitBounds({ points }: { points: LatLng[] }) {
   return null
 }
 
+
 export default function DormsMap({
   dorms,
   availability,
   userLocation,
   compact = false,
   showUniversities = !compact,
+  heightClassName,
 }: Props) {
   const t = useTranslations('dormCard')
   const tDorms = useTranslations('dorms')
   const tLabels = useTranslations('labels')
+  const [isLoading, setIsLoading] = useState(true)
 
   const located = useMemo(
     () => dorms.filter((d): d is LocatedDorm => d.lat != null && d.lng != null),
@@ -132,7 +141,10 @@ export default function DormsMap({
   if (located.length === 0) {
     return (
       <div
-        className={`flex flex-col items-center justify-center rounded-2xl bg-muted text-center ${compact ? 'h-48' : 'h-[50vh]'}`}
+        className={cn(
+          'flex flex-col items-center justify-center rounded-2xl bg-muted text-center',
+          heightClassName ?? (compact ? 'h-48' : 'h-[50vh]'),
+        )}
       >
         <p className="px-4 text-sm text-muted-foreground">{tDorms('mapNoLocations')}</p>
       </div>
@@ -141,8 +153,16 @@ export default function DormsMap({
 
   return (
     <div
-      className={`relative w-full overflow-hidden rounded-2xl border border-border ${compact ? 'h-56' : 'h-[60vh] md:h-[70vh]'}`}
+      className={cn(
+        'relative w-full overflow-hidden rounded-2xl border border-border bg-muted',
+        heightClassName ?? (compact ? 'h-56' : 'h-[60vh] md:h-[70vh]'),
+      )}
     >
+      {isLoading && (
+        <div className="absolute inset-0 z-[1000] grid place-items-center bg-muted">
+          <Loader2 className="size-6 animate-spin text-muted-foreground" aria-hidden="true" />
+        </div>
+      )}
       <MapContainer
         center={[points[0].lat, points[0].lng]}
         zoom={14}
@@ -152,8 +172,13 @@ export default function DormsMap({
         className="h-full w-full"
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          subdomains={['a', 'b', 'c']}
+          eventHandlers={{
+            loading: () => setIsLoading(true),
+            load: () => setIsLoading(false),
+          }}
         />
         <FitBounds points={boundsPoints} />
         {located.map((dorm, i) => {
