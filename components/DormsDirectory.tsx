@@ -7,7 +7,7 @@ import { useSearchParams } from 'next/navigation'
 import { Link, usePathname, useRouter } from '@/i18n/navigation'
 import { format, parseISO } from 'date-fns'
 import { toast } from 'sonner'
-import { Bell, List, Loader2, Map as MapIcon, MapPin, Search, SlidersHorizontal, X } from 'lucide-react'
+import { Bell, Loader2, Map as MapIcon, MapPin, Search, SlidersHorizontal, X } from 'lucide-react'
 import {
   DISTRICT_NAMES,
   type AvailabilityStatus,
@@ -67,7 +67,30 @@ interface Props {
   savedDormIds?: string[]
 }
 
-type ViewMode = 'list' | 'map'
+function MapLegend({ className }: { className?: string }) {
+  const t = useTranslations('dorms')
+  const tAvail = useTranslations('availability')
+  return (
+    <div className={cn('flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-muted-foreground', className)}>
+      <span className="inline-flex items-center gap-1.5">
+        <span className="inline-block size-2.5 rounded-full bg-brand-accent" />
+        {tAvail('available')}
+      </span>
+      <span className="inline-flex items-center gap-1.5">
+        <span className="inline-block size-2.5 rounded-full bg-foreground/80" />
+        {tAvail('fullyBooked')}
+      </span>
+      <span className="inline-flex items-center gap-1.5">
+        <span className="inline-block size-2.5 rounded-full bg-muted-foreground/40" />
+        {tAvail('unknown')}
+      </span>
+      <span className="inline-flex items-center gap-1.5">
+        <span aria-hidden="true">🎓</span>
+        {t('mapUniversityLegend')}
+      </span>
+    </div>
+  )
+}
 
 type QuickFilter = {
   id: string
@@ -384,7 +407,13 @@ export default function DormsDirectory({ dorms, availability, savedDormIds }: Pr
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const [view, setView] = useState<ViewMode>('list')
+  // Map is a persistent sticky side-column on wide screens (xl+), always
+  // visible by default rather than hidden behind a tab — this can be
+  // collapsed back to a full-width list via the "Hide map" toggle. Below
+  // that breakpoint there isn't room for a side-by-side column, so a
+  // floating button opens the map in a fullscreen sheet instead.
+  const [desktopMapOpen, setDesktopMapOpen] = useState(true)
+  const [mobileMapOpen, setMobileMapOpen] = useState(false)
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [locating, setLocating] = useState(false)
 
@@ -742,36 +771,15 @@ export default function DormsDirectory({ dorms, availability, savedDormIds }: Pr
                 </p>
 
                 {filtered.length > 0 && (
-                  <div
-                    role="group"
-                    aria-label={t('viewModeAria')}
-                    className="inline-flex shrink-0 rounded-full bg-muted p-0.5"
+                  <button
+                    type="button"
+                    onClick={() => setDesktopMapOpen((v) => !v)}
+                    aria-pressed={desktopMapOpen}
+                    className="hidden shrink-0 items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/70 xl:inline-flex"
                   >
-                    <button
-                      type="button"
-                      aria-pressed={view === 'list'}
-                      onClick={() => setView('list')}
-                      className={cn(
-                        'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
-                        view === 'list' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground',
-                      )}
-                    >
-                      <List className="size-3.5" aria-hidden="true" />
-                      {t('listView')}
-                    </button>
-                    <button
-                      type="button"
-                      aria-pressed={view === 'map'}
-                      onClick={() => setView('map')}
-                      className={cn(
-                        'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
-                        view === 'map' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground',
-                      )}
-                    >
-                      <MapIcon className="size-3.5" aria-hidden="true" />
-                      {t('mapView')}
-                    </button>
-                  </div>
+                    <MapIcon className="size-3.5" aria-hidden="true" />
+                    {desktopMapOpen ? t('hideMap') : t('showMap')}
+                  </button>
                 )}
               </div>
 
@@ -780,82 +788,128 @@ export default function DormsDirectory({ dorms, availability, savedDormIds }: Pr
               )}
             </div>
 
-            {dorms.length === 0 && (
-              <div className="flex flex-col items-center py-24 text-center">
-                <div className="mb-4 grid size-14 place-items-center rounded-2xl bg-muted">
-                  <Search className="size-6 text-muted-foreground/50" />
-                </div>
-                <p className="text-base font-medium text-foreground">{t('noListingsYet')}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{t('noListingsHint')}</p>
-              </div>
-            )}
+            <div className="xl:flex xl:items-start xl:gap-5">
+              <div className="min-w-0 xl:flex-1">
+                {dorms.length === 0 && (
+                  <div className="flex flex-col items-center py-24 text-center">
+                    <div className="mb-4 grid size-14 place-items-center rounded-2xl bg-muted">
+                      <Search className="size-6 text-muted-foreground/50" />
+                    </div>
+                    <p className="text-base font-medium text-foreground">{t('noListingsYet')}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{t('noListingsHint')}</p>
+                  </div>
+                )}
 
-            {dorms.length > 0 && filtered.length === 0 && (
-              <div className="flex flex-col items-center py-24 text-center">
-                <div className="mb-4 grid size-14 place-items-center rounded-2xl bg-muted">
-                  <SlidersHorizontal className="size-6 text-muted-foreground/50" />
-                </div>
-                <p className="text-base font-medium text-foreground">{t('noResults')}</p>
-                <p className="mt-1 mb-5 max-w-sm text-sm text-muted-foreground">
-                  {t('noMatchExtended')}
-                </p>
-                <div className="flex flex-wrap justify-center gap-2">
-                  <Button onClick={resetFilters} variant="outline" className="h-10 rounded-full px-6 text-sm">
-                    {t('resetFilters')}
-                  </Button>
-                  <Button nativeButton={false} className="h-10 rounded-full px-6 text-sm" render={<Link href={alertHref} />}>
-                    {t('setAlertInstead')}
-                  </Button>
-                </div>
-              </div>
-            )}
+                {dorms.length > 0 && filtered.length === 0 && (
+                  <div className="flex flex-col items-center py-24 text-center">
+                    <div className="mb-4 grid size-14 place-items-center rounded-2xl bg-muted">
+                      <SlidersHorizontal className="size-6 text-muted-foreground/50" />
+                    </div>
+                    <p className="text-base font-medium text-foreground">{t('noResults')}</p>
+                    <p className="mt-1 mb-5 max-w-sm text-sm text-muted-foreground">
+                      {t('noMatchExtended')}
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      <Button onClick={resetFilters} variant="outline" className="h-10 rounded-full px-6 text-sm">
+                        {t('resetFilters')}
+                      </Button>
+                      <Button nativeButton={false} className="h-10 rounded-full px-6 text-sm" render={<Link href={alertHref} />}>
+                        {t('setAlertInstead')}
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
-            {filtered.length > 0 && view === 'map' && (
-              <div className="space-y-2">
-                <DormsMap dorms={filtered} availability={availability} userLocation={userLocation} />
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-1 text-[11px] text-muted-foreground">
-                  <span className="inline-flex items-center gap-1.5">
-                    <span className="inline-block size-2.5 rounded-full bg-brand-accent" />
-                    {tAvail('available')}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <span className="inline-block size-2.5 rounded-full bg-foreground/80" />
-                    {tAvail('fullyBooked')}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <span className="inline-block size-2.5 rounded-full bg-muted-foreground/40" />
-                    {tAvail('unknown')}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <span aria-hidden="true">🎓</span>
-                    {t('mapUniversityLegend')}
-                  </span>
-                </div>
+                {filtered.length > 0 && (
+                  <div
+                    className={cn(
+                      'grid grid-cols-1 gap-4 sm:grid-cols-2',
+                      desktopMapOpen ? 'xl:grid-cols-2 2xl:grid-cols-3' : 'xl:grid-cols-3',
+                    )}
+                  >
+                    {filtered.map((dorm) => (
+                      <DormCard
+                        key={dorm.id}
+                        dorm={dorm}
+                        availability={
+                          availability[dorm.id] ?? {
+                            status: 'unknown',
+                            label: tAvail('unknown'),
+                          }
+                        }
+                        variant="full"
+                        showSaveButton={savedDormIds != null}
+                        initialSaved={savedSet.has(dorm.id)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
 
-            {filtered.length > 0 && view === 'list' && (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {filtered.map((dorm) => (
-                  <DormCard
-                    key={dorm.id}
-                    dorm={dorm}
-                    availability={
-                      availability[dorm.id] ?? {
-                        status: 'unknown',
-                        label: tAvail('unknown'),
-                      }
-                    }
-                    variant="full"
-                    showSaveButton={savedDormIds != null}
-                    initialSaved={savedSet.has(dorm.id)}
-                  />
-                ))}
-              </div>
-            )}
+              {/* Persistent side-by-side map on wide screens — always visible
+                  by default (desktopMapOpen starts true) instead of hidden
+                  behind a tab, per the "map isn't visible enough" feedback. */}
+              {filtered.length > 0 && desktopMapOpen && (
+                <div className="hidden xl:sticky xl:top-[calc(3.75rem+1.5rem)] xl:block xl:w-[380px] xl:shrink-0 2xl:w-[420px]">
+                  <div className="space-y-2">
+                    <DormsMap
+                      dorms={filtered}
+                      availability={availability}
+                      userLocation={userLocation}
+                      heightClassName="h-[calc(100vh-8rem)]"
+                    />
+                    <MapLegend className="px-1" />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Below xl, there's no room for a side-by-side map — a persistent
+          floating button opens it fullscreen instead, so it's always
+          reachable rather than buried in a toolbar that can scroll away. */}
+      {filtered.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setMobileMapOpen(true)}
+          className="fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] left-1/2 z-30 -translate-x-1/2 inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-3 text-sm font-medium text-background shadow-lg transition-transform hover:scale-105 xl:hidden"
+        >
+          <MapIcon className="size-4" aria-hidden="true" />
+          {t('mapView')}
+        </button>
+      )}
+
+      <Sheet open={mobileMapOpen} onOpenChange={setMobileMapOpen}>
+        <SheetContent
+          side="bottom"
+          showCloseButton={false}
+          className="rounded-none p-0 data-[side=bottom]:h-[100dvh] xl:hidden"
+        >
+          <div className="flex h-full flex-col">
+            <SheetHeader className="flex-row items-center justify-between border-b border-border p-3">
+              <SheetTitle className="text-base">{t('mapView')}</SheetTitle>
+              <SheetClose
+                render={
+                  <Button variant="ghost" size="icon-sm" className="rounded-full" aria-label={t('closeMap')} />
+                }
+              >
+                <X className="size-4" />
+              </SheetClose>
+            </SheetHeader>
+            <div className="min-h-0 flex-1 p-3">
+              <DormsMap
+                dorms={filtered}
+                availability={availability}
+                userLocation={userLocation}
+                heightClassName="h-full"
+              />
+            </div>
+            <MapLegend className="border-t border-border p-3" />
+          </div>
+        </SheetContent>
+      </Sheet>
     </main>
   )
 }

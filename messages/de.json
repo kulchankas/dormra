@@ -249,9 +249,10 @@
     "locationDenied": "Standort konnte nicht ermittelt werden. Prüfe die Standortfreigabe deines Browsers und versuche es erneut.",
     "sortDistance": "Am nächsten zu mir",
     "youAreHere": "Dein Standort",
-    "viewModeAria": "Zwischen Listen- und Kartenansicht wechseln",
-    "listView": "Liste",
     "mapView": "Karte",
+    "hideMap": "Karte ausblenden",
+    "showMap": "Karte anzeigen",
+    "closeMap": "Karte schließen",
     "mapNoLocations": "Für die aktuellen Filter gibt es noch keine Standorte auf der Karte.",
     "mapUniversityLegend": "Universitäten"
   },

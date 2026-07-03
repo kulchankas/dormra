@@ -249,9 +249,10 @@
     "locationDenied": "Couldn't get your location. Check your browser's location permission and try again.",
     "sortDistance": "Nearest to me",
     "youAreHere": "Your location",
-    "viewModeAria": "Switch between list and map view",
-    "listView": "List",
     "mapView": "Map",
+    "hideMap": "Hide map",
+    "showMap": "Show map",
+    "closeMap": "Close map",
     "mapNoLocations": "No mapped locations for the current filters yet.",
     "mapUniversityLegend": "Universities"
   },
