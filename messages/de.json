@@ -155,7 +155,11 @@
     "couples": "Paare ✓",
     "furnished": "Möbliert ✓",
     "imageAlt": "Studentenheim {name}",
-    "viewAria": "{name} ansehen"
+    "viewAria": "{name} ansehen",
+    "galleryAria": "Fotos von {name}",
+    "galleryPrev": "Vorheriges Foto",
+    "galleryNext": "Nächstes Foto",
+    "galleryGoTo": "Zu Foto {index}"
   },
   "dorms": {
     "title": "Heime durchsuchen",
@@ -245,10 +249,12 @@
     "locationDenied": "Standort konnte nicht ermittelt werden. Prüfe die Standortfreigabe deines Browsers und versuche es erneut.",
     "sortDistance": "Am nächsten zu mir",
     "youAreHere": "Dein Standort",
-    "viewModeAria": "Zwischen Listen- und Kartenansicht wechseln",
-    "listView": "Liste",
     "mapView": "Karte",
-    "mapNoLocations": "Für die aktuellen Filter gibt es noch keine Standorte auf der Karte."
+    "hideMap": "Karte ausblenden",
+    "showMap": "Karte anzeigen",
+    "closeMap": "Karte schließen",
+    "mapNoLocations": "Für die aktuellen Filter gibt es noch keine Standorte auf der Karte.",
+    "mapUniversityLegend": "Universitäten"
   },
   "dormDetail": {
     "back": "Zurück zu allen Heimen",
@@ -284,7 +290,11 @@
     "unsaveAria": "{name} aus gespeicherten Heimen entfernen",
     "loginToSaveAria": "Anmelden, um dieses Heim zu speichern",
     "savedToast": "{name} gespeichert — im Dashboard zu finden",
-    "unsavedToast": "{name} aus gespeicherten Heimen entfernt"
+    "unsavedToast": "{name} aus gespeicherten Heimen entfernt",
+    "lastChecked": "Verfügbarkeit geprüft {time}",
+    "kmAway": "{km} km",
+    "visitWebsite": "Website",
+    "similarDorms": "Das könnte dir auch gefallen"
   },
   "saved": {
     "title": "Gespeicherte Heime",

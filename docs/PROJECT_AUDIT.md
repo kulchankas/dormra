@@ -160,3 +160,4 @@ Operator → GET /api/test-alert?slug=…&dryRun=1|email=…
 | 2026-07-02 | `cursor/add-dorms-map-and-filters-fc38` | `/dorms` map view + geocoded coordinates; rent range, short-stay, near-me filters |
 | 2026-07-02 | `cursor/fix-admin-purity-lint-fc38` | Fixed `main` CI break from PR #42 (Date.now in render) |
 | 2026-07-02 | `cursor/saved-dorms-tracker-fc38` | Saved dorms + status tracker — bookmark toggle, `/dashboard/saved` |
+| 2026-07-02 | `cursor/dorms-pages-improvements-fc38` | Photo gallery, university proximity, save button, JSON-LD, map layout overhaul |

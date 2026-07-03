@@ -155,7 +155,11 @@
     "couples": "Couples ✓",
     "furnished": "Furnished ✓",
     "imageAlt": "{name} dormitory",
-    "viewAria": "View {name}"
+    "viewAria": "View {name}",
+    "galleryAria": "Photos of {name}",
+    "galleryPrev": "Previous photo",
+    "galleryNext": "Next photo",
+    "galleryGoTo": "Go to photo {index}"
   },
   "dorms": {
     "title": "Browse dorms",
@@ -245,10 +249,12 @@
     "locationDenied": "Couldn't get your location. Check your browser's location permission and try again.",
     "sortDistance": "Nearest to me",
     "youAreHere": "Your location",
-    "viewModeAria": "Switch between list and map view",
-    "listView": "List",
     "mapView": "Map",
-    "mapNoLocations": "No mapped locations for the current filters yet."
+    "hideMap": "Hide map",
+    "showMap": "Show map",
+    "closeMap": "Close map",
+    "mapNoLocations": "No mapped locations for the current filters yet.",
+    "mapUniversityLegend": "Universities"
   },
   "dormDetail": {
     "back": "Back to all dorms",
@@ -284,7 +290,11 @@
     "unsaveAria": "Remove {name} from saved dorms",
     "loginToSaveAria": "Log in to save this dorm",
     "savedToast": "Saved {name} — find it in your dashboard",
-    "unsavedToast": "Removed {name} from saved dorms"
+    "unsavedToast": "Removed {name} from saved dorms",
+    "lastChecked": "Availability checked {time}",
+    "kmAway": "{km} km",
+    "visitWebsite": "Website",
+    "similarDorms": "You might also like"
   },
   "saved": {
     "title": "Saved dorms",

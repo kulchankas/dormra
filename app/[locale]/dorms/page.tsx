@@ -55,7 +55,13 @@ async function DormsUnavailable() {
 }
 
 async function fetchDormsData(): Promise<
-  { ok: true; dorms: Dorm[]; availability: Record<string, AvailabilityStatus> } | { ok: false }
+  | {
+      ok: true
+      dorms: Dorm[]
+      availability: Record<string, AvailabilityStatus>
+      savedDormIds?: string[]
+    }
+  | { ok: false }
 > {
   const tAvail = await getTranslations('availability')
 
@@ -79,7 +85,17 @@ async function fetchDormsData(): Promise<
       (key) => tAvail(key),
     )
 
-    return { ok: true, dorms, availability }
+    let savedDormIds: string[] | undefined
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: trackerRows } = await supabase
+        .from('tracker')
+        .select('dorm_id')
+        .eq('user_id', user.id)
+      savedDormIds = (trackerRows ?? []).map((r) => r.dorm_id)
+    }
+
+    return { ok: true, dorms, availability, savedDormIds }
   } catch {
     return { ok: false }
   }
@@ -92,7 +108,13 @@ async function DormsContent() {
     return <DormsUnavailable />
   }
 
-  return <DormsDirectory dorms={result.dorms} availability={result.availability} />
+  return (
+    <DormsDirectory
+      dorms={result.dorms}
+      availability={result.availability}
+      savedDormIds={result.savedDormIds}
+    />
+  )
 }
 
 export default async function DormsPage({ params }: PageProps) {

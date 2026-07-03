@@ -11,6 +11,7 @@ import {
 } from '@/lib/helpers'
 import { formatDistrictLabel, formatPriceLabel } from '@/lib/i18n-labels'
 import AvailabilityBadge from '@/components/AvailabilityBadge'
+import SaveDormButton from '@/components/SaveDormButton'
 import { Badge } from '@/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
@@ -21,9 +22,18 @@ interface Props {
   dorm: Dorm
   availability: AvailabilityStatus
   variant?: Variant
+  /** Only render the save/bookmark toggle when the viewer is signed in. */
+  showSaveButton?: boolean
+  initialSaved?: boolean
 }
 
-export default function DormCard({ dorm, availability, variant = 'full' }: Props) {
+export default function DormCard({
+  dorm,
+  availability,
+  variant = 'full',
+  showSaveButton = false,
+  initialSaved = false,
+}: Props) {
   const t = useTranslations('dormCard')
   const tChances = useTranslations('chances')
   const tLabels = useTranslations('labels')
@@ -82,6 +92,12 @@ export default function DormCard({ dorm, availability, variant = 'full' }: Props
           <div className="absolute left-2.5 top-2.5">
             <AvailabilityBadge availability={availability} className="text-[10px] px-2 py-0.5" />
           </div>
+
+          {showSaveButton && (
+            <div className="absolute right-2.5 top-2.5">
+              <SaveDormButton dormId={dorm.id} dormName={dorm.name} initialSaved={initialSaved} size="sm" />
+            </div>
+          )}
         </div>
 
         <div className={cn('flex flex-col', isCompact ? 'gap-1 p-3.5' : 'gap-1.5 p-4')}>

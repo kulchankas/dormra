@@ -155,7 +155,11 @@
     "couples": "Пары ✓",
     "furnished": "Мебель ✓",
     "imageAlt": "Общежитие {name}",
-    "viewAria": "Открыть {name}"
+    "viewAria": "Открыть {name}",
+    "galleryAria": "Фото {name}",
+    "galleryPrev": "Предыдущее фото",
+    "galleryNext": "Следующее фото",
+    "galleryGoTo": "Перейти к фото {index}"
   },
   "dorms": {
     "title": "Каталог общежитий",
@@ -245,10 +249,12 @@
     "locationDenied": "Не удалось определить местоположение. Проверьте разрешение геолокации в браузере и попробуйте снова.",
     "sortDistance": "Ближе всего ко мне",
     "youAreHere": "Ваше местоположение",
-    "viewModeAria": "Переключение между списком и картой",
-    "listView": "Список",
     "mapView": "Карта",
-    "mapNoLocations": "Для текущих фильтров пока нет объектов на карте."
+    "hideMap": "Скрыть карту",
+    "showMap": "Показать карту",
+    "closeMap": "Закрыть карту",
+    "mapNoLocations": "Для текущих фильтров пока нет объектов на карте.",
+    "mapUniversityLegend": "Университеты"
   },
   "dormDetail": {
     "back": "Назад к каталогу",
@@ -284,7 +290,11 @@
     "unsaveAria": "Убрать {name} из сохранённых",
     "loginToSaveAria": "Войдите, чтобы сохранить это общежитие",
     "savedToast": "{name} сохранено — найдите в панели управления",
-    "unsavedToast": "{name} убрано из сохранённых"
+    "unsavedToast": "{name} убрано из сохранённых",
+    "lastChecked": "Доступность проверена {time}",
+    "kmAway": "{km} км",
+    "visitWebsite": "Сайт",
+    "similarDorms": "Вам может понравиться"
   },
   "saved": {
     "title": "Сохранённые общежития",
