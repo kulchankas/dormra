@@ -8,6 +8,7 @@ import { getAvailabilityStatusBulk } from '@/lib/availability'
 import { type Dorm } from '@/lib/helpers'
 import { localizeAvailabilityMap } from '@/lib/i18n-availability'
 import { Link } from '@/i18n/navigation'
+import { absoluteUrl, localePath } from '@/lib/i18n-path'
 import HeroSearch from '@/components/HeroSearch'
 import DormraLogo from '@/components/DormraLogo'
 import DormCard from '@/components/DormCard'
@@ -138,8 +139,33 @@ export default async function HomePage({ params }: PageProps) {
     { icon: Mail, step: '03', title: t('step3Title'), desc: t('step3Desc') },
   ]
 
+  const homeUrl = absoluteUrl(localePath('/', locale))
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Organization',
+        name: 'Dormra',
+        url: homeUrl,
+        logo: absoluteUrl('/icon.svg'),
+        description: t('subtitle'),
+      },
+      {
+        '@type': 'WebSite',
+        name: 'Dormra',
+        url: homeUrl,
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: `${absoluteUrl(localePath('/dorms', locale))}?q={search_term_string}`,
+          'query-input': 'required name=search_term_string',
+        },
+      },
+    ],
+  }
+
   return (
     <main>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <section className="hero-glow w-full pt-12 pb-10 md:pt-20 md:pb-14" aria-label={t('heroAria')}>
         <div className="mx-auto flex max-w-[680px] flex-col items-center px-6 text-center">
           <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-border/60 bg-surface/80 px-3 py-1 text-xs font-medium text-brand backdrop-blur-sm">

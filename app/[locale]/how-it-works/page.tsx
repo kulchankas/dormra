@@ -46,8 +46,19 @@ export default async function HowItWorksPage({ params }: PageProps) {
     { q: t('faq7q'), a: t('faq7a') },
   ]
 
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map(({ q, a }) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: { '@type': 'Answer', text: a },
+    })),
+  }
+
   return (
     <main className="min-h-screen bg-background">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <section className="hero-glow">
         <div className="mx-auto max-w-3xl px-6 pb-16 pt-14 text-center md:pt-20">
           <span className="inline-flex rounded-full border border-border/60 bg-surface/80 px-3 py-1 text-xs font-medium text-brand backdrop-blur-sm">

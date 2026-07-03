@@ -184,6 +184,17 @@ export default async function DormDetailPage({ params }: PageProps) {
     ...(dorm.lat != null && dorm.lng != null
       ? { geo: { '@type': 'GeoCoordinates', latitude: dorm.lat, longitude: dorm.lng } }
       : {}),
+    ...(ratingSummary.average != null
+      ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: Number(ratingSummary.average.toFixed(1)),
+            reviewCount: ratingSummary.count,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
     ...(dorm.price_min != null
       ? {
           priceRange: dorm.price_max

@@ -3,11 +3,20 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server'
 import { Onest, Poppins } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import type { Metadata } from 'next'
 import Header from '@/components/Header'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { routing } from '@/i18n/routing'
+import { SITE_URL } from '@/lib/i18n-path'
 import '../globals.css'
+
+// Lets every page's relative/auto-detected asset URLs (like the generated
+// opengraph-image route) resolve against the real production domain instead
+// of falling back to the deployment URL or localhost.
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+}
 
 const poppins = Poppins({
   variable: '--font-poppins',
