@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 import type { DormAlertInfo } from './types/dorm'
-import { getEmailMessages, resolveLocale } from './i18n-email'
+import { getEmailMessages, resolveLocale, type EmailMessages } from './i18n-email'
 import { absoluteUrl, localePath } from './i18n-path'
 
 let _resend: Resend | undefined
@@ -144,5 +144,122 @@ ${t.manageAlerts}: ${manageUrl}`
     const msg = err instanceof Error ? err.message : String(err)
     console.error(`[EMAIL] Unexpected error for alert ${alertId}:`, msg)
     return { success: false, error: msg }
+  }
+}
+
+type WelcomeDorm = {
+  slug: string
+  name: string
+  provider: string
+  district: number | null
+  price_min: number | null
+  price_max: number | null
+}
+
+function formatWelcomePrice(
+  dorm: WelcomeDorm,
+  t: EmailMessages,
+): string {
+  if (dorm.price_min && dorm.price_max) {
+    return t.priceRange.replace('{min}', String(dorm.price_min)).replace('{max}', String(dorm.price_max))
+  }
+  if (dorm.price_min) return t.priceFrom.replace('{min}', String(dorm.price_min))
+  if (dorm.price_max) return t.priceUpTo.replace('{max}', String(dorm.price_max))
+  return t.priceNotListed
+}
+
+export async function sendWelcomeDigest({
+  to,
+  alertId,
+  locale,
+  dorms,
+  totalAvailable,
+}: {
+  to: string
+  alertId: string
+  locale?: string | null
+  dorms: WelcomeDorm[]
+  totalAvailable: number
+}): Promise<{ sent: boolean; error?: string }> {
+  const resolvedLocale = resolveLocale(locale)
+  const t = getEmailMessages(resolvedLocale)
+  const from = process.env.RESEND_FROM ?? 'Dormra <onboarding@resend.dev>'
+  const subject = t.welcomeSubject.replace('{count}', String(totalAvailable))
+  const manageUrl = absoluteUrl(localePath('/dashboard/alerts', resolvedLocale))
+  const browseUrl = absoluteUrl(localePath('/dorms', resolvedLocale))
+
+  const dormRows = dorms
+    .map((dorm) => {
+      const url = absoluteUrl(localePath(`/dorms/${dorm.slug}`, resolvedLocale))
+      const price = formatWelcomePrice(dorm, t)
+      const district =
+        dorm.district !== null
+          ? `<tr><td style="padding:2px 0;font-size:13px;color:#6B5C53;">${t.district}:&nbsp;</td><td style="padding:2px 0;font-size:13px;color:#1A1410;">${dorm.district}</td></tr>`
+          : ''
+      return `<tr><td style="padding:16px 0;border-bottom:1px solid #FFE4D6;">
+        <p style="margin:0 0 4px;font-size:16px;font-weight:600;color:#1A1410;"><a href="${url}" style="color:#1A1410;text-decoration:none;">${dorm.name}</a></p>
+        <p style="margin:0 0 8px;font-size:12px;color:#6B5C53;text-transform:uppercase;letter-spacing:0.4px;">${dorm.provider}</p>
+        <table cellpadding="0" cellspacing="0">${district}<tr><td style="padding:2px 0;font-size:13px;color:#6B5C53;">${t.price}:&nbsp;</td><td style="padding:2px 0;font-size:13px;color:#1A1410;">${price}</td></tr></table>
+      </td></tr>`
+    })
+    .join('')
+
+  const moreLine =
+    totalAvailable > dorms.length
+      ? `<p style="margin:16px 0 0;font-size:14px;color:#6B5C53;">${t.welcomeMore.replace('{count}', String(totalAvailable - dorms.length))}</p>`
+      : ''
+
+  const html = `<!DOCTYPE html>
+<html lang="${resolvedLocale}">
+<body style="margin:0;padding:0;background-color:#FFF8F4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FFF8F4;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+        <tr><td style="padding-bottom:24px;text-align:center;font-size:22px;font-weight:600;color:#B8381A;">Dormra</td></tr>
+        <tr><td style="background:#fff;border-radius:12px;padding:32px;border:1px solid #FFE4D6;">
+          <p style="margin:0 0 16px;font-size:16px;color:#1A1410;">${t.greetingAnonymous}</p>
+          <p style="margin:0 0 20px;font-size:16px;color:#1A1410;">${t.welcomeIntro}</p>
+          <table width="100%" cellpadding="0" cellspacing="0">${dormRows}</table>
+          ${moreLine}
+          <p style="margin:20px 0 0;font-size:14px;color:#6B5C53;">${t.welcomeOutro}</p>
+          <p style="margin:24px 0 0;text-align:center;"><a href="${browseUrl}" style="display:inline-block;background:#C2401E;color:#fff;text-decoration:none;font-size:15px;font-weight:600;padding:12px 24px;border-radius:8px;">${t.welcomeBrowseCta}</a></p>
+        </td></tr>
+        <tr><td style="padding-top:20px;text-align:center;">
+          <p style="margin:0;font-size:12px;color:#6B5C53;">${t.footerReason}</p>
+          <a href="${manageUrl}" style="font-size:12px;color:#C2401E;">${t.manageAlerts}</a>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+
+  const textLines = [
+    t.greetingAnonymous,
+    '',
+    t.welcomeIntro,
+    '',
+    ...dorms.map((dorm) => {
+      const url = absoluteUrl(localePath(`/dorms/${dorm.slug}`, resolvedLocale))
+      return `${dorm.name} (${dorm.provider}) — ${formatWelcomePrice(dorm, t)}\n${url}`
+    }),
+  ]
+  if (totalAvailable > dorms.length) {
+    textLines.push('', t.welcomeMore.replace('{count}', String(totalAvailable - dorms.length)))
+  }
+  textLines.push('', t.welcomeOutro, `${t.welcomeBrowseCta}: ${browseUrl}`, '', t.manageAlerts + ': ' + manageUrl)
+  const text = textLines.join('\n')
+
+  try {
+    const { error } = await getResend().emails.send({ from, to, subject, html, text })
+    if (error) {
+      console.error(`[EMAIL] Welcome digest failed for alert ${alertId}:`, error.message)
+      return { sent: false, error: error.message }
+    }
+    return { sent: true }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error(`[EMAIL] Welcome digest error for alert ${alertId}:`, msg)
+    return { sent: false, error: msg }
   }
 }

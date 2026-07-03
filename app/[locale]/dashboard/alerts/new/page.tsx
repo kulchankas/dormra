@@ -9,13 +9,37 @@ import { Link, redirect } from '@/i18n/navigation'
 
 type PageProps = {
   params: Promise<{ locale: string }>
-  searchParams: Promise<{ maxPrice?: string; districts?: string }>
+  searchParams: Promise<{
+    maxPrice?: string
+    districts?: string
+    maxDeposit?: string
+    pets?: string
+    couples?: string
+  }>
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'metadata' })
   return buildPageMetadata(locale, '/dashboard/alerts/new', t('newAlertPageTitle'))
+}
+
+function parseDistricts(raw: string | undefined): number[] {
+  return (raw ?? '')
+    .split(',')
+    .map((value) => Number(value.trim()))
+    .filter((value) => !Number.isNaN(value) && value >= 1 && value <= 23)
+}
+
+function parsePositiveInt(raw: string | undefined): number | null {
+  if (!raw) return null
+  const value = Number(raw)
+  if (Number.isNaN(value) || value <= 0) return null
+  return value
+}
+
+function parseFlag(raw: string | undefined): boolean {
+  return raw === '1' || raw === 'true'
 }
 
 export default async function NewAlertPage({ params, searchParams }: PageProps) {
@@ -31,15 +55,16 @@ export default async function NewAlertPage({ params, searchParams }: PageProps) 
   }
 
   const sp = await searchParams
-  const districts = (sp.districts ?? '')
-    .split(',')
-    .map((value) => Number(value.trim()))
-    .filter((value) => !Number.isNaN(value) && value >= 1 && value <= 23)
+  const districts = parseDistricts(sp.districts)
+  const maxPrice = parsePositiveInt(sp.maxPrice)
+  const maxDeposit = parsePositiveInt(sp.maxDeposit)
 
-  const maxPrice = sp.maxPrice ? Number(sp.maxPrice) : NaN
   const prefilled: Partial<AlertPayload> = {}
   if (districts.length > 0) prefilled.districts = districts
-  if (!Number.isNaN(maxPrice) && maxPrice > 0) prefilled.price_max = maxPrice
+  if (maxPrice != null) prefilled.price_max = maxPrice
+  if (maxDeposit != null) prefilled.deposit_max = maxDeposit
+  if (parseFlag(sp.pets)) prefilled.pets_required = true
+  if (parseFlag(sp.couples)) prefilled.couples = true
 
   return (
     <main className="min-h-screen bg-background">

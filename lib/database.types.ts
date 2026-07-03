@@ -22,6 +22,7 @@ export interface Database {
         Row: {
           id: string
           user_id: string
+          alert_id: string | null
           dorm_id: string
           sent_at: string
           channel: string
@@ -30,6 +31,7 @@ export interface Database {
         Insert: {
           id?: string
           user_id: string
+          alert_id?: string | null
           dorm_id: string
           sent_at?: string
           channel: string
@@ -38,10 +40,59 @@ export interface Database {
         Update: {
           id?: string
           user_id?: string
+          alert_id?: string | null
           dorm_id?: string
           sent_at?: string
           channel?: string
           snapshot_id?: string | null
+        }
+        Relationships: []
+      }
+      cron_runs: {
+        Row: {
+          id: string
+          started_at: string
+          duration_ms: number
+          ok: boolean
+          error_message: string | null
+          providers: string[]
+          batch: number | null
+          batches: number | null
+          scraped: number
+          errors: number
+          skipped: number
+          pruned: number
+          by_provider: Json | null
+        }
+        Insert: {
+          id?: string
+          started_at?: string
+          duration_ms: number
+          ok?: boolean
+          error_message?: string | null
+          providers: string[]
+          batch?: number | null
+          batches?: number | null
+          scraped?: number
+          errors?: number
+          skipped?: number
+          pruned?: number
+          by_provider?: Json | null
+        }
+        Update: {
+          id?: string
+          started_at?: string
+          duration_ms?: number
+          ok?: boolean
+          error_message?: string | null
+          providers?: string[]
+          batch?: number | null
+          batches?: number | null
+          scraped?: number
+          errors?: number
+          skipped?: number
+          pruned?: number
+          by_provider?: Json | null
         }
         Relationships: []
       }

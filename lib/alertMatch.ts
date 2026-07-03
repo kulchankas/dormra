@@ -1,5 +1,6 @@
 import { dormMatchesAlert, type AlertCriteria } from './alert-criteria'
 import type { Dorm } from './types/dorm'
+import type { AvailabilityStatus } from './availability'
 
 /** UI-facing criteria for live match previews (excludes move_in_before — not matched yet). */
 export type UIMatchCriteria = {
@@ -8,6 +9,11 @@ export type UIMatchCriteria = {
   deposit_max: number | null
   pets_required: boolean
   couples: boolean
+}
+
+export type MatchBreakdown = {
+  criteriaMatches: number
+  availableMatches: number
 }
 
 function toAlertCriteria(criteria: UIMatchCriteria): AlertCriteria {
@@ -20,13 +26,28 @@ function toAlertCriteria(criteria: UIMatchCriteria): AlertCriteria {
   }
 }
 
-export function countMatches(dorms: Dorm[], criteria: UIMatchCriteria): number {
+export function countMatchBreakdown(
+  dorms: Dorm[],
+  criteria: UIMatchCriteria,
+  availability?: Record<string, AvailabilityStatus>,
+): MatchBreakdown {
   const alert = toAlertCriteria(criteria)
-  let n = 0
+  let criteriaMatches = 0
+  let availableMatches = 0
+
   for (const dorm of dorms) {
-    if (dormMatchesAlert(dorm, alert)) n++
+    if (!dormMatchesAlert(dorm, alert)) continue
+    criteriaMatches++
+    if (availability?.[dorm.id]?.status === 'available') {
+      availableMatches++
+    }
   }
-  return n
+
+  return { criteriaMatches, availableMatches }
+}
+
+export function countMatches(dorms: Dorm[], criteria: UIMatchCriteria): number {
+  return countMatchBreakdown(dorms, criteria).criteriaMatches
 }
 
 /** Build a shareable /dorms URL pre-filtered to this alert's criteria. */

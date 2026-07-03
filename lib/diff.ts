@@ -77,18 +77,19 @@ export async function sendAlertsForDorm(
 
   for (const alert of matchingAlerts) {
     try {
-      // Dedup: one email per user+dorm per week (alert_log has no alert_id column).
+      // Dedup: one availability email per alert+dorm per week.
       const { data: existing } = await admin
         .from('alert_log')
         .select('id')
-        .eq('user_id', alert.user_id)
+        .eq('alert_id', alert.id)
         .eq('dorm_id', dormId)
+        .eq('channel', 'email')
         .gte('sent_at', sevenDaysAgo)
         .limit(1)
         .maybeSingle()
 
       if (existing) {
-        console.log(`[DIFF] User ${alert.user_id.slice(0, 8)} already notified for ${dorm.slug} — skipping`)
+        console.log(`[DIFF] Alert ${alert.id.slice(0, 8)} already notified for ${dorm.slug} — skipping`)
         continue
       }
 
@@ -109,6 +110,7 @@ export async function sendAlertsForDorm(
       if (result.success) {
         const { error: logError } = await admin.from('alert_log').insert({
           user_id: alert.user_id,
+          alert_id: alert.id,
           dorm_id: dormId,
           sent_at: new Date().toISOString(),
           channel: 'email',
@@ -116,7 +118,7 @@ export async function sendAlertsForDorm(
         })
 
         if (logError?.code === '23505') {
-          console.log(`[DIFF] Dedup: user ${alert.user_id.slice(0, 8)} already notified this week for ${dorm.slug}`)
+          console.log(`[DIFF] Dedup: alert ${alert.id.slice(0, 8)} already notified this week for ${dorm.slug}`)
           continue
         }
         if (logError) {
