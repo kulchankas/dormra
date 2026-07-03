@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 const TABS = [
   { href: '/admin' as const, key: 'overview' as const, exact: true },
   { href: '/admin/dorms' as const, key: 'dorms' as const, exact: false },
+  { href: '/admin/reviews' as const, key: 'reviews' as const, exact: false },
   { href: '/admin/deliveries' as const, key: 'deliveries' as const, exact: false },
   { href: '/admin/alerts' as const, key: 'alerts' as const, exact: false },
 ]

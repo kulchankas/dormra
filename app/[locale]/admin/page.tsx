@@ -1,7 +1,7 @@
 import { setRequestLocale, getTranslations } from 'next-intl/server'
 import { formatDistanceToNow } from 'date-fns'
 import { de, ru, enGB } from 'date-fns/locale'
-import { Activity, Bell, Building2, Mail, AlertTriangle } from 'lucide-react'
+import { Activity, Bell, Building2, Mail, AlertTriangle, Flag } from 'lucide-react'
 import { getAdminOverview } from '@/lib/admin-stats'
 import { Link } from '@/i18n/navigation'
 
@@ -89,7 +89,21 @@ export default async function AdminOverviewPage({ params }: PageProps) {
             value={stats.emailsThisWeek}
             hint={t('emailsToday', { count: stats.emailsToday })}
           />
+          <StatCard
+            icon={Flag}
+            label={t('pendingReviewReports')}
+            value={stats.pendingReviewReports}
+            hint={t('pendingReviewReportsHint')}
+            tone={stats.pendingReviewReports > 0 ? 'warning' : 'default'}
+          />
         </div>
+        {stats.pendingReviewReports > 0 && (
+          <p className="mt-3">
+            <Link href="/admin/reviews" className="text-sm font-medium text-brand hover:underline">
+              {t('viewReviewReports')} →
+            </Link>
+          </p>
+        )}
       </section>
 
       <section className="card-elevated rounded-2xl bg-surface p-5">

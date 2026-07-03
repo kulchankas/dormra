@@ -13,6 +13,7 @@ export type AdminOverview = {
   emailsToday: number
   emailsThisWeek: number
   lastScrapedAt: string | null
+  pendingReviewReports: number
   providerStats: {
     provider: string
     dorms: number
@@ -77,6 +78,7 @@ export async function getAdminOverview(): Promise<AdminOverview> {
     { count: emailsWeek },
     { data: lastRow },
     { data: dorms },
+    { data: reportRows },
   ] = await Promise.all([
     admin.from('dorms').select('*', { count: 'exact', head: true }).eq('active', true),
     admin.from('user_alerts').select('*', { count: 'exact', head: true }),
@@ -90,7 +92,19 @@ export async function getAdminOverview(): Promise<AdminOverview> {
       .limit(1)
       .maybeSingle(),
     admin.from('dorms').select('id, provider').eq('active', true),
+    admin.from('dorm_review_reports').select('review_id'),
   ])
+
+  let pendingReviewReports = 0
+  const reportedReviewIds = [...new Set((reportRows ?? []).map((r) => r.review_id))]
+  if (reportedReviewIds.length > 0) {
+    const { count } = await admin
+      .from('dorm_reviews')
+      .select('*', { count: 'exact', head: true })
+      .in('id', reportedReviewIds)
+      .eq('hidden', false)
+    pendingReviewReports = count ?? 0
+  }
 
   const dormList = dorms ?? []
   const dormIds = dormList.map((d) => d.id)
@@ -161,6 +175,7 @@ export async function getAdminOverview(): Promise<AdminOverview> {
     emailsToday: emailsToday ?? 0,
     emailsThisWeek: emailsWeek ?? 0,
     lastScrapedAt: lastRow?.scraped_at ?? null,
+    pendingReviewReports,
     providerStats,
   }
 }
