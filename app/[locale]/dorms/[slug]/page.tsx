@@ -11,12 +11,21 @@ import { getAvailabilityStatusBulk, availabilityMapToRecord, type AvailabilitySt
 import { localizeAvailability, localizeAvailabilityRecord } from '@/lib/i18n-availability'
 import { nearestUniversities } from '@/lib/universities'
 import { getDormGallery } from '@/lib/dorm-images'
+import {
+  getDormReviews,
+  getDormRatingSummary,
+  getDormRatingSummaries,
+  ratingSummaryMapToRecord,
+  type DormRatingSummary,
+} from '@/lib/dorm-reviews'
 import { absoluteUrl, localePath } from '@/lib/i18n-path'
 import { type Dorm } from '@/lib/helpers'
 import AvailabilityBadge from '@/components/AvailabilityBadge'
 import DormLocationMap from '@/components/DormLocationMap'
 import DormCard from '@/components/DormCard'
 import DormGallery from '@/components/DormGallery'
+import DormRatingBadge from '@/components/DormRatingBadge'
+import DormReviews from '@/components/DormReviews'
 import SaveDormButton from '@/components/SaveDormButton'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -94,6 +103,11 @@ export default async function DormDetailPage({ params }: PageProps) {
   const galleryImages = await getDormGallery(dorm.id, supabase)
   const allImages = galleryImages.length > 0 ? galleryImages : dorm.image_url ? [dorm.image_url] : []
 
+  const [reviews, ratingSummary] = await Promise.all([
+    getDormReviews(dorm.id, supabase, user?.id ?? null),
+    getDormRatingSummary(dorm.id, supabase),
+  ])
+
   let similarDorms: Dorm[] = []
   let similarAvailability: Record<string, AvailabilityStatus> = {}
   if (dorm.district != null) {
@@ -116,9 +130,13 @@ export default async function DormDetailPage({ params }: PageProps) {
       .limit(3)
     similarDorms = (sameProvider ?? []) as Dorm[]
   }
+  let similarRatings: Record<string, DormRatingSummary> = {}
   if (similarDorms.length > 0) {
     const similarMap = await getAvailabilityStatusBulk(similarDorms.map((d) => d.id), supabase)
     similarAvailability = localizeAvailabilityRecord(availabilityMapToRecord(similarMap), (key) => tAvail(key))
+    similarRatings = ratingSummaryMapToRecord(
+      await getDormRatingSummaries(similarDorms.map((d) => d.id), supabase),
+    )
   }
 
   function boolLabel(v: boolean | null): string {
@@ -225,6 +243,7 @@ export default async function DormDetailPage({ params }: PageProps) {
           <h1 className="text-[22px] font-bold leading-snug tracking-tight text-foreground mb-1">
             {dorm.name}
           </h1>
+          <DormRatingBadge summary={ratingSummary} className="mb-1" />
           {districtLabel && (
             <p className="text-sm text-muted-foreground">{districtLabel}</p>
           )}
@@ -326,6 +345,8 @@ export default async function DormDetailPage({ params }: PageProps) {
           )}
         </div>
 
+        <DormReviews dormId={dorm.id} dormSlug={dorm.slug} reviews={reviews} isAuthenticated={!!user} />
+
         {similarDorms.length > 0 && (
           <div className="mt-10 border-t border-border pt-8">
             <h2 className="mb-4 text-sm font-semibold text-foreground">{t('similarDorms')}</h2>
@@ -338,6 +359,7 @@ export default async function DormDetailPage({ params }: PageProps) {
                     similarAvailability[similar.id] ?? { status: 'unknown', label: tAvail('unknown') }
                   }
                   variant="compact"
+                  ratingSummary={similarRatings[similar.id]}
                 />
               ))}
             </div>

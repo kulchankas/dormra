@@ -10,7 +10,9 @@ import {
   type Dorm,
 } from '@/lib/helpers'
 import { formatDistrictLabel, formatPriceLabel } from '@/lib/i18n-labels'
+import type { DormRatingSummary } from '@/lib/dorm-reviews'
 import AvailabilityBadge from '@/components/AvailabilityBadge'
+import DormRatingBadge from '@/components/DormRatingBadge'
 import SaveDormButton from '@/components/SaveDormButton'
 import { Badge } from '@/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -25,6 +27,8 @@ interface Props {
   /** Only render the save/bookmark toggle when the viewer is signed in. */
   showSaveButton?: boolean
   initialSaved?: boolean
+  /** Aggregate rating from The Grapevine reviews. Omitted entirely when not fetched (e.g. loading skeletons). */
+  ratingSummary?: DormRatingSummary
 }
 
 export default function DormCard({
@@ -33,6 +37,7 @@ export default function DormCard({
   variant = 'full',
   showSaveButton = false,
   initialSaved = false,
+  ratingSummary,
 }: Props) {
   const t = useTranslations('dormCard')
   const tChances = useTranslations('chances')
@@ -128,6 +133,10 @@ export default function DormCard({
 
           {!isCompact && districtLabel && dorm.address && (
             <p className="truncate text-[13px] text-muted-foreground">{dorm.address}</p>
+          )}
+
+          {ratingSummary != null && ratingSummary.count > 0 && (
+            <DormRatingBadge summary={ratingSummary} />
           )}
 
           <div className="mt-1 flex items-center justify-between gap-2">

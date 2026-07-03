@@ -10,6 +10,7 @@ import {
   type AvailabilityStatus,
 } from '@/lib/availability'
 import { localizeAvailabilityRecord } from '@/lib/i18n-availability'
+import { getDormRatingSummaries, ratingSummaryMapToRecord, type DormRatingSummary } from '@/lib/dorm-reviews'
 import DormsDirectory from '@/components/DormsDirectory'
 import DormsLoading from './loading'
 import { Link } from '@/i18n/navigation'
@@ -60,6 +61,7 @@ async function fetchDormsData(): Promise<
       dorms: Dorm[]
       availability: Record<string, AvailabilityStatus>
       savedDormIds?: string[]
+      ratingSummaries: Record<string, DormRatingSummary>
     }
   | { ok: false }
 > {
@@ -95,7 +97,11 @@ async function fetchDormsData(): Promise<
       savedDormIds = (trackerRows ?? []).map((r) => r.dorm_id)
     }
 
-    return { ok: true, dorms, availability, savedDormIds }
+    const ratingSummaries = ratingSummaryMapToRecord(
+      await getDormRatingSummaries(dorms.map((d) => d.id), supabase),
+    )
+
+    return { ok: true, dorms, availability, savedDormIds, ratingSummaries }
   } catch {
     return { ok: false }
   }
@@ -113,6 +119,7 @@ async function DormsContent() {
       dorms={result.dorms}
       availability={result.availability}
       savedDormIds={result.savedDormIds}
+      ratingSummaries={result.ratingSummaries}
     />
   )
 }

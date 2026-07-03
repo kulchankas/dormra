@@ -13,6 +13,7 @@ import {
   type AvailabilityStatus,
   type Dorm,
 } from '@/lib/helpers'
+import type { DormRatingSummary } from '@/lib/dorm-reviews'
 import {
   DEFAULT_FILTERS,
   MAX_PRICE_CEILING,
@@ -65,6 +66,8 @@ interface Props {
   /** Dorm IDs the signed-in viewer has saved. Omitted entirely for signed-out
    * visitors, in which case the save toggle isn't rendered on cards. */
   savedDormIds?: string[]
+  /** Aggregate Grapevine ratings per dorm ID, bulk-fetched like `availability`. */
+  ratingSummaries?: Record<string, DormRatingSummary>
 }
 
 function MapLegend({ className }: { className?: string }) {
@@ -399,7 +402,7 @@ function FilterPanel({
   )
 }
 
-export default function DormsDirectory({ dorms, availability, savedDormIds }: Props) {
+export default function DormsDirectory({ dorms, availability, savedDormIds, ratingSummaries }: Props) {
   const savedSet = useMemo(() => new Set(savedDormIds ?? []), [savedDormIds])
   const t = useTranslations('dorms')
   const tAvail = useTranslations('availability')
@@ -840,6 +843,7 @@ export default function DormsDirectory({ dorms, availability, savedDormIds }: Pr
                         variant="full"
                         showSaveButton={savedDormIds != null}
                         initialSaved={savedSet.has(dorm.id)}
+                        ratingSummary={ratingSummaries?.[dorm.id]}
                       />
                     ))}
                   </div>
