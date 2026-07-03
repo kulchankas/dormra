@@ -4,8 +4,8 @@ import { NextRequest } from 'next/server'
 const mockExchangeCode = vi.fn()
 const mockVerifyOtp = vi.fn()
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: vi.fn(async () => ({
+vi.mock('@supabase/ssr', () => ({
+  createServerClient: vi.fn(() => ({
     auth: {
       exchangeCodeForSession: mockExchangeCode,
       verifyOtp: mockVerifyOtp,
@@ -63,6 +63,18 @@ describe('GET /auth/callback', () => {
 
     expect(response.headers.get('location')).toBe(
       'http://localhost:3000/login?error=callback_failed',
+    )
+  })
+
+  it('redirects OAuth provider errors to login', async () => {
+    const { GET } = await import('./route')
+    const request = new NextRequest(
+      'http://localhost:3000/auth/callback?error=access_denied&error_description=User%20denied',
+    )
+    const response = await GET(request)
+
+    expect(response.headers.get('location')).toBe(
+      'http://localhost:3000/login?error=access_denied%3A%20User%20denied',
     )
   })
 

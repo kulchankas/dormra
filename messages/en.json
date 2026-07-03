@@ -351,6 +351,7 @@
     "signedUp": "Account created. Welcome to Dormra!",
     "callbackFailed": "That sign-in link was invalid or has expired. Please try again.",
     "genericError": "Something went wrong during sign-in.",
+    "googleUnavailable": "Google sign-in is not available right now. Use email instead.",
     "emailInvalid": "Enter a valid email address.",
     "passwordMin": "Password must be at least 8 characters.",
     "signIn": "Sign in",
@@ -622,6 +623,13 @@
     "created7d": "Created last 7 days",
     "created30d": "Created last 30 days",
     "byLocale": "By locale",
-    "noAlertsYet": "No alerts created yet."
+    "noAlertsYet": "No alerts created yet.",
+    "authStatusTitle": "Auth configuration",
+    "authStatusSubtitle": "OAuth and email provider status from Supabase",
+    "googleOAuth": "Google OAuth",
+    "emailAuth": "Email / password",
+    "authEnabled": "Enabled",
+    "authDisabled": "Disabled — see MANUAL_TASKS.md §5b",
+    "authSetupHint": "Enable Google in Supabase → Authentication → Providers, then set Site URL to https://dormra.eu (§6)."
   }
 }

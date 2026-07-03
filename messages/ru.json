@@ -351,6 +351,7 @@
     "signedUp": "Аккаунт создан. Добро пожаловать в Dormra!",
     "callbackFailed": "Ссылка для входа недействительна или истекла. Попробуй снова.",
     "genericError": "Что-то пошло не так при входе.",
+    "googleUnavailable": "Вход через Google сейчас недоступен. Используй email.",
     "emailInvalid": "Введи корректный email.",
     "passwordMin": "Пароль — минимум 8 символов.",
     "signIn": "Войти",
@@ -622,6 +623,13 @@
     "created7d": "Создано за 7 дней",
     "created30d": "Создано за 30 дней",
     "byLocale": "По языку",
-    "noAlertsYet": "Алерты ещё не созданы."
+    "noAlertsYet": "Алерты ещё не созданы.",
+    "authStatusTitle": "Настройки авторизации",
+    "authStatusSubtitle": "Статус OAuth и email из Supabase",
+    "googleOAuth": "Google OAuth",
+    "emailAuth": "Email / пароль",
+    "authEnabled": "Включено",
+    "authDisabled": "Выключено — см. MANUAL_TASKS.md §5b",
+    "authSetupHint": "Включи Google в Supabase → Authentication → Providers и установи Site URL на https://dormra.eu (§6)."
   }
 }
