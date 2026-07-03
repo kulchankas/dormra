@@ -9,7 +9,8 @@ Rough tasks you jot down during the day. A **scheduled night agent** reads the *
 ## Rules for the night agent
 
 - Process only the **latest dated Draft section** unless told otherwise.
-- Max **3 tasks** per night unless the draft explicitly says more.
+- Work through **all tasks in priority order** — do not stop after a fixed count. If time or runtime runs out, finish the current task cleanly, then list remaining items under **Issues / blockers → Deferred** in the nightly report.
+- **Priority:** order in the draft = priority (top first). You can prefix `P1` / `P2` / `P3` or `1.` / `2.` if you want to be explicit.
 - Prefer small, shippable PRs — branch name `cursor/<short-description>-fc38`.
 - Run lint/build/tests before committing when code changes.
 - If a task is ambiguous, **skip it** and explain why in the report (do not guess on auth, billing, or production data).
@@ -24,10 +25,10 @@ Write messy bullets here. One `## Draft — YYYY-MM-DD` section per day.
 
 ### Draft — 2026-07-03
 
-<!-- Example — delete or replace:
-- fix thing on mobile
-- geocode remaining dorms (oejab, kolping) — see seeds
-- don't touch auth
+<!-- Example — delete or replace (top = highest priority):
+1. fix thing on mobile
+2. geocode remaining dorms (oejab, kolping) — see seeds
+3. don't touch auth
 -->
 
 ---
@@ -56,6 +57,7 @@ Newest report at the top. The agent adds one block per run.
 
 ### Issues / blockers
 - …
+- **Deferred** (ran out of time — do next run): …
 
 ### Ideas for later
 - …
