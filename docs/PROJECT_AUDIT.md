@@ -1,10 +1,12 @@
 # Dormra Project Audit & Roadmap
 
-Last updated: 2026-07-02
+Last updated: 2026-07-02 (audit implementation pass)
 
 ## Executive summary
 
 Dormra is a well-structured beta: clear scraper → snapshot → diff → alert pipeline, honest README about planned features, and solid RLS policy design. **Production cron code is working** (split jobs, Playwright on Vercel); remaining blockers are **operator tasks** (cron-job.org enable, Supabase auth URLs, secret rotation, Resend domain).
+
+**Latest agent pass:** sign-out fix, alert list UX, welcome digest email, `alert_id` dedup, admin cron run log, dashboard polish.
 
 ---
 
@@ -39,6 +41,12 @@ Dormra is a well-structured beta: clear scraper → snapshot → diff → alert 
 |---|--------|--------|-------|
 | 3.1 | Hero `moveIn` param doesn't filter | Open | No scraped move-in dates — banner + alert CTA; matching deferred |
 | 3.2 | `move_in_before` not matched | Open | Documented; field stored for future use |
+| 3.16 | Alert list match count buried | ✅ Done | Availability-aware stat + post-create banner |
+| 3.17 | Browse→create prefill incomplete | ✅ Done | pets, couples, maxDeposit from URL |
+| 3.18 | Sign-out broken in desktop menu | ✅ Done | SignOutButton + settings sign-out |
+| 3.19 | alert_log dedup per user+dorm only | ✅ Done | `alert_id` column + per-alert weekly index |
+| 3.20 | No cron run history in admin | ✅ Done | `cron_runs` table + admin widget |
+| 3.21 | No welcome email on alert create | ✅ Done | Digest when matches available now |
 | 3.3 | Hardcoded English in helpers | ✅ Done | `lib/i18n-labels.ts` + DistrictGrid |
 | 3.4 | Inactive dorms reachable by URL | ✅ Done | Detail page checks `active = true` |
 | 3.5 | `/dorms` Suspense ineffective | ✅ Done | Data fetch in async `DormsContent` child |
@@ -73,7 +81,11 @@ Priority order — **do not start Phase 2 scrapers until Phase 1 metric met.**
 | P0 | home4students room-card parser | ✅ This sprint — structured `.room-card` parsing | — |
 | P1 | Admin per-provider last scrape | ✅ Shipped PR #42 (CI fix in follow-up PR #45) | — |
 | P1 | Account settings page | ✅ This sprint | — |
-| P2 | Saved dorms + application tracker | ✅ This sprint — bookmark toggle + status tracker at `/dashboard/saved`, reuses existing `tracker` table/RLS | — |
+| P1 | Alert system UX + welcome digest | ✅ This sprint | PR #48 |
+| P1 | Sign-out fix | ✅ This sprint | PR #47 |
+| P1 | Admin cron run log | ✅ This sprint | migration + /admin widget |
+| P1 | alert_id dedup fix | ✅ This sprint | migration 20260702220100 |
+| P2 | Saved dorms + application tracker | ✅ This sprint | `/dashboard/saved`, reuses `tracker` table |
 | Hold | New scrapers (ÖJAB, WIHAST, …) | Phase 2 gate | Phase 1 week clean |
 
 **Your manual schedule (parallel):**
@@ -122,6 +134,8 @@ Operator → GET /api/test-alert?slug=…&dryRun=1|email=…
 3. `20260701120000_user_alerts_locale.sql` — alert email locale
 4. `20260701130000_snapshot_rpc_and_retention.sql` — RPC + prune
 5. `20260701140000_alert_log_dedup.sql` — weekly dedup index
+6. `20260702220000_cron_runs.sql` — cron job run log
+7. `20260702220100_alert_log_alert_id.sql` — per-alert dedup
 
 **Manual steps:** [`MANUAL_TASKS.md`](./MANUAL_TASKS.md)
 
@@ -141,7 +155,8 @@ Operator → GET /api/test-alert?slug=…&dryRun=1|email=…
 | 2026-07-02 | `main` | PR #33–37 ops fixes (proxy, Playwright, Chromium pack) |
 | 2026-07-02 | `cursor/cron-split-providers-5868` | PR #39 cron split; setup-cron-jobs.sh; MONITORING docs |
 | 2026-07-02 | `cursor/test-alert-and-docs-5868` | `/api/test-alert`; manual tasks + strategy audit refresh |
+| 2026-07-02 | `cursor/alert-system-5868` | Alert UX, sign-out, welcome digest, alert_id dedup, cron_runs admin |
 | 2026-07-02 | `cursor/mobile-ux-polish-fc38` | Mobile layout/a11y/touch bugs across auth, nav, dorms, DormCard |
 | 2026-07-02 | `cursor/add-dorms-map-and-filters-fc38` | `/dorms` map view + geocoded coordinates; rent range, short-stay, near-me filters |
 | 2026-07-02 | `cursor/fix-admin-purity-lint-fc38` | Fixed `main` CI break from PR #42 (Date.now in render) |
-| 2026-07-02 | `cursor/saved-dorms-tracker-fc38` | Saved dorms + status tracker (P2) — bookmark toggle, `/dashboard/saved`, dashboard card |
+| 2026-07-02 | `cursor/saved-dorms-tracker-fc38` | Saved dorms + status tracker — bookmark toggle, `/dashboard/saved` |

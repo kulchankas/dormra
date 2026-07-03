@@ -17,6 +17,10 @@ vi.mock('@/lib/snapshot-maintenance', () => ({
   pruneOldSnapshots: vi.fn(async () => 0),
 }))
 
+vi.mock('@/lib/cron-runs', () => ({
+  logCronRun: vi.fn(async () => {}),
+}))
+
 vi.mock('@/scrapers', () => ({
   getScraperForProvider: vi.fn(() => null),
   usesBrowser: vi.fn(() => false),

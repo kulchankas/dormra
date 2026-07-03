@@ -54,7 +54,7 @@ export default async function DashboardPage({ params }: PageProps) {
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Link
             href="/dashboard/alerts"
             className="card-elevated group rounded-2xl bg-surface p-5 transition-all hover:-translate-y-0.5"
@@ -80,17 +80,6 @@ export default async function DashboardPage({ params }: PageProps) {
           </Link>
 
           <Link
-            href="/dashboard/settings"
-            className="card-elevated group rounded-2xl bg-surface p-5 transition-all hover:-translate-y-0.5"
-          >
-            <div className="mb-3 grid size-10 place-items-center rounded-xl bg-brand-soft transition-colors group-hover:bg-brand/10">
-              <Settings className="size-4 text-brand" />
-            </div>
-            <p className="text-sm font-semibold text-foreground">{t('settings')}</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">{t('settingsHint')}</p>
-          </Link>
-
-          <Link
             href="/dashboard/saved"
             className="card-elevated group rounded-2xl bg-surface p-5 transition-all hover:-translate-y-0.5"
           >
@@ -112,6 +101,17 @@ export default async function DashboardPage({ params }: PageProps) {
                   ? t('savedDormsCount', { count: savedCount })
                   : t('savedDormsCountPlural', { count: savedCount })}
             </p>
+          </Link>
+
+          <Link
+            href="/dashboard/settings"
+            className="card-elevated group rounded-2xl bg-surface p-5 transition-all hover:-translate-y-0.5 sm:col-span-2 lg:col-span-1"
+          >
+            <div className="mb-3 grid size-10 place-items-center rounded-xl bg-brand-soft transition-colors group-hover:bg-brand/10">
+              <Settings className="size-4 text-brand" />
+            </div>
+            <p className="text-sm font-semibold text-foreground">{t('settings')}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{t('settingsHint')}</p>
           </Link>
         </div>
 

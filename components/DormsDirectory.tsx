@@ -490,6 +490,7 @@ export default function DormsDirectory({ dorms, availability }: Props) {
     const params = new URLSearchParams()
     if (filters.maxPrice < 1500) params.set('maxPrice', String(filters.maxPrice))
     if (filters.districts.length > 0) params.set('districts', filters.districts.join(','))
+    if (filters.maxDepositMonths !== '') params.set('maxDeposit', String(filters.maxDepositMonths))
     if (filters.couples) params.set('couples', '1')
     if (filters.pets) params.set('pets', '1')
     const qs = params.toString()

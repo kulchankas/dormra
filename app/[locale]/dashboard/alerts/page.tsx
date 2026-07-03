@@ -1,4 +1,4 @@
-import { ArrowLeft, Bell, Plus, Pencil, Home } from 'lucide-react'
+import { ArrowLeft, Bell, Plus, Pencil } from 'lucide-react'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
 import { buildPageMetadata } from '@/lib/i18n-metadata'
@@ -8,8 +8,10 @@ import { Badge } from '@/components/ui/badge'
 import DeleteAlertButton from '@/components/DeleteAlertButton'
 import AlertActiveToggle from '@/components/AlertActiveToggle'
 import ScanningPillServer from '@/components/ScanningPillServer'
+import AlertCreatedBanner from '@/components/AlertCreatedBanner'
 import { DISTRICT_NAMES, type Dorm } from '@/lib/helpers'
-import { alertToDormsHref, countMatches } from '@/lib/alertMatch'
+import { alertToDormsHref, countMatchBreakdown } from '@/lib/alertMatch'
+import { getAvailabilityStatusBulk, availabilityMapToRecord } from '@/lib/availability'
 import { cn } from '@/lib/utils'
 import { dateLocale } from '@/lib/i18n-dates'
 import { Link, redirect } from '@/i18n/navigation'
@@ -29,7 +31,10 @@ type AlertRow = {
   created_at: string
 }
 
-type PageProps = { params: Promise<{ locale: string }> }
+type PageProps = {
+  params: Promise<{ locale: string }>
+  searchParams: Promise<{ created?: string; available?: string; matches?: string }>
+}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params
@@ -71,11 +76,12 @@ function formatCreatedAt(iso: string, locale: string): string {
   })
 }
 
-export default async function AlertsPage({ params }: PageProps) {
+export default async function AlertsPage({ params, searchParams }: PageProps) {
   const { locale } = await params
   setRequestLocale(locale)
   const t = await getTranslations('dashboard')
   const tHome = await getTranslations('home')
+  const sp = await searchParams
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -96,6 +102,26 @@ export default async function AlertsPage({ params }: PageProps) {
   const rows = (alerts ?? []) as AlertRow[]
   const dorms = (dormData ?? []) as Dorm[]
   const activeCount = rows.filter((r) => r.active).length
+
+  const availabilityMap = await getAvailabilityStatusBulk(
+    dorms.map((d) => d.id),
+    supabase,
+  )
+  const availability = availabilityMapToRecord(availabilityMap)
+
+  const justCreated = sp.created === '1'
+  const createdAvailable = Number(sp.available ?? '0')
+  const createdMatches = Number(sp.matches ?? '0')
+  const latestCriteria = rows[0]
+    ? {
+        price_max: rows[0].price_max,
+        districts: rows[0].districts,
+        deposit_max: rows[0].deposit_max,
+        pets_required: rows[0].pets_required,
+        couples: rows[0].couples,
+      }
+    : null
+  const createdDormsHref = latestCriteria ? alertToDormsHref(latestCriteria) : '/dorms'
 
   return (
     <main className="min-h-screen bg-background">
@@ -132,6 +158,14 @@ export default async function AlertsPage({ params }: PageProps) {
             {t('newAlert')}
           </Button>
         </div>
+
+        {justCreated && (
+          <AlertCreatedBanner
+            availableMatches={createdAvailable}
+            criteriaMatches={createdMatches}
+            dormsHref={createdDormsHref}
+          />
+        )}
 
         {rows.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border bg-surface-soft/50 p-12 text-center">
@@ -171,8 +205,13 @@ export default async function AlertsPage({ params }: PageProps) {
                 pets_required: alert.pets_required,
                 couples: alert.couples,
               }
-              const matchCount = countMatches(dorms, criteria)
+              const { criteriaMatches, availableMatches } = countMatchBreakdown(
+                dorms,
+                criteria,
+                availability,
+              )
               const dormsHref = alertToDormsHref(criteria)
+              const hasAvailable = availableMatches > 0
 
               return (
                 <article
@@ -184,44 +223,85 @@ export default async function AlertsPage({ params }: PageProps) {
                 >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="text-sm font-semibold text-foreground sm:text-base">
-                          {formatAlertSummary(alert, t, locale)}
-                        </h2>
-                        {!alert.active && (
-                          <Badge variant="secondary" className="text-[10px]">{t('paused')}</Badge>
-                        )}
+                      <div className="flex flex-wrap items-start gap-4">
+                        <div className="flex items-end gap-2">
+                          <span
+                            className={cn(
+                              'text-3xl font-bold tabular-nums leading-none',
+                              hasAvailable ? 'text-brand' : 'text-muted-foreground',
+                            )}
+                          >
+                            {availableMatches}
+                          </span>
+                          <div className="pb-0.5">
+                            <p className="text-sm font-semibold text-foreground">
+                              {availableMatches === 1
+                                ? t('availableNowSingular')
+                                : t('availableNowPlural')}
+                            </p>
+                            {criteriaMatches > availableMatches && (
+                              <p className="text-xs text-muted-foreground">
+                                {t('criteriaMatchesTotal', { count: criteriaMatches })}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="min-w-0 flex-1 sm:pt-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h2 className="text-sm font-semibold text-foreground sm:text-base">
+                              {formatAlertSummary(alert, t, locale)}
+                            </h2>
+                            {!alert.active && (
+                              <Badge variant="secondary" className="text-[10px]">
+                                {t('paused')}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="mt-1 text-[11px] text-muted-foreground">
+                            {t('created', { date: formatCreatedAt(alert.created_at, locale) })}
+                          </p>
+                        </div>
                       </div>
 
-                      <p className="mt-1 text-[11px] text-muted-foreground">
-                        {t('created', { date: formatCreatedAt(alert.created_at, locale) })}
-                      </p>
-
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {alert.pets_required && (
-                          <Badge variant="secondary" className="text-[10px]">{t('petsBadge')}</Badge>
-                        )}
-                        {alert.couples && (
-                          <Badge variant="secondary" className="text-[10px]">{t('couplesBadge')}</Badge>
-                        )}
-                        {alert.deposit_max != null && (
-                          <Badge variant="secondary" className="text-[10px]">
-                            {t('depositBadge', { months: alert.deposit_max })}
-                          </Badge>
-                        )}
-                        {alert.notify_email && (
-                          <Badge variant="secondary" className="text-[10px]">{t('emailBadge')}</Badge>
-                        )}
-                      </div>
+                      {(alert.pets_required ||
+                        alert.couples ||
+                        alert.deposit_max != null ||
+                        alert.notify_email) && (
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {alert.pets_required && (
+                            <Badge variant="secondary" className="text-[10px]">
+                              {t('petsBadge')}
+                            </Badge>
+                          )}
+                          {alert.couples && (
+                            <Badge variant="secondary" className="text-[10px]">
+                              {t('couplesBadge')}
+                            </Badge>
+                          )}
+                          {alert.deposit_max != null && (
+                            <Badge variant="secondary" className="text-[10px]">
+                              {t('depositBadge', { months: alert.deposit_max })}
+                            </Badge>
+                          )}
+                          {alert.notify_email && (
+                            <Badge variant="secondary" className="text-[10px]">
+                              {t('emailBadge')}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
 
                       <Link
                         href={dormsHref}
-                        className="mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1.5 text-xs font-medium text-brand transition-colors hover:bg-brand-soft/70"
+                        className={cn(
+                          'mt-3 inline-flex min-h-9 items-center rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                          hasAvailable
+                            ? 'bg-brand text-brand-foreground hover:bg-brand/90'
+                            : 'bg-muted text-muted-foreground hover:bg-muted/80',
+                        )}
                       >
-                        <Home className="size-3.5" />
-                        {matchCount === 1
-                          ? t('dormMatches', { count: matchCount })
-                          : t('dormsMatch', { count: matchCount })}
+                        {t('viewMatchingDorms')}
                       </Link>
                     </div>
 

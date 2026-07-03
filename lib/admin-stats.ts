@@ -53,6 +53,21 @@ export type AlertStats = {
   createdLast30Days: number
 }
 
+export type CronRunRow = {
+  id: string
+  startedAt: string
+  durationMs: number
+  ok: boolean
+  errorMessage: string | null
+  providers: string[]
+  batch: number | null
+  batches: number | null
+  scraped: number
+  errors: number
+  skipped: number
+  pruned: number
+}
+
 function snapshotStatus(
   row: { available: boolean; scrape_ok: boolean; scraped_at: string } | undefined,
   now: number,
@@ -287,4 +302,36 @@ export async function getAlertStats(): Promise<AlertStats> {
     createdLast7Days: created7 ?? 0,
     createdLast30Days: created30 ?? 0,
   }
+}
+
+export async function getRecentCronRuns(limit = 10): Promise<CronRunRow[]> {
+  const admin = createAdminClient()
+
+  const { data: rows, error } = await admin
+    .from('cron_runs')
+    .select(
+      'id, started_at, duration_ms, ok, error_message, providers, batch, batches, scraped, errors, skipped, pruned',
+    )
+    .order('started_at', { ascending: false })
+    .limit(limit)
+
+  if (error || !rows) {
+    if (error) console.error('[ADMIN] Failed to fetch cron runs:', error.message)
+    return []
+  }
+
+  return rows.map((row) => ({
+    id: row.id,
+    startedAt: row.started_at,
+    durationMs: row.duration_ms,
+    ok: row.ok,
+    errorMessage: row.error_message,
+    providers: row.providers,
+    batch: row.batch,
+    batches: row.batches,
+    scraped: row.scraped,
+    errors: row.errors,
+    skipped: row.skipped,
+    pruned: row.pruned,
+  }))
 }

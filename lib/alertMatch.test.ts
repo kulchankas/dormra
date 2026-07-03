@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { countMatches, alertToDormsHref } from './alertMatch'
+import { countMatches, countMatchBreakdown, alertToDormsHref } from './alertMatch'
 import type { Dorm } from './types/dorm'
 
 const dorm = (overrides: Partial<Dorm>): Dorm => ({
@@ -65,5 +65,34 @@ describe('countMatches', () => {
       pets_required: true,
       couples: false,
     })).toBe('/dorms?maxPrice=600&districts=9%2C10&maxDeposit=2&pets=1')
+  })
+})
+
+describe('countMatchBreakdown', () => {
+  const dorms = [
+    dorm({ id: '1', district: 9, price_min: 400 }),
+    dorm({ id: '2', district: 9, price_min: 450 }),
+    dorm({ id: '3', district: 1, price_min: 800 }),
+  ]
+
+  const criteria = {
+    price_max: 500,
+    districts: [9],
+    deposit_max: null,
+    pets_required: false,
+    couples: false,
+  }
+
+  it('counts criteria matches and available subset separately', () => {
+    const availability = {
+      '1': { status: 'available' as const, label: 'Available' },
+      '2': { status: 'fully_booked' as const, label: 'Fully booked' },
+      '3': { status: 'available' as const, label: 'Available' },
+    }
+
+    expect(countMatchBreakdown(dorms, criteria, availability)).toEqual({
+      criteriaMatches: 2,
+      availableMatches: 1,
+    })
   })
 })
