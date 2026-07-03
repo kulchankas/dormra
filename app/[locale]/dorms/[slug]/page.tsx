@@ -15,6 +15,7 @@ import {
   getDormReviews,
   getDormRatingSummary,
   getDormRatingSummaries,
+  getDormTagCounts,
   ratingSummaryMapToRecord,
   type DormRatingSummary,
 } from '@/lib/dorm-reviews'
@@ -103,9 +104,10 @@ export default async function DormDetailPage({ params }: PageProps) {
   const galleryImages = await getDormGallery(dorm.id, supabase)
   const allImages = galleryImages.length > 0 ? galleryImages : dorm.image_url ? [dorm.image_url] : []
 
-  const [reviews, ratingSummary] = await Promise.all([
+  const [reviews, ratingSummary, tagCounts] = await Promise.all([
     getDormReviews(dorm.id, supabase, user?.id ?? null),
     getDormRatingSummary(dorm.id, supabase),
+    getDormTagCounts(dorm.id, supabase),
   ])
 
   let similarDorms: Dorm[] = []
@@ -345,7 +347,13 @@ export default async function DormDetailPage({ params }: PageProps) {
           )}
         </div>
 
-        <DormReviews dormId={dorm.id} dormSlug={dorm.slug} reviews={reviews} isAuthenticated={!!user} />
+        <DormReviews
+          dormId={dorm.id}
+          dormSlug={dorm.slug}
+          reviews={reviews}
+          isAuthenticated={!!user}
+          tagCounts={tagCounts}
+        />
 
         {similarDorms.length > 0 && (
           <div className="mt-10 border-t border-border pt-8">

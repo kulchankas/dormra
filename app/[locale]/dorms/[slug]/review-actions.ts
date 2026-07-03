@@ -10,7 +10,7 @@ type ActionResult = { error?: string }
 export async function createReview(
   dormSlug: string,
   dormId: string,
-  input: { rating: number; body: string },
+  input: { rating: number; body: string; tags?: string[] },
 ): Promise<ActionResult> {
   const supabase = await createClient()
   const {
@@ -27,6 +27,7 @@ export async function createReview(
     pseudonym: generatePseudonym(),
     rating: parsed.data.rating,
     body: parsed.data.body,
+    tags: parsed.data.tags,
   })
 
   if (error) {
@@ -43,7 +44,7 @@ export async function createReview(
 export async function updateReview(
   dormSlug: string,
   reviewId: string,
-  input: { rating: number; body: string },
+  input: { rating: number; body: string; tags?: string[] },
 ): Promise<ActionResult> {
   const supabase = await createClient()
   const {
@@ -59,6 +60,7 @@ export async function updateReview(
     .update({
       rating: parsed.data.rating,
       body: parsed.data.body,
+      tags: parsed.data.tags,
       updated_at: new Date().toISOString(),
     })
     .eq('id', reviewId)

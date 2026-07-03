@@ -7,8 +7,11 @@ import { useRouter } from '@/i18n/navigation'
 import StarRating from '@/components/StarRating'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { Chip } from '@/components/ui/toggle-chip'
 import { createReview, updateReview } from '@/app/[locale]/dorms/[slug]/review-actions'
 import { REVIEW_BODY_MAX_LENGTH, REVIEW_BODY_MIN_LENGTH } from '@/lib/dorm-reviews'
+import { REVIEW_TAGS, MAX_TAGS_PER_REVIEW, type ReviewTag } from '@/lib/review-tags'
+import { reviewTagLabel } from '@/lib/review-tag-labels'
 
 type Props = {
   dormId: string
@@ -17,6 +20,7 @@ type Props = {
   reviewId?: string
   initialRating?: number
   initialBody?: string
+  initialTags?: ReviewTag[]
   onDone?: () => void
   onCancel?: () => void
 }
@@ -28,6 +32,7 @@ export default function DormReviewForm({
   reviewId,
   initialRating = 0,
   initialBody = '',
+  initialTags = [],
   onDone,
   onCancel,
 }: Props) {
@@ -35,10 +40,19 @@ export default function DormReviewForm({
   const router = useRouter()
   const [rating, setRating] = useState(initialRating)
   const [body, setBody] = useState(initialBody)
+  const [tags, setTags] = useState<ReviewTag[]>(initialTags)
   const [isPending, startTransition] = useTransition()
 
   const bodyLength = body.trim().length
   const canSubmit = rating > 0 && bodyLength >= REVIEW_BODY_MIN_LENGTH && bodyLength <= REVIEW_BODY_MAX_LENGTH
+
+  function toggleTag(tag: ReviewTag) {
+    setTags((prev) => {
+      if (prev.includes(tag)) return prev.filter((t) => t !== tag)
+      if (prev.length >= MAX_TAGS_PER_REVIEW) return prev
+      return [...prev, tag]
+    })
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -47,8 +61,8 @@ export default function DormReviewForm({
     startTransition(async () => {
       const result =
         mode === 'create'
-          ? await createReview(dormSlug, dormId, { rating, body })
-          : await updateReview(dormSlug, reviewId!, { rating, body })
+          ? await createReview(dormSlug, dormId, { rating, body, tags })
+          : await updateReview(dormSlug, reviewId!, { rating, body, tags })
 
       if (result.error === 'already_reviewed') {
         toast.error(t('alreadyReviewed'))
@@ -63,6 +77,7 @@ export default function DormReviewForm({
       if (mode === 'create') {
         setRating(0)
         setBody('')
+        setTags([])
       }
       router.refresh()
       onDone?.()
@@ -73,6 +88,15 @@ export default function DormReviewForm({
     <form onSubmit={handleSubmit} className="card-elevated rounded-2xl bg-surface p-4">
       <p className="mb-2 text-xs font-medium text-muted-foreground">{t('yourRating')}</p>
       <StarRating value={rating} onChange={setRating} size="lg" starLabel={(n) => t('starLabel', { n })} />
+
+      <p className="mb-1.5 mt-3 text-xs font-medium text-muted-foreground">{t('tagsLabel')}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {REVIEW_TAGS.map((tag) => (
+          <Chip key={tag} active={tags.includes(tag)} onClick={() => toggleTag(tag)}>
+            {reviewTagLabel(t, tag)}
+          </Chip>
+        ))}
+      </div>
 
       <label htmlFor="review-body" className="sr-only">
         {t('bodyLabel')}

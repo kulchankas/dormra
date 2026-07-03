@@ -311,7 +311,10 @@
     "statusLabel": "Bewerbungsstatus",
     "remove": "Entfernen",
     "confirmRemove": "Entfernen bestätigen",
-    "removeConfirm": "Entfernen?"
+    "removeConfirm": "Entfernen?",
+    "applyTipTitle": "Bewirb dich auch bei einem Backup",
+    "applyTipBody": "Wiener Wohnheime vergeben Plätze nach dem Prinzip \"first come, first served\" — beliebte Häuser sind Monate im Voraus voll. Du hast dich bisher nur bei einem Anbieter beworben; ein zweiter oder dritter kostet nichts und sichert deinen Zeitplan ab.",
+    "applyTipCta": "Weitere Heime durchsuchen"
   },
   "reviews": {
     "sectionTitle": "Der Buschfunk",
@@ -319,6 +322,22 @@
     "yourRating": "Deine Bewertung",
     "starLabel": "{n} von 5 Sternen bewerten",
     "ratingAria": "Bewertet mit {rating} von 5",
+    "tagsLabel": "Was ist dir aufgefallen? (optional)",
+    "frequentlyMentioned": "Häufig erwähnt",
+    "tags": {
+      "thin_walls": "Dünne Wände",
+      "slow_repairs": "Langsame Reparaturen",
+      "responsive_staff": "Reagiert schnell",
+      "unreliable_wifi": "Unzuverlässiges WLAN",
+      "reliable_wifi": "Zuverlässiges WLAN",
+      "messy_kitchen": "Unordentliche Gemeinschaftsküche",
+      "clean": "Immer sauber",
+      "great_location": "Top Lage",
+      "party_dorm": "Lebhaft / Party-Heim",
+      "quiet_dorm": "Ruhig, gut zum Lernen",
+      "friendly_community": "Freundliche Community",
+      "small_rooms": "Zimmer sind klein"
+    },
     "bodyLabel": "Deine Bewertung",
     "bodyPlaceholder": "Wie ist es wirklich, hier zu wohnen? Lärm, Personal, Reparaturen, Nachbarn — raus damit.",
     "anonymityHint": "Wird anonym unter einem zufälligen Namen veröffentlicht — nie unter deinem Konto.",
@@ -383,9 +402,13 @@
     "faq3a": "Wir scrapen alle 15 Minuten und vergleichen jeden Snapshot. Einträge älter als 6 Stunden werden als \"Status unbekannt\" markiert.",
     "faq4q": "Bewirbt Dormra für mich?",
     "faq4a": "Noch nicht — heute leiten wir dich zum Anbieter weiter. Eine universelle Bewerbungsschicht ist für Phase 5 geplant.",
-    "faq5q": "Ich bin nicht in Wien — wann kommt meine Stadt?",
-    "faq5a": "Graz, Salzburg, Innsbruck und Linz folgen direkt nach Wien. Berlin, München, Prag und Amsterdam danach."
-  },
+  "faq5q": "Ich bin nicht in Wien — wann kommt meine Stadt?",
+  "faq5a": "Graz, Salzburg, Innsbruck und Linz folgen direkt nach Wien. Berlin, München, Prag und Amsterdam danach.",
+  "faq6q": "Soll ich mich bei mehreren Heimen bewerben?",
+  "faq6a": "Ja. Wiener Wohnheimplätze werden ohne feste Frist nach dem Prinzip \"first come, first served\" vergeben, und beliebte Häuser sind Monate im Voraus voll. Bewirb dich parallel bei 2-3 verschiedenen Anbietern — aber nie zweimal beim selben, da eine zweite Bewerbung meist deine Position in der Warteliste zurücksetzt. Nimm das erste passende Angebot an und sag den Rest ab.",
+  "faq7q": "Wie vermeide ich Betrug bei der Wohnungssuche?",
+  "faq7a": "Zahle nie, bevor du einen unterschriebenen Vertrag hast — idealerweise nach einer Besichtigung vor Ort oder einem Live-Videoanruf, nicht einem vorab aufgenommenen Video. Betrüger nutzen mittlerweile überzeugende Scheinfirmen und sogar inszenierte Besichtigungen — jeder Druck, vor der Unterschrift zu zahlen, ist ein Warnsignal. Ein etabliertes Studentenheim (alles, was Dormra erfasst) ist für den Start das risikoärmste Angebot."
+},
   "auth": {
     "layoutTagline": "Finde dein Wiener Heim schneller — wir überwachen alle Anbieter und benachrichtigen dich bei passenden Zimmern.",
     "loginTitle": "Willkommen zurück",

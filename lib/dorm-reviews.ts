@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from './database.types'
+import { REVIEW_TAGS, MAX_TAGS_PER_REVIEW, sanitizeReviewTags, computeTagCounts, type ReviewTag } from './review-tags'
 
 type DbClient = SupabaseClient<Database>
 
@@ -10,6 +11,7 @@ export const REVIEW_BODY_MAX_LENGTH = 2000
 export const reviewInputSchema = z.object({
   rating: z.number().int().min(1).max(5),
   body: z.string().trim().min(REVIEW_BODY_MIN_LENGTH).max(REVIEW_BODY_MAX_LENGTH),
+  tags: z.array(z.enum(REVIEW_TAGS)).max(MAX_TAGS_PER_REVIEW).optional().default([]),
 })
 
 export type ReviewInput = z.infer<typeof reviewInputSchema>
@@ -27,6 +29,7 @@ export type DormReview = {
   pseudonym: string
   rating: number
   body: string
+  tags: ReviewTag[]
   createdAt: string
   updatedAt: string
   hidden: boolean
@@ -54,6 +57,7 @@ type ReviewRow = {
   pseudonym: string
   rating: number
   body: string
+  tags: string[]
   hidden: boolean
   created_at: string
   updated_at: string
@@ -66,6 +70,7 @@ function rowToReview(row: ReviewRow, viewerUserId: string | null): DormReview {
     pseudonym: row.pseudonym,
     rating: row.rating,
     body: row.body,
+    tags: sanitizeReviewTags(row.tags ?? []),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     hidden: row.hidden,
@@ -85,12 +90,19 @@ export async function getDormReviews(
 ): Promise<DormReview[]> {
   const { data, error } = await db
     .from('dorm_reviews')
-    .select('id, dorm_id, user_id, pseudonym, rating, body, hidden, created_at, updated_at')
+    .select('id, dorm_id, user_id, pseudonym, rating, body, tags, hidden, created_at, updated_at')
     .eq('dorm_id', dormId)
     .order('created_at', { ascending: false })
 
   if (error || !data) return []
   return data.map((row) => rowToReview(row, viewerUserId))
+}
+
+/** Most-mentioned tags across a dorm's visible reviews, for a "frequently mentioned" summary. */
+export async function getDormTagCounts(dormId: string, db: DbClient) {
+  const { data, error } = await db.from('dorm_reviews').select('tags').eq('dorm_id', dormId).eq('hidden', false)
+  if (error || !data) return []
+  return computeTagCounts(data.map((row) => row.tags ?? []))
 }
 
 /**

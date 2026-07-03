@@ -311,7 +311,10 @@
     "statusLabel": "Application status",
     "remove": "Remove",
     "confirmRemove": "Confirm remove",
-    "removeConfirm": "Remove?"
+    "removeConfirm": "Remove?",
+    "applyTipTitle": "Apply to a backup, too",
+    "applyTipBody": "Vienna dorms are first-come-first-served — popular buildings fill up months ahead. You've applied to just one so far; adding a second or third provider costs nothing and protects your timeline.",
+    "applyTipCta": "Browse more dorms"
   },
   "reviews": {
     "sectionTitle": "The Grapevine",
@@ -319,6 +322,22 @@
     "yourRating": "Your rating",
     "starLabel": "Rate {n} out of 5",
     "ratingAria": "Rated {rating} out of 5",
+    "tagsLabel": "What stood out? (optional)",
+    "frequentlyMentioned": "Frequently mentioned",
+    "tags": {
+      "thin_walls": "Thin walls",
+      "slow_repairs": "Slow repairs",
+      "responsive_staff": "Responsive staff",
+      "unreliable_wifi": "Unreliable WiFi",
+      "reliable_wifi": "Reliable WiFi",
+      "messy_kitchen": "Messy shared kitchen",
+      "clean": "Always clean",
+      "great_location": "Great location",
+      "party_dorm": "Lively / party dorm",
+      "quiet_dorm": "Quiet, good for studying",
+      "friendly_community": "Friendly community",
+      "small_rooms": "Rooms are small"
+    },
     "bodyLabel": "Your review",
     "bodyPlaceholder": "What's it actually like living here? Noise, staff, repairs, neighbors — spill it.",
     "anonymityHint": "Posted anonymously under a random name — never your account.",
@@ -383,9 +402,13 @@
     "faq3a": "We re-scrape every 15 minutes and compare each snapshot to the previous one. Rows older than 6 hours are marked as \"Status unknown\" so you never act on stale data.",
     "faq4q": "Does Dormra apply on my behalf?",
     "faq4a": "Not yet — today we send you straight to the provider with everything pre-filled when possible. A universal application layer is on the Phase 5 roadmap.",
-    "faq5q": "I am not in Vienna — when will you cover my city?",
-    "faq5a": "Graz, Salzburg, Innsbruck and Linz come right after Vienna. Berlin, Munich, Prague and Amsterdam follow."
-  },
+  "faq5q": "I am not in Vienna — when will you cover my city?",
+  "faq5a": "Graz, Salzburg, Innsbruck and Linz come right after Vienna. Berlin, Munich, Prague and Amsterdam follow.",
+  "faq6q": "Should I apply to more than one dorm?",
+  "faq6a": "Yes. Vienna dorms are first-come-first-served with no fixed deadline, and popular buildings fill up months ahead. Apply to 2-3 different providers in parallel — but never twice to the same provider, since a second application usually resets your place in the queue. Take the first offer that works for you and decline the rest.",
+  "faq7q": "How do I avoid rental scams while searching?",
+  "faq7a": "Never pay before you've seen a signed contract, ideally after an in-person viewing or a live video call — not a pre-recorded clip. Scammers now use convincing fake companies and even staged viewings, so treat any pressure to pay before signing as a red flag. An established dorm provider (everything Dormra tracks) is the lowest-risk option for your first placement."
+},
   "auth": {
     "layoutTagline": "Find your Vienna dorm faster — we watch every provider and ping you the moment a matching room opens up.",
     "loginTitle": "Welcome back",

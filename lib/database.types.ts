@@ -4,7 +4,7 @@
  * Regenerate when the live schema changes:
  *   npx supabase gen types typescript --project-id <ref> > lib/database.types.ts
  *
- * Last verified against production schema: 2026-07-03
+ * Last verified against production schema: 2026-07-03 (dorm_reviews.tags added)
  */
 
 export type Json =
@@ -194,6 +194,7 @@ export interface Database {
           pseudonym: string
           rating: number
           body: string
+          tags: string[]
           hidden: boolean
           hidden_reason: string | null
           created_at: string
@@ -206,6 +207,7 @@ export interface Database {
           pseudonym: string
           rating: number
           body: string
+          tags?: string[]
           hidden?: boolean
           hidden_reason?: string | null
           created_at?: string
@@ -218,6 +220,7 @@ export interface Database {
           pseudonym?: string
           rating?: number
           body?: string
+          tags?: string[]
           hidden?: boolean
           hidden_reason?: string | null
           created_at?: string
