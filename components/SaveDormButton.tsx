@@ -4,6 +4,7 @@ import { useState, useTransition, type MouseEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { Bookmark } from 'lucide-react'
 import { toast } from 'sonner'
+import { useRouter } from '@/i18n/navigation'
 import { toggleSavedDorm } from '@/app/[locale]/dashboard/saved/actions'
 import { cn } from '@/lib/utils'
 
@@ -20,6 +21,7 @@ export default function SaveDormButton({
   size?: 'default' | 'sm'
 }) {
   const t = useTranslations('dormDetail')
+  const router = useRouter()
   const [saved, setSaved] = useState(initialSaved)
   const [isPending, startTransition] = useTransition()
 
@@ -39,6 +41,7 @@ export default function SaveDormButton({
         return
       }
       setSaved(result.saved)
+      router.refresh()
       toast.success(result.saved ? t('savedToast', { name: dormName }) : t('unsavedToast', { name: dormName }))
     })
   }

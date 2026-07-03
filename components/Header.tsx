@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import HeaderUserMenu from './HeaderUserMenu'
 import HeaderMobileMenu from './HeaderMobileMenu'
 import HeaderNav from './HeaderNav'
+import HeaderSignOutButton from './HeaderSignOutButton'
 import LanguageSwitcher from './LanguageSwitcher'
 
 export default async function Header() {
@@ -44,6 +45,7 @@ export default async function Header() {
               >
                 {t('myAlerts')}
               </Button>
+              <HeaderSignOutButton />
               <HeaderUserMenu email={userEmail} showAdmin={showAdmin} />
             </>
           ) : (

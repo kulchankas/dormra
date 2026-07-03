@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
 import { de, ru, enGB } from 'date-fns/locale'
-import { ArrowLeft, Bell, Bookmark, ExternalLink, GraduationCap, Globe } from 'lucide-react'
+import { ArrowLeft, Bell, Bookmark, ExternalLink, GraduationCap, Globe, Building2, MapPin, Info } from 'lucide-react'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
 import { buildPageMetadata } from '@/lib/i18n-metadata'
@@ -18,6 +18,8 @@ import DormLocationMap from '@/components/DormLocationMap'
 import DormCard from '@/components/DormCard'
 import DormGallery from '@/components/DormGallery'
 import SaveDormButton from '@/components/SaveDormButton'
+import DormTrackerPanel from '@/components/DormTrackerPanel'
+import { type TrackerStatus } from '@/lib/tracker'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Link } from '@/i18n/navigation'
@@ -64,14 +66,18 @@ export default async function DormDetailPage({ params }: PageProps) {
 
   const { data: { user } } = await supabase.auth.getUser()
   let isSaved = false
+  let trackerId: string | null = null
+  let trackerStatus: TrackerStatus | null = null
   if (user) {
     const { data: trackerRow } = await supabase
       .from('tracker')
-      .select('id')
+      .select('id, status')
       .eq('user_id', user.id)
       .eq('dorm_id', dorm.id)
       .maybeSingle()
     isSaved = !!trackerRow
+    trackerId = trackerRow?.id ?? null
+    trackerStatus = (trackerRow?.status as TrackerStatus | undefined) ?? null
   }
 
   const availabilityMap = await getAvailabilityStatusBulk([dorm.id], supabase)
@@ -84,6 +90,7 @@ export default async function DormDetailPage({ params }: PageProps) {
   const districtLabel = formatDistrictLabel(dorm.district, (key, values) => tLabels(key, values))
   const priceLabel = formatPriceLabel(dorm.price_min, dorm.price_max, (key, values) => tLabels(key, values))
   const applyHref = dorm.apply_url || dorm.website_url
+  const providerSiteHref = dorm.website_url || dorm.apply_url
   const websiteHref =
     dorm.website_url && dorm.website_url !== applyHref ? dorm.website_url : null
 
@@ -241,19 +248,77 @@ export default async function DormDetailPage({ params }: PageProps) {
         </div>
 
         <div className="card-elevated rounded-2xl bg-surface p-5 mb-4">
-          <p className="text-xl font-semibold text-foreground mb-1">{priceLabel}</p>
-          {dorm.deposit_months != null && (
-            <p className="text-sm text-muted-foreground">
-              {dorm.deposit_months !== 1
-                ? t('depositMonthsPlural', { count: dorm.deposit_months })
-                : t('depositMonths', { count: dorm.deposit_months })}
-            </p>
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+                {t('monthlyPrice')}
+              </p>
+              <p className="text-xl font-semibold text-foreground">{priceLabel}</p>
+              {dorm.price_min != null && dorm.price_max != null && dorm.price_min !== dorm.price_max && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t('priceRangeDetail', { min: dorm.price_min, max: dorm.price_max })}
+                </p>
+              )}
+            </div>
+            <AvailabilityBadge availability={availability} />
+          </div>
+          {(dorm.deposit_months != null || dorm.deposit_eur != null) && (
+            <div className="border-t border-border/60 pt-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+                {t('deposit')}
+              </p>
+              {dorm.deposit_months != null && (
+                <p className="text-sm text-foreground">
+                  {dorm.deposit_months !== 1
+                    ? t('depositMonthsPlural', { count: dorm.deposit_months })
+                    : t('depositMonths', { count: dorm.deposit_months })}
+                </p>
+              )}
+              {dorm.deposit_eur != null && dorm.deposit_months == null && (
+                <p className="text-sm text-foreground">
+                  {t('depositEur', { amount: dorm.deposit_eur })}
+                </p>
+              )}
+            </div>
           )}
-          {dorm.deposit_eur != null && dorm.deposit_months == null && (
-            <p className="text-sm text-muted-foreground">
-              {t('depositEur', { amount: dorm.deposit_eur })}
-            </p>
-          )}
+        </div>
+
+        <div className="card-elevated rounded-2xl bg-surface p-5 mb-4">
+          <h2 className="text-sm font-medium text-foreground mb-3">{t('atAGlance')}</h2>
+          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="flex items-start gap-2.5">
+              <Building2 className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
+              <div>
+                <dt className="text-xs text-muted-foreground">{t('providerLabel')}</dt>
+                <dd className="text-sm font-medium text-foreground">{dorm.provider}</dd>
+              </div>
+            </div>
+            {districtLabel && (
+              <div className="flex items-start gap-2.5">
+                <MapPin className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
+                <div>
+                  <dt className="text-xs text-muted-foreground">{t('district')}</dt>
+                  <dd className="text-sm font-medium text-foreground">{districtLabel}</dd>
+                </div>
+              </div>
+            )}
+            {dorm.address && (
+              <div className="flex items-start gap-2.5 sm:col-span-2">
+                <MapPin className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
+                <div>
+                  <dt className="text-xs text-muted-foreground">{t('address')}</dt>
+                  <dd className="text-sm font-medium text-foreground">{dorm.address}</dd>
+                </div>
+              </div>
+            )}
+            <div className="flex items-start gap-2.5">
+              <Info className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
+              <div>
+                <dt className="text-xs text-muted-foreground">{t('availability')}</dt>
+                <dd className="text-sm font-medium text-foreground">{availability.label}</dd>
+              </div>
+            </div>
+          </dl>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
@@ -264,6 +329,34 @@ export default async function DormDetailPage({ params }: PageProps) {
             </div>
           ))}
         </div>
+
+        {user && (
+          <DormTrackerPanel
+            dormId={dorm.id}
+            dormName={dorm.name}
+            provider={dorm.provider}
+            isSaved={isSaved}
+            trackerId={trackerId}
+            trackerStatus={trackerStatus}
+          />
+        )}
+
+        {providerSiteHref && (
+          <div className="card-elevated rounded-2xl bg-surface-soft p-5 mb-6">
+            <h2 className="text-sm font-medium text-foreground mb-1">{t('aboutProvider', { provider: dorm.provider })}</h2>
+            <p className="text-sm leading-relaxed text-muted-foreground mb-3">{t('providerHint', { provider: dorm.provider })}</p>
+            <a
+              href={providerSiteHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:underline"
+            >
+              <Globe className="size-3.5" aria-hidden="true" />
+              {t('visitProviderSite', { provider: dorm.provider })}
+              <ExternalLink className="size-3" aria-hidden="true" />
+            </a>
+          </div>
+        )}
 
         {dorm.lat != null && dorm.lng != null && (
           <div className="mb-6">

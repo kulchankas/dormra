@@ -441,13 +441,40 @@ export default function DormsDirectory({ dorms, availability, savedDormIds }: Pr
       id: 'budget500',
       label: t('presetsUnder500'),
       isActive: (f) => f.maxPrice === 500,
-      toggle: (f) => ({ ...f, maxPrice: f.maxPrice === 500 ? 1500 : 500 }),
+      toggle: (f) => ({ ...f, maxPrice: f.maxPrice === 500 ? MAX_PRICE_CEILING : 500 }),
+    },
+    {
+      id: 'budget400',
+      label: t('presetsUnder400'),
+      isActive: (f) => f.maxPrice === 400,
+      toggle: (f) => ({ ...f, maxPrice: f.maxPrice === 400 ? MAX_PRICE_CEILING : 400 }),
     },
     {
       id: 'couples',
       label: t('presetsCouples'),
       isActive: (f) => f.couples,
       toggle: (f) => ({ ...f, couples: !f.couples }),
+    },
+    {
+      id: 'furnished',
+      label: t('presetsFurnished'),
+      isActive: (f) => f.furnished,
+      toggle: (f) => ({ ...f, furnished: !f.furnished }),
+    },
+    {
+      id: 'shortStay',
+      label: t('presetsShortStay'),
+      isActive: (f) => f.shortStayOk,
+      toggle: (f) => ({ ...f, shortStayOk: !f.shortStayOk }),
+    },
+    {
+      id: 'lowDeposit',
+      label: t('presetsLowDeposit'),
+      isActive: (f) => f.maxDepositMonths === 2,
+      toggle: (f) => ({
+        ...f,
+        maxDepositMonths: f.maxDepositMonths === 2 ? '' : 2,
+      }),
     },
   ]
 

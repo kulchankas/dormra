@@ -32,6 +32,11 @@ interface Props {
   heightClassName?: string
 }
 
+/** Warm-toned basemap tiles — lighter than raw OSM, fits Dormra sand palette. */
+const MAP_TILE_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
+const MAP_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+
 const STATUS_COLORS: Record<AvailabilityStatus['status'], string> = {
   available: '#E85D3B',
   fully_booked: '#3A322C',
@@ -172,9 +177,10 @@ export default function DormsMap({
         className="h-full w-full"
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          subdomains={['a', 'b', 'c']}
+          attribution={MAP_ATTRIBUTION}
+          url={MAP_TILE_URL}
+          subdomains={['a', 'b', 'c', 'd']}
+          className="dormra-map-tiles"
           eventHandlers={{
             loading: () => setIsLoading(true),
             load: () => setIsLoading(false),
