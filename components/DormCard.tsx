@@ -28,6 +28,12 @@ interface Props {
   initialSaved?: boolean
 }
 
+const AVAILABILITY_ACCENT: Record<AvailabilityStatus['status'], string> = {
+  available: 'bg-brand-accent',
+  unknown: 'bg-muted-foreground/30',
+  fully_booked: 'bg-foreground/25',
+}
+
 export default function DormCard({
   dorm,
   availability,
@@ -62,17 +68,22 @@ export default function DormCard({
       href={`/dorms/${dorm.slug}`}
       aria-label={t('viewAria', { name: dorm.name })}
       className={cn(
-        'group card-elevated block overflow-hidden rounded-2xl bg-surface transition-all duration-200',
+        'group card-elevated relative block overflow-hidden rounded-2xl bg-surface transition-all duration-200',
         availability.status === 'fully_booked' && 'opacity-[0.88]',
-        'hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]',
+        'hover:-translate-y-1 hover:shadow-[var(--shadow-card-hover)]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2',
       )}
     >
+      <span
+        className={cn('absolute inset-x-0 top-0 z-10 h-1', AVAILABILITY_ACCENT[availability.status])}
+        aria-hidden="true"
+      />
+
       <article>
         <div
           className={cn(
             'relative w-full overflow-hidden bg-brand-soft',
-            isCompact ? 'h-[140px]' : 'aspect-video',
+            isCompact ? 'h-[148px]' : 'aspect-[16/10]',
           )}
         >
           {dorm.image_url ? (
@@ -82,41 +93,43 @@ export default function DormCard({
               sizes={isCompact ? '(max-width: 768px) 100vw, 33vw' : '(max-width: 768px) 100vw, 50vw'}
             />
           ) : (
-            <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-gradient-to-br from-brand-soft to-background">
-              <Home className="size-7 text-muted-foreground/40" aria-hidden="true" />
+            <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 bg-gradient-to-br from-brand-soft via-surface-soft to-background">
+              <span className="grid size-12 place-items-center rounded-2xl bg-surface/80 ring-1 ring-border/60">
+                <Home className="size-6 text-brand/50" aria-hidden="true" />
+              </span>
               <span className="text-xs font-medium text-muted-foreground">
                 {dorm.provider}
               </span>
             </div>
           )}
 
-          <div className="absolute left-2.5 top-2.5">
-            <AvailabilityBadge availability={availability} className="text-[10px] px-2 py-0.5" />
+          <div className="absolute left-2.5 top-3.5">
+            <AvailabilityBadge availability={availability} className="text-[10px] px-2 py-0.5 shadow-sm" />
           </div>
 
           {districtLabel && (
-            <span className="absolute bottom-2.5 left-2.5 inline-flex max-w-[85%] items-center gap-1 rounded-full bg-black/45 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+            <span className="absolute bottom-2.5 left-2.5 inline-flex max-w-[85%] items-center gap-1 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-medium text-white backdrop-blur-sm">
               <MapPin className="size-3 shrink-0" aria-hidden="true" />
               <span className="truncate">{districtLabel}</span>
             </span>
           )}
 
           {showSaveButton && (
-            <div className="absolute right-2.5 top-2.5">
+            <div className="absolute right-2.5 top-3.5">
               <SaveDormButton dormId={dorm.id} dormName={dorm.name} initialSaved={initialSaved} size="sm" />
             </div>
           )}
         </div>
 
-        <div className={cn('flex flex-col', isCompact ? 'gap-1 p-3.5' : 'gap-1.5 p-4')}>
-          <Badge variant="secondary" className="w-fit text-[10px]">
+        <div className={cn('flex flex-col', isCompact ? 'gap-1 p-3.5 pt-4' : 'gap-1.5 p-4 pt-4')}>
+          <Badge variant="secondary" className="w-fit border-0 bg-brand-soft text-[10px] font-semibold text-brand">
             {dorm.provider}
           </Badge>
 
           <h3
             className={cn(
-              'font-medium leading-snug text-foreground',
-              isCompact ? 'text-sm' : 'text-base',
+              'font-semibold leading-snug text-foreground transition-colors group-hover:text-brand',
+              isCompact ? 'text-sm line-clamp-2' : 'text-base line-clamp-2',
             )}
           >
             {dorm.name}
@@ -126,24 +139,27 @@ export default function DormCard({
             <p className="truncate text-[13px] text-muted-foreground">{dorm.address}</p>
           )}
 
-          <div className="mt-1 flex items-center justify-between gap-2">
-            <span
-              className={cn(
-                'font-bold tracking-tight text-foreground',
-                isCompact ? 'text-sm' : 'text-base',
+          <div className="mt-1 flex items-end justify-between gap-2">
+            <div className="min-w-0">
+              <span
+                className={cn(
+                  'block font-bold tracking-tight text-foreground',
+                  isCompact ? 'text-sm' : 'text-lg',
+                )}
+              >
+                {priceLabel}
+              </span>
+              {!isCompact && (
+                <span className="text-[11px] text-muted-foreground">{t('perMonth')}</span>
               )}
-            >
-              {priceLabel}
-            </span>
+            </div>
 
             <Popover>
-              {/* A hover-only Tooltip would be invisible on touch devices — a
-                  tap-to-open Popover works identically for mouse and touch. */}
               <PopoverTrigger
                 render={
                   <button
                     type="button"
-                    className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2"
+                    className="inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2"
                     style={{ background: chances.bg, color: chances.color }}
                     onClick={(e) => e.preventDefault()}
                     aria-label={tChances('ariaLabel', { label: chances.label, tooltip: chances.tooltip })}
@@ -177,7 +193,7 @@ export default function DormCard({
           )}
 
           {!isCompact && (
-            <span className="mt-1.5 inline-flex items-center gap-1 text-sm font-medium text-brand">
+            <span className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-brand">
               {t('viewDetails')}
               <ArrowRight
                 className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5"
