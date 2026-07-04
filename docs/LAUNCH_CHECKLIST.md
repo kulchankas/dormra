@@ -6,7 +6,7 @@
 Full operator steps (SQL, curl, DNS): [`MANUAL_TASKS.md`](./MANUAL_TASKS.md)  
 Day-to-day monitoring: [`MONITORING.md`](./MONITORING.md)
 
-**Last audit:** 2026-07-02 — cron endpoint verified; cron-job.org still needs your enable.
+**Last audit:** 2026-07-04 — full project audit; 98 tests pass; cron-job.org still needs your enable.
 
 ---
 
@@ -60,6 +60,11 @@ Only if using “Continue with Google” — [`MANUAL_TASKS.md`](./MANUAL_TASKS.
 - [x] **Cron split PR #39** — provider batches avoid 504 timeout
 - [x] **`/api/test-alert`** — E2E alert test route (CRON_SECRET auth)
 - [x] 3 live scrapers: OeAD (26), home4students (11), STUWO (12)
+- [x] Saved dorms + application tracker (PR #49)
+- [x] Dorm detail enrichment: gallery, JSON-LD, map (PR #50)
+- [x] Alert UX + welcome digest + cron run log (PR #48)
+- [x] Sign-out fix + Google OAuth hardening (PR #47, #52)
+- [x] ÖJAB seed file (15 dorms — apply manually, no scraper yet)
 
 ### Cron endpoint (tested 2026-07-02)
 
@@ -77,6 +82,8 @@ Only if using “Continue with Google” — [`MANUAL_TASKS.md`](./MANUAL_TASKS.
 
 - [x] RLS enabled on public tables
 - [x] Migrations: locale, snapshot RPC, alert dedup
+- [ ] Migrations: coordinates, dorm_images, cron_runs, alert_id — apply if not done
+- [ ] ÖJAB seed + gallery seed — apply if not done
 
 ---
 
