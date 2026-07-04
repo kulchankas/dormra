@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
-import { de, ru, enGB } from 'date-fns/locale'
+import { de, ru, enGB, uk } from 'date-fns/locale'
 import {
   ArrowLeft,
   Bell,
@@ -34,12 +34,14 @@ import DormCard from '@/components/DormCard'
 import DormGallery from '@/components/DormGallery'
 import SaveDormButton from '@/components/SaveDormButton'
 import DormTrackerPanel from '@/components/DormTrackerPanel'
+import ApplyButton from '@/components/ApplyButton'
+import AppliedReturnBanner from '@/components/AppliedReturnBanner'
 import { type TrackerStatus } from '@/lib/tracker'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Link } from '@/i18n/navigation'
 
-const DATE_LOCALES = { en: enGB, de, ru } as const
+const DATE_LOCALES = { en: enGB, de, ru, uk } as const
 
 type PageProps = { params: Promise<{ locale: string; slug: string }> }
 
@@ -258,6 +260,16 @@ export default async function DormDetailPage({ params }: PageProps) {
       </div>
 
       <div className="mx-auto max-w-6xl px-4 py-6 pb-28 md:px-8 md:py-8 md:pb-12">
+        {user && (
+          <AppliedReturnBanner
+            dormSlug={dorm.slug}
+            dormName={dorm.name}
+            provider={dorm.provider}
+            isLoggedIn={!!user}
+            isSaved={isSaved}
+            trackerStatus={trackerStatus}
+          />
+        )}
         <div className="card-elevated relative aspect-video w-full overflow-hidden rounded-3xl bg-brand-soft md:aspect-[21/9]">
           {allImages.length > 0 ? (
             <DormGallery images={allImages} alt={tCard('imageAlt', { name: dorm.name })} />
@@ -390,15 +402,13 @@ export default async function DormDetailPage({ params }: PageProps) {
 
               <div className="mt-5 space-y-2.5">
                 {applyHref ? (
-                  <Button
-                    size="lg"
-                    className="h-12 w-full gap-2 rounded-2xl text-sm"
-                    nativeButton={false}
-                    render={<a href={applyHref} target="_blank" rel="noopener noreferrer" />}
-                  >
-                    {t('applyOn', { provider: dorm.provider })}
-                    <ExternalLink className="size-3.5" />
-                  </Button>
+                  <ApplyButton
+                    dormId={dorm.id}
+                    dormSlug={dorm.slug}
+                    applyHref={applyHref}
+                    provider={dorm.provider}
+                    isLoggedIn={!!user}
+                  />
                 ) : (
                   <p className="text-sm text-muted-foreground">{t('noApplyLink')}</p>
                 )}

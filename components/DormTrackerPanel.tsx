@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
-import { BookmarkCheck } from 'lucide-react'
+import { BookmarkCheck, CheckCircle2 } from 'lucide-react'
 import TrackerStatusSelect from '@/components/TrackerStatusSelect'
 import SaveDormButton from '@/components/SaveDormButton'
 import type { TrackerStatus } from '@/lib/tracker'
@@ -23,11 +23,22 @@ export default function DormTrackerPanel({
   trackerStatus: TrackerStatus | null
 }) {
   const t = useTranslations('dormDetail')
+  const isAppliedOrBeyond =
+    trackerStatus === 'applied' || trackerStatus === 'accepted' || trackerStatus === 'rejected'
 
   return (
     <div className="card-elevated rounded-2xl bg-surface p-5 mb-6">
-      <h2 className="text-sm font-medium text-foreground mb-1">{t('trackApplication')}</h2>
-      <p className="text-sm leading-relaxed text-muted-foreground mb-4">{t('applyNote', { provider })}</p>
+      <div className="mb-3 flex items-start gap-2.5">
+        <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-brand-soft">
+          <CheckCircle2 className="size-4 text-brand" aria-hidden="true" />
+        </span>
+        <div>
+          <h2 className="text-sm font-medium text-foreground">{t('trackApplication')}</h2>
+          <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">
+            {isAppliedOrBeyond ? t('applyNoteTracked', { provider }) : t('applyNoteAuto', { provider })}
+          </p>
+        </div>
+      </div>
       {isSaved && trackerId && trackerStatus ? (
         <div className="flex flex-wrap items-center gap-3">
           <TrackerStatusSelect trackerId={trackerId} status={trackerStatus} />
