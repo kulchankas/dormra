@@ -62,7 +62,6 @@
     "mainNav": "Основная навигация",
     "mobileNav": "Мобильная навигация",
     "footerNav": "Ссылки в подвале",
-    "skipToContent": "Перейти к содержимому",
     "admin": "Админ",
     "settings": "Настройки",
     "privacy": "Конфиденциальность",
@@ -148,7 +147,7 @@
     "ariaLabel": "Шансы на зачисление: {label}. {tooltip}"
   },
   "dormCard": {
-    "viewDetails": "Подробнее →",
+    "viewDetails": "Подробнее",
     "depositMonths": "Депозит: {count} мес.",
     "depositMonthsPlural": "Депозит: {count} мес.",
     "depositEur": "Депозит: €{amount}",
@@ -179,7 +178,7 @@
     "providers": "Провайдеры",
     "districts": "Районы",
     "maxPrice": "Макс. цена в месяц",
-    "maxDeposit": "Макс. депозит (мес.)",
+    "maxDeposit": "Макс. депозит",
     "moveInBefore": "Заезд до",
     "amenities": "Удобства",
     "petsAllowed": "Можно с животными",
@@ -210,7 +209,6 @@
     "clear": "Очистить",
     "district": "Район",
     "clearCount": "Очистить ({count})",
-    "maxDeposit": "Макс. депозит",
     "depositPlaceholder": "напр. 2",
     "monthsShort": "мес.",
     "requirements": "Требования",
@@ -259,7 +257,14 @@
     "showMap": "Показать карту",
     "closeMap": "Закрыть карту",
     "mapNoLocations": "Для текущих фильтров пока нет объектов на карте.",
-    "mapUniversityLegend": "Университеты"
+    "mapUniversityLegend": "Университеты",
+    "mapAria": "Интерактивная карта общежитий Вены",
+    "mapZoomIn": "Приблизить",
+    "mapZoomOut": "Отдалить",
+    "mapResetView": "Сбросить вид карты",
+    "mapDistrictCount": "{count} общежитие",
+    "mapDistrictCountPlural": "{count} общежитий",
+    "mapClosePopup": "Закрыть превью общежития"
   },
   "dormDetail": {
     "back": "Назад к каталогу",

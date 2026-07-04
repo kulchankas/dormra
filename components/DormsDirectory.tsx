@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import dynamic from 'next/dynamic'
 import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import { Link, usePathname, useRouter } from '@/i18n/navigation'
@@ -26,7 +25,7 @@ import {
   type SortKey,
 } from '@/lib/dorm-filters'
 import DormCard from '@/components/DormCard'
-import { Skeleton } from '@/components/ui/skeleton'
+import ViennaMap from '@/components/ViennaMap'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -53,11 +52,6 @@ import {
   toggleDistrictPreset,
 } from '@/lib/district-presets'
 import { cn } from '@/lib/utils'
-
-const DormsMap = dynamic(() => import('@/components/DormsMap'), {
-  ssr: false,
-  loading: () => <Skeleton className="h-[60vh] w-full rounded-2xl md:h-[70vh]" />,
-})
 
 interface Props {
   dorms: Dorm[]
@@ -880,7 +874,7 @@ export default function DormsDirectory({ dorms, availability, savedDormIds }: Pr
               {filtered.length > 0 && desktopMapOpen && (
                 <div className="hidden xl:sticky xl:top-[calc(3.75rem+1.5rem)] xl:block xl:w-[380px] xl:shrink-0 2xl:w-[420px]">
                   <div className="space-y-2">
-                    <DormsMap
+                    <ViennaMap
                       dorms={filtered}
                       availability={availability}
                       userLocation={userLocation}
@@ -927,7 +921,7 @@ export default function DormsDirectory({ dorms, availability, savedDormIds }: Pr
               </SheetClose>
             </SheetHeader>
             <div className="min-h-0 flex-1 p-3">
-              <DormsMap
+              <ViennaMap
                 dorms={filtered}
                 availability={availability}
                 userLocation={userLocation}
