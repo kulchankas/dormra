@@ -44,6 +44,13 @@ Completed items moved here by the night agent (newest date first).
 - [x] research if i need to start company if i add subscriptions in austria
 - [x] make custom map instead of open source one with our brand design
 
+2026-07-04
+- [ ] track your application status is bullshit. people won’t do it manually. it should be more automated and smarter 
+- [ ] work on ui/ux (especially dorm cards, look too boring) 
+- [ ] dormspot.nl change strategy to housing hunting(?) is it good for austria and overall? 
+- [ ] consistency with 8 different websites but 11 providers, correct text 
+- [ ] add ukrainian 
+- [ ] add more pictures of dorms 
 ---
 
 ## Nightly reports
