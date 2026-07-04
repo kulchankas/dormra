@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type ReactNode, type ComponentPropsWithoutRef } from 'react'
 import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 import { format } from 'date-fns'
@@ -22,6 +22,39 @@ import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 
 const DATE_LOCALES = { en: enGB, de, ru } as const
+
+function SearchSegment({
+  label,
+  children,
+  className,
+  asButton,
+  ...rest
+}: {
+  label: string
+  children: ReactNode
+  className?: string
+  asButton?: boolean
+} & ComponentPropsWithoutRef<'button'> &
+  ComponentPropsWithoutRef<'div'>) {
+  const Tag = asButton ? 'button' : 'div'
+  return (
+    <Tag
+      type={asButton ? 'button' : undefined}
+      {...rest}
+      className={cn(
+        'flex flex-1 min-w-0 flex-col justify-center px-4 py-2.5 text-left rounded-full',
+        asButton && 'bg-transparent border-none cursor-pointer hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
+        !asButton && 'cursor-default hover:bg-muted/50 transition-colors',
+        className,
+      )}
+    >
+      <span className="text-[10px] font-semibold uppercase tracking-wide leading-none text-muted-foreground">
+        {label}
+      </span>
+      <div className="mt-1 flex min-h-5 items-center text-sm leading-none font-medium">{children}</div>
+    </Tag>
+  )
+}
 
 export default function HeroSearch() {
   const t = useTranslations('search')
@@ -57,33 +90,27 @@ export default function HeroSearch() {
         aria-label={t('aria')}
         className="search-elevated hidden md:flex items-center w-full max-w-[580px] rounded-pill bg-surface border border-border/80 p-1.5 transition-shadow hover:shadow-[var(--shadow-card-hover)]"
       >
-        <div className="flex-1 min-w-0 px-4 py-2.5 rounded-full hover:bg-muted/50 transition-colors cursor-default">
-          <p className="text-[10px] font-semibold uppercase tracking-wide leading-none text-muted-foreground mb-1">{t('where')}</p>
-          <p className="text-sm leading-none font-medium text-foreground">{t('vienna')}</p>
-        </div>
+        <SearchSegment label={t('where')}>
+          <span className="text-foreground">{t('vienna')}</span>
+        </SearchSegment>
 
         <div className="w-px self-stretch bg-border shrink-0" />
 
         <Popover>
           <PopoverTrigger
             render={
-              <button
-                type="button"
-                title={t('moveInPickerHint')}
-                className={cn(
-                  'flex-1 min-w-0 px-4 py-2.5 text-left bg-transparent border-none cursor-pointer rounded-full',
-                  'hover:bg-muted/50 transition-colors',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
-                )}
+              <SearchSegment
+                label={t('moveIn')}
+                asButton
                 aria-label={selectedDate ? t('moveInSelected', { date: dateLabel }) : t('selectMoveIn')}
-              />
+                title={t('moveInPickerHint')}
+              >
+                <span className={cn(selectedDate ? 'text-foreground' : 'text-muted-foreground font-normal')}>
+                  {dateLabel}
+                </span>
+              </SearchSegment>
             }
-          >
-            <p className="text-[10px] font-semibold uppercase tracking-wide leading-none text-muted-foreground mb-1">{t('moveIn')}</p>
-            <p className={cn('text-sm leading-none font-medium', selectedDate ? 'text-foreground' : 'text-muted-foreground')}>
-              {dateLabel}
-            </p>
-          </PopoverTrigger>
+          />
           <PopoverContent align="start" className="w-auto p-0">
             <Calendar
               mode="single"
@@ -98,12 +125,9 @@ export default function HeroSearch() {
 
         <div className="w-px self-stretch bg-border shrink-0" />
 
-        <div className="flex-1 min-w-0 px-4 py-2.5 rounded-full hover:bg-muted/50 transition-colors">
-          <label htmlFor="hero-budget" className="block text-[10px] font-semibold uppercase tracking-wide leading-none text-muted-foreground mb-1 cursor-pointer">
-            {t('budget')}
-          </label>
-          <div className="flex items-center gap-0.5">
-            <Euro className="size-3 text-muted-foreground shrink-0" aria-hidden="true" />
+        <SearchSegment label={t('budget')} className="hover:bg-muted/50">
+          <div className="flex w-full items-center gap-0.5">
+            <Euro className="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
             <input
               id="hero-budget"
               type="text"
@@ -113,10 +137,11 @@ export default function HeroSearch() {
               onChange={(e) => setBudget(e.target.value.replace(/\D/g, ''))}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               placeholder={t('anyBudget')}
+              aria-label={t('budget')}
               className="block w-full bg-transparent outline-none text-sm leading-none font-medium text-foreground placeholder:text-muted-foreground placeholder:font-normal"
             />
           </div>
-        </div>
+        </SearchSegment>
 
         <button
           onClick={handleSearch}

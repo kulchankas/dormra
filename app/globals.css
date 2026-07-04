@@ -172,3 +172,8 @@
     display: none;
   }
 }
+
+/* Warm tint on map tiles to match Dormra sand palette */
+.dormra-map-tiles {
+  filter: sepia(0.12) saturate(0.92) brightness(1.02);
+}
