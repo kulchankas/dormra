@@ -9,13 +9,11 @@ import type { AlertPayload } from '@/app/[locale]/dashboard/alerts/actions'
 const MAX_DORMS = 5
 
 export async function maybeSendWelcomeDigest({
-  userId,
   userEmail,
   alertId,
   criteria,
   locale,
 }: {
-  userId: string
   userEmail: string
   alertId: string
   criteria: Pick<
