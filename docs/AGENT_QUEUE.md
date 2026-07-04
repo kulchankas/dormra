@@ -23,13 +23,22 @@ Rough tasks you jot down during the day. A **scheduled night agent** reads the *
 
 Write messy bullets here. One `## Draft — YYYY-MM-DD` section per day.
 
-<!-- Draft cleared 2026-07-03 — see nightly report and Done archive -->
+<!-- Draft cleared 2026-07-04 — see nightly report and Done archive -->
 
 ---
 
 ## Done archive
 
 Completed items moved here by the night agent (newest date first).
+
+### From draft — 2026-07-04
+
+- [x] track your application status is bullshit. people won't do it manually. it should be more automated and smarter
+- [x] work on ui/ux (especially dorm cards, look too boring)
+- [x] dormspot.nl change strategy to housing hunting(?) is it good for austria and overall?
+- [x] consistency with 8 different websites but 11 providers, correct text
+- [x] add ukrainian
+- [x] add more pictures of dorms
 
 ### From draft — 2026-07-03
 
@@ -44,18 +53,46 @@ Completed items moved here by the night agent (newest date first).
 - [x] research if i need to start company if i add subscriptions in austria
 - [x] make custom map instead of open source one with our brand design
 
-2026-07-04
-- [ ] track your application status is bullshit. people won’t do it manually. it should be more automated and smarter 
-- [ ] work on ui/ux (especially dorm cards, look too boring) 
-- [ ] dormspot.nl change strategy to housing hunting(?) is it good for austria and overall? 
-- [ ] consistency with 8 different websites but 11 providers, correct text 
-- [ ] add ukrainian 
-- [ ] add more pictures of dorms 
 ---
 
 ## Nightly reports
 
 Newest report at the top. The agent adds one block per run.
+
+## Nightly report — 2026-07-04
+
+**Branch(es) / PR(s):** `cursor/dormra-nightly-agent-queue-222d` → main
+
+### Summary
+
+Processed all 6 draft items from 2026-07-04. Shipped smart application tracking (auto-mark on Apply click), dorm card visual refresh, Ukrainian locale, consistent “8 websites / 11 providers” copy, ÖJAB dorm images seed, and a housing-hunting strategy research doc.
+
+### Completed
+
+- **Application tracker** — `ApplyButton` auto-saves and marks status `applied` on click; return banner after provider tab; `utm_source=dormra` on outbound links; updated tracker copy (`recordApplyClick` server action)
+- **Dorm cards UI** — Availability accent bar, stronger typography, brand-tinted provider badge, `/month` label, improved placeholder and hover states
+- **Housing hunting research** — `docs/HOUSING_HUNTING_STRATEGY.md` (Roomspot vs alert-first model; recommendation: stay alert-first for Austria)
+- **Provider copy consistency** — `lib/providers.ts` canonical list (11 orgs, 8 websites); hero/how-it-works/FAQ/stats updated in en/de/ru/uk
+- **Ukrainian locale** — `uk` in routing, `messages/uk.json`, language switcher, email bundles, date locale, Onest Cyrillic styling
+- **More dorm pictures** — `supabase/seeds/ojab_dorm_images.sql` (15 ÖJAB thumbnails); `www.oejab.at` added to Next.js image allowlist
+- **101 tests pass**; **build succeeds**; lint warnings only (pre-existing)
+
+### Issues / blockers
+
+- None. All draft items completed.
+
+### Ideas for later
+
+- Saved-dorm availability emails when cron detects openings for tracked dorms
+- Stale-status nudges (“heard back from provider?”) after N days in `applied`
+- ÖJAB live scraper (images + seed exist; availability still unknown)
+- Expand Ukrainian translations beyond ru-derived base in `uk.json`
+
+### Manual tasks for you
+
+- [ ] Apply ÖJAB image seed to production Supabase: `psql $DATABASE_URL -f supabase/seeds/ojab_dorm_images.sql` (after ÖJAB dorm seed if not yet applied — see [`docs/MANUAL_TASKS.md`](./MANUAL_TASKS.md))
+- [ ] Review `docs/HOUSING_HUNTING_STRATEGY.md` before any positioning/marketing pivot
+- [ ] Merge PR when happy with preview deploy
 
 ## Nightly report — 2026-07-03
 
