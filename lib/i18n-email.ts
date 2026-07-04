@@ -1,9 +1,10 @@
 import en from '@/messages/en.json'
 import de from '@/messages/de.json'
 import ru from '@/messages/ru.json'
+import uk from '@/messages/uk.json'
 import { routing, type Locale } from '@/i18n/routing'
 
-const bundles = { en, de, ru } as const
+const bundles = { en, de, ru, uk } as const
 
 export type EmailMessages = (typeof en)['email']
 
