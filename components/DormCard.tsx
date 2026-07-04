@@ -2,7 +2,8 @@
 
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
-import { Home } from 'lucide-react'
+import { ArrowRight, HeartHandshake, Home, MapPin, PawPrint, Sofa } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import DormImage from '@/components/DormImage'
 import {
   getChancesRating,
@@ -50,11 +51,11 @@ export default function DormCard({
       ? t('depositEur', { amount: dorm.deposit_eur })
       : null
 
-  const amenities = [
-    dorm.pets === true && t('pets'),
-    dorm.couples === true && t('couples'),
-    dorm.furnished === true && t('furnished'),
-  ].filter((x): x is string => typeof x === 'string')
+  const amenities: { icon: LucideIcon; label: string }[] = [
+    ...(dorm.pets === true ? [{ icon: PawPrint, label: t('pets') }] : []),
+    ...(dorm.couples === true ? [{ icon: HeartHandshake, label: t('couples') }] : []),
+    ...(dorm.furnished === true ? [{ icon: Sofa, label: t('furnished') }] : []),
+  ]
 
   return (
     <Link
@@ -93,6 +94,13 @@ export default function DormCard({
             <AvailabilityBadge availability={availability} className="text-[10px] px-2 py-0.5" />
           </div>
 
+          {districtLabel && (
+            <span className="absolute bottom-2.5 left-2.5 inline-flex max-w-[85%] items-center gap-1 rounded-full bg-black/45 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+              <MapPin className="size-3 shrink-0" aria-hidden="true" />
+              <span className="truncate">{districtLabel}</span>
+            </span>
+          )}
+
           {showSaveButton && (
             <div className="absolute right-2.5 top-2.5">
               <SaveDormButton dormId={dorm.id} dormName={dorm.name} initialSaved={initialSaved} size="sm" />
@@ -114,27 +122,15 @@ export default function DormCard({
             {dorm.name}
           </h3>
 
-          {districtLabel && (
-            <p className={cn('text-muted-foreground', isCompact ? 'text-xs' : 'text-[13px]')}>
-              {districtLabel}
-            </p>
-          )}
-
-          {!isCompact && !districtLabel && dorm.address && (
-            <p className={cn('text-muted-foreground', isCompact ? 'text-xs' : 'text-[13px]')}>
-              {dorm.address}
-            </p>
-          )}
-
-          {!isCompact && districtLabel && dorm.address && (
+          {!isCompact && dorm.address && (
             <p className="truncate text-[13px] text-muted-foreground">{dorm.address}</p>
           )}
 
           <div className="mt-1 flex items-center justify-between gap-2">
             <span
               className={cn(
-                'font-semibold text-foreground',
-                isCompact ? 'text-sm' : 'text-[15px]',
+                'font-bold tracking-tight text-foreground',
+                isCompact ? 'text-sm' : 'text-base',
               )}
             >
               {priceLabel}
@@ -167,12 +163,26 @@ export default function DormCard({
           )}
 
           {!isCompact && amenities.length > 0 && (
-            <p className="text-xs text-muted-foreground">{amenities.join(' · ')}</p>
+            <div className="mt-1 flex flex-wrap gap-1.5">
+              {amenities.map(({ icon: Icon, label }) => (
+                <span
+                  key={label}
+                  className="inline-flex items-center gap-1 rounded-full bg-surface-soft px-2 py-0.5 text-[10px] font-medium text-muted-foreground ring-1 ring-border/70"
+                >
+                  <Icon className="size-3 text-brand" aria-hidden="true" />
+                  {label}
+                </span>
+              ))}
+            </div>
           )}
 
           {!isCompact && (
-            <span className="mt-1 text-sm font-medium text-brand transition-colors group-hover:underline">
+            <span className="mt-1.5 inline-flex items-center gap-1 text-sm font-medium text-brand">
               {t('viewDetails')}
+              <ArrowRight
+                className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
             </span>
           )}
         </div>

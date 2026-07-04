@@ -62,7 +62,6 @@
     "mainNav": "Main navigation",
     "mobileNav": "Mobile navigation",
     "footerNav": "Footer links",
-    "skipToContent": "Skip to content",
     "admin": "Admin",
     "settings": "Settings",
     "privacy": "Privacy",
@@ -148,7 +147,7 @@
     "ariaLabel": "Application chances: {label}. {tooltip}"
   },
   "dormCard": {
-    "viewDetails": "View details →",
+    "viewDetails": "View details",
     "depositMonths": "Deposit: {count} month",
     "depositMonthsPlural": "Deposit: {count} months",
     "depositEur": "Deposit: €{amount}",
@@ -179,7 +178,7 @@
     "providers": "Providers",
     "districts": "Districts",
     "maxPrice": "Max monthly price",
-    "maxDeposit": "Max deposit (months)",
+    "maxDeposit": "Max deposit",
     "moveInBefore": "Move in before",
     "amenities": "Amenities",
     "petsAllowed": "Pets allowed",
@@ -210,7 +209,6 @@
     "clear": "Clear",
     "district": "District",
     "clearCount": "Clear ({count})",
-    "maxDeposit": "Max deposit",
     "depositPlaceholder": "e.g. 2",
     "monthsShort": "months",
     "requirements": "Requirements",
@@ -259,7 +257,14 @@
     "showMap": "Show map",
     "closeMap": "Close map",
     "mapNoLocations": "No mapped locations for the current filters yet.",
-    "mapUniversityLegend": "Universities"
+    "mapUniversityLegend": "Universities",
+    "mapAria": "Interactive map of Vienna student dorms",
+    "mapZoomIn": "Zoom in",
+    "mapZoomOut": "Zoom out",
+    "mapResetView": "Reset map view",
+    "mapDistrictCount": "{count} dorm",
+    "mapDistrictCountPlural": "{count} dorms",
+    "mapClosePopup": "Close dorm preview"
   },
   "dormDetail": {
     "back": "Back to all dorms",

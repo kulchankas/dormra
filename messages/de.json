@@ -62,7 +62,6 @@
     "mainNav": "Hauptnavigation",
     "mobileNav": "Mobile Navigation",
     "footerNav": "Footer-Links",
-    "skipToContent": "Zum Inhalt springen",
     "admin": "Admin",
     "settings": "Einstellungen",
     "privacy": "Datenschutz",
@@ -148,7 +147,7 @@
     "ariaLabel": "Bewerbungschancen: {label}. {tooltip}"
   },
   "dormCard": {
-    "viewDetails": "Details ansehen →",
+    "viewDetails": "Details ansehen",
     "depositMonths": "Kaution: {count} Monat",
     "depositMonthsPlural": "Kaution: {count} Monate",
     "depositEur": "Kaution: €{amount}",
@@ -179,7 +178,7 @@
     "providers": "Anbieter",
     "districts": "Bezirke",
     "maxPrice": "Max. Monatspreis",
-    "maxDeposit": "Max. Kaution (Monate)",
+    "maxDeposit": "Max. Kaution",
     "moveInBefore": "Einzug bis",
     "amenities": "Ausstattung",
     "petsAllowed": "Haustiere erlaubt",
@@ -210,7 +209,6 @@
     "clear": "Löschen",
     "district": "Bezirk",
     "clearCount": "Löschen ({count})",
-    "maxDeposit": "Max. Kaution",
     "depositPlaceholder": "z. B. 2",
     "monthsShort": "Monate",
     "requirements": "Anforderungen",
@@ -259,7 +257,14 @@
     "showMap": "Karte anzeigen",
     "closeMap": "Karte schließen",
     "mapNoLocations": "Für die aktuellen Filter gibt es noch keine Standorte auf der Karte.",
-    "mapUniversityLegend": "Universitäten"
+    "mapUniversityLegend": "Universitäten",
+    "mapAria": "Interaktive Karte der Wiener Studierendenwohnheime",
+    "mapZoomIn": "Vergrößern",
+    "mapZoomOut": "Verkleinern",
+    "mapResetView": "Kartenansicht zurücksetzen",
+    "mapDistrictCount": "{count} Wohnheim",
+    "mapDistrictCountPlural": "{count} Wohnheime",
+    "mapClosePopup": "Wohnheim-Vorschau schließen"
   },
   "dormDetail": {
     "back": "Zurück zu allen Heimen",

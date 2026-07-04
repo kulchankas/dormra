@@ -1,9 +1,24 @@
 import { notFound } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
 import { de, ru, enGB } from 'date-fns/locale'
-import { ArrowLeft, Bell, Bookmark, ExternalLink, GraduationCap, Globe, Building2, MapPin, Info } from 'lucide-react'
+import {
+  ArrowLeft,
+  Bell,
+  Bookmark,
+  Building2,
+  CalendarClock,
+  CalendarRange,
+  ExternalLink,
+  Globe,
+  GraduationCap,
+  HeartHandshake,
+  MapPin,
+  PawPrint,
+  Sofa,
+} from 'lucide-react'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
+import type { LucideIcon } from 'lucide-react'
 import { buildPageMetadata } from '@/lib/i18n-metadata'
 import { createClient } from '@/lib/supabase/server'
 import { formatDistrictLabel, formatPriceLabel } from '@/lib/i18n-labels'
@@ -14,7 +29,7 @@ import { getDormGallery } from '@/lib/dorm-images'
 import { absoluteUrl, localePath } from '@/lib/i18n-path'
 import { type Dorm } from '@/lib/helpers'
 import AvailabilityBadge from '@/components/AvailabilityBadge'
-import DormLocationMap from '@/components/DormLocationMap'
+import ViennaMap from '@/components/ViennaMap'
 import DormCard from '@/components/DormCard'
 import DormGallery from '@/components/DormGallery'
 import SaveDormButton from '@/components/SaveDormButton'
@@ -134,18 +149,25 @@ export default async function DormDetailPage({ params }: PageProps) {
     return t('unknown')
   }
 
-  const details: { label: string; value: string }[] = [
-    { label: t('petsAllowed'), value: boolLabel(dorm.pets) },
-    { label: t('couplesAllowed'), value: boolLabel(dorm.couples) },
-    { label: t('furnished'), value: boolLabel(dorm.furnished) },
+  const facts: { icon: LucideIcon; label: string; value: string; wide?: boolean }[] = [
+    { icon: Building2, label: t('providerLabel'), value: dorm.provider },
+    ...(districtLabel ? [{ icon: MapPin, label: t('district'), value: districtLabel }] : []),
+    ...(dorm.address
+      ? [{ icon: MapPin, label: t('address'), value: dorm.address, wide: true }]
+      : []),
+    { icon: PawPrint, label: t('petsAllowed'), value: boolLabel(dorm.pets) },
+    { icon: HeartHandshake, label: t('couplesAllowed'), value: boolLabel(dorm.couples) },
+    { icon: Sofa, label: t('furnished'), value: boolLabel(dorm.furnished) },
     ...(dorm.min_stay_months != null
       ? [{
+          icon: CalendarClock,
           label: t('minStay'),
           value: `${dorm.min_stay_months} ${dorm.min_stay_months !== 1 ? t('months') : t('month')}`,
         }]
       : []),
     ...(dorm.max_stay_months != null
       ? [{
+          icon: CalendarRange,
           label: t('maxStay'),
           value: `${dorm.max_stay_months} ${dorm.max_stay_months !== 1 ? t('months') : t('month')}`,
         }]
@@ -186,16 +208,57 @@ export default async function DormDetailPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="mx-auto max-w-3xl px-4 py-8 pb-28 md:px-8 md:pb-8">
-        <Link
-          href="/dorms"
-          className="mb-8 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="size-3.5" aria-hidden="true" />
-          {t('back')}
-        </Link>
+      <div className="hero-glow border-b border-border/40">
+        <div className="mx-auto max-w-6xl px-4 pb-6 pt-6 md:px-8 md:pt-8">
+          <Link
+            href="/dorms"
+            className="mb-5 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="size-3.5" aria-hidden="true" />
+            {t('back')}
+          </Link>
 
-        <div className="card-elevated relative mb-6 aspect-video w-full overflow-hidden rounded-2xl bg-brand-soft">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="min-w-0">
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <Badge variant="secondary" className="text-[10px]">
+                  {dorm.provider}
+                </Badge>
+                <AvailabilityBadge availability={availability} />
+              </div>
+              <h1 className="text-2xl font-bold leading-tight tracking-tight text-foreground md:text-3xl">
+                {dorm.name}
+              </h1>
+              {(districtLabel || dorm.address) && (
+                <p className="mt-1.5 flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
+                  {[districtLabel, dorm.address].filter(Boolean).join(' · ')}
+                </p>
+              )}
+              {lastCheckedAt && (
+                <p className="mt-1.5 text-xs text-muted-foreground/80">
+                  {t('lastChecked', {
+                    time: formatDistanceToNow(new Date(lastCheckedAt), { addSuffix: true, locale: dateLocale }),
+                  })}
+                </p>
+              )}
+            </div>
+            <div className="shrink-0">
+              <p className="text-right text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+                {priceLabel}
+              </p>
+              {dorm.price_min != null && dorm.price_max != null && dorm.price_min !== dorm.price_max && (
+                <p className="mt-0.5 text-right text-xs text-muted-foreground">
+                  {t('priceRangeDetail', { min: dorm.price_min, max: dorm.price_max })}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-6xl px-4 py-6 pb-28 md:px-8 md:py-8 md:pb-12">
+        <div className="card-elevated relative aspect-video w-full overflow-hidden rounded-3xl bg-brand-soft md:aspect-[21/9]">
           {allImages.length > 0 ? (
             <DormGallery images={allImages} alt={tCard('imageAlt', { name: dorm.name })} />
           ) : (
@@ -204,9 +267,6 @@ export default async function DormDetailPage({ params }: PageProps) {
               <span className="text-sm font-medium text-muted-foreground">{dorm.provider}</span>
             </div>
           )}
-          <div className="absolute left-3 top-3">
-            <AvailabilityBadge availability={availability} />
-          </div>
           <div className="absolute right-3 top-3">
             {user ? (
               <SaveDormButton dormId={dorm.id} dormName={dorm.name} initialSaved={isSaved} />
@@ -222,206 +282,164 @@ export default async function DormDetailPage({ params }: PageProps) {
           </div>
         </div>
 
-        <div className="mb-6">
-          <div className="mb-2 flex flex-wrap items-center gap-2">
-            <Badge variant="secondary" className="text-[10px]">
-              {dorm.provider}
-            </Badge>
-            <AvailabilityBadge availability={availability} className="md:hidden" />
-          </div>
-          <h1 className="text-[22px] font-bold leading-snug tracking-tight text-foreground mb-1">
-            {dorm.name}
-          </h1>
-          {districtLabel && (
-            <p className="text-sm text-muted-foreground">{districtLabel}</p>
-          )}
-          {dorm.address && (
-            <p className="text-sm text-muted-foreground">{dorm.address}</p>
-          )}
-          {lastCheckedAt && (
-            <p className="mt-2 text-xs text-muted-foreground/80">
-              {t('lastChecked', {
-                time: formatDistanceToNow(new Date(lastCheckedAt), { addSuffix: true, locale: dateLocale }),
-              })}
-            </p>
-          )}
-        </div>
-
-        <div className="card-elevated rounded-2xl bg-surface p-5 mb-4">
-          <div className="flex items-start justify-between gap-3 mb-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">
-                {t('monthlyPrice')}
-              </p>
-              <p className="text-xl font-semibold text-foreground">{priceLabel}</p>
-              {dorm.price_min != null && dorm.price_max != null && dorm.price_min !== dorm.price_max && (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {t('priceRangeDetail', { min: dorm.price_min, max: dorm.price_max })}
-                </p>
-              )}
-            </div>
-            <AvailabilityBadge availability={availability} />
-          </div>
-          {(dorm.deposit_months != null || dorm.deposit_eur != null) && (
-            <div className="border-t border-border/60 pt-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">
-                {t('deposit')}
-              </p>
-              {dorm.deposit_months != null && (
-                <p className="text-sm text-foreground">
-                  {dorm.deposit_months !== 1
-                    ? t('depositMonthsPlural', { count: dorm.deposit_months })
-                    : t('depositMonths', { count: dorm.deposit_months })}
-                </p>
-              )}
-              {dorm.deposit_eur != null && dorm.deposit_months == null && (
-                <p className="text-sm text-foreground">
-                  {t('depositEur', { amount: dorm.deposit_eur })}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="card-elevated rounded-2xl bg-surface p-5 mb-4">
-          <h2 className="text-sm font-medium text-foreground mb-3">{t('atAGlance')}</h2>
-          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="flex items-start gap-2.5">
-              <Building2 className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
-              <div>
-                <dt className="text-xs text-muted-foreground">{t('providerLabel')}</dt>
-                <dd className="text-sm font-medium text-foreground">{dorm.provider}</dd>
-              </div>
-            </div>
-            {districtLabel && (
-              <div className="flex items-start gap-2.5">
-                <MapPin className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
-                <div>
-                  <dt className="text-xs text-muted-foreground">{t('district')}</dt>
-                  <dd className="text-sm font-medium text-foreground">{districtLabel}</dd>
-                </div>
-              </div>
-            )}
-            {dorm.address && (
-              <div className="flex items-start gap-2.5 sm:col-span-2">
-                <MapPin className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
-                <div>
-                  <dt className="text-xs text-muted-foreground">{t('address')}</dt>
-                  <dd className="text-sm font-medium text-foreground">{dorm.address}</dd>
-                </div>
-              </div>
-            )}
-            <div className="flex items-start gap-2.5">
-              <Info className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
-              <div>
-                <dt className="text-xs text-muted-foreground">{t('availability')}</dt>
-                <dd className="text-sm font-medium text-foreground">{availability.label}</dd>
-              </div>
-            </div>
-          </dl>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-          {details.map(({ label, value }) => (
-            <div key={label} className="card-elevated rounded-xl bg-surface p-3.5">
-              <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
-              <p className="text-sm font-medium text-foreground">{value}</p>
-            </div>
-          ))}
-        </div>
-
-        {user && (
-          <DormTrackerPanel
-            dormId={dorm.id}
-            dormName={dorm.name}
-            provider={dorm.provider}
-            isSaved={isSaved}
-            trackerId={trackerId}
-            trackerStatus={trackerStatus}
-          />
-        )}
-
-        {providerSiteHref && (
-          <div className="card-elevated rounded-2xl bg-surface-soft p-5 mb-6">
-            <h2 className="text-sm font-medium text-foreground mb-1">{t('aboutProvider', { provider: dorm.provider })}</h2>
-            <p className="text-sm leading-relaxed text-muted-foreground mb-3">{t('providerHint', { provider: dorm.provider })}</p>
-            <a
-              href={providerSiteHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:underline"
-            >
-              <Globe className="size-3.5" aria-hidden="true" />
-              {t('visitProviderSite', { provider: dorm.provider })}
-              <ExternalLink className="size-3" aria-hidden="true" />
-            </a>
-          </div>
-        )}
-
-        {dorm.lat != null && dorm.lng != null && (
-          <div className="mb-6">
-            <h2 className="mb-2 text-sm font-medium text-foreground">{t('location')}</h2>
-            <DormLocationMap dorm={dorm} availability={availability} />
-            {universities.length > 0 && (
-              <ul className="mt-3 flex flex-wrap gap-2">
-                {universities.map((u) => (
-                  <li
-                    key={u.id}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-surface-soft px-3 py-1 text-xs text-muted-foreground ring-1 ring-border"
+        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="min-w-0 space-y-6">
+            <section className="card-elevated rounded-2xl bg-surface p-5 md:p-6">
+              <h2 className="mb-4 text-sm font-semibold text-foreground">{t('atAGlance')}</h2>
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-3">
+                {facts.map(({ icon: Icon, label, value, wide }) => (
+                  <div
+                    key={label}
+                    className={wide ? 'col-span-2 flex items-start gap-2.5 sm:col-span-3' : 'flex items-start gap-2.5'}
                   >
-                    <GraduationCap className="size-3.5 text-brand" aria-hidden="true" />
-                    {u.name}
-                    <span className="font-medium text-foreground">{t('kmAway', { km: u.km.toFixed(1) })}</span>
-                  </li>
+                    <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-brand-soft">
+                      <Icon className="size-4 text-brand" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">{label}</dt>
+                      <dd className="text-sm font-medium text-foreground">{value}</dd>
+                    </div>
+                  </div>
                 ))}
-              </ul>
+              </dl>
+            </section>
+
+            {user && (
+              <DormTrackerPanel
+                dormId={dorm.id}
+                dormName={dorm.name}
+                provider={dorm.provider}
+                isSaved={isSaved}
+                trackerId={trackerId}
+                trackerStatus={trackerStatus}
+              />
+            )}
+
+            {dorm.lat != null && dorm.lng != null && (
+              <section>
+                <h2 className="mb-3 text-sm font-semibold text-foreground">{t('location')}</h2>
+                <ViennaMap dorms={[dorm]} availability={{ [dorm.id]: availability }} compact showUniversities />
+                {universities.length > 0 && (
+                  <ul className="mt-3 flex flex-wrap gap-2">
+                    {universities.map((u) => (
+                      <li
+                        key={u.id}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-surface-soft px-3 py-1 text-xs text-muted-foreground ring-1 ring-border"
+                      >
+                        <GraduationCap className="size-3.5 text-brand" aria-hidden="true" />
+                        {u.name}
+                        <span className="font-medium text-foreground">{t('kmAway', { km: u.km.toFixed(1) })}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            )}
+
+            {dorm.notes && (
+              <section className="card-elevated rounded-2xl bg-surface p-5 md:p-6">
+                <h2 className="mb-2 text-sm font-semibold text-foreground">{t('notes')}</h2>
+                <p className="text-sm leading-relaxed text-muted-foreground">{dorm.notes}</p>
+              </section>
+            )}
+
+            {providerSiteHref && (
+              <section className="card-elevated rounded-2xl bg-surface-soft p-5 md:p-6">
+                <h2 className="mb-1 text-sm font-semibold text-foreground">{t('aboutProvider', { provider: dorm.provider })}</h2>
+                <p className="mb-3 text-sm leading-relaxed text-muted-foreground">{t('providerHint', { provider: dorm.provider })}</p>
+                <a
+                  href={providerSiteHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:underline"
+                >
+                  <Globe className="size-3.5" aria-hidden="true" />
+                  {t('visitProviderSite', { provider: dorm.provider })}
+                  <ExternalLink className="size-3" aria-hidden="true" />
+                </a>
+              </section>
             )}
           </div>
-        )}
 
-        {dorm.notes && (
-          <div className="card-elevated rounded-2xl bg-surface p-5 mb-6">
-            <h2 className="text-sm font-medium text-foreground mb-2">{t('notes')}</h2>
-            <p className="text-sm leading-relaxed text-muted-foreground">{dorm.notes}</p>
-          </div>
-        )}
+          <aside className="min-w-0">
+            <div className="card-elevated rounded-3xl bg-surface p-6 lg:sticky lg:top-[calc(3.75rem+1.5rem)]">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {t('monthlyPrice')}
+                  </p>
+                  <p className="mt-1 text-3xl font-bold tracking-tight text-foreground">{priceLabel}</p>
+                  {dorm.price_min != null && dorm.price_max != null && dorm.price_min !== dorm.price_max && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {t('priceRangeDetail', { min: dorm.price_min, max: dorm.price_max })}
+                    </p>
+                  )}
+                </div>
+                <AvailabilityBadge availability={availability} />
+              </div>
 
-        <div className="hidden flex-wrap items-center gap-3 md:flex">
-          {applyHref ? (
-            <Button size="lg" className="h-11 gap-2 rounded-2xl px-7 text-sm" nativeButton={false} render={<a href={applyHref} target="_blank" rel="noopener noreferrer" />}>
-              {t('applyOn', { provider: dorm.provider })}
-              <ExternalLink className="size-3.5" />
-            </Button>
-          ) : (
-            <p className="text-sm text-muted-foreground">{t('noApplyLink')}</p>
-          )}
-          <Button
-            variant="outline"
-            size="lg"
-            nativeButton={false}
-            className="h-11 gap-2 rounded-2xl px-6 text-sm"
-            render={<Link href={alertHref(dorm)} />}
-          >
-            <Bell className="size-3.5" aria-hidden="true" />
-            {t('alertSimilar')}
-          </Button>
-          {websiteHref && (
-            <Button
-              variant="ghost"
-              size="lg"
-              nativeButton={false}
-              className="h-11 gap-1.5 rounded-2xl px-4 text-sm text-muted-foreground"
-              render={<a href={websiteHref} target="_blank" rel="noopener noreferrer" />}
-            >
-              <Globe className="size-3.5" aria-hidden="true" />
-              {t('visitWebsite')}
-            </Button>
-          )}
+              {(dorm.deposit_months != null || dorm.deposit_eur != null) && (
+                <p className="mt-3 border-t border-border/60 pt-3 text-sm text-muted-foreground">
+                  {dorm.deposit_months != null
+                    ? dorm.deposit_months !== 1
+                      ? t('depositMonthsPlural', { count: dorm.deposit_months })
+                      : t('depositMonths', { count: dorm.deposit_months })
+                    : t('depositEur', { amount: dorm.deposit_eur ?? 0 })}
+                </p>
+              )}
+
+              <div className="mt-5 space-y-2.5">
+                {applyHref ? (
+                  <Button
+                    size="lg"
+                    className="h-12 w-full gap-2 rounded-2xl text-sm"
+                    nativeButton={false}
+                    render={<a href={applyHref} target="_blank" rel="noopener noreferrer" />}
+                  >
+                    {t('applyOn', { provider: dorm.provider })}
+                    <ExternalLink className="size-3.5" />
+                  </Button>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{t('noApplyLink')}</p>
+                )}
+                <Button
+                  variant="outline"
+                  size="lg"
+                  nativeButton={false}
+                  className="h-11 w-full gap-2 rounded-2xl text-sm"
+                  render={<Link href={alertHref(dorm)} />}
+                >
+                  <Bell className="size-3.5" aria-hidden="true" />
+                  {t('alertSimilar')}
+                </Button>
+                {websiteHref && (
+                  <Button
+                    variant="ghost"
+                    size="lg"
+                    nativeButton={false}
+                    className="h-10 w-full gap-1.5 rounded-2xl text-sm text-muted-foreground"
+                    render={<a href={websiteHref} target="_blank" rel="noopener noreferrer" />}
+                  >
+                    <Globe className="size-3.5" aria-hidden="true" />
+                    {t('visitWebsite')}
+                  </Button>
+                )}
+              </div>
+
+              {lastCheckedAt && (
+                <p className="mt-4 text-center text-[11px] text-muted-foreground/80">
+                  {t('lastChecked', {
+                    time: formatDistanceToNow(new Date(lastCheckedAt), { addSuffix: true, locale: dateLocale }),
+                  })}
+                </p>
+              )}
+            </div>
+          </aside>
         </div>
 
         {similarDorms.length > 0 && (
-          <div className="mt-10 border-t border-border pt-8">
-            <h2 className="mb-4 text-sm font-semibold text-foreground">{t('similarDorms')}</h2>
+          <div className="mt-12 border-t border-border pt-8">
+            <h2 className="mb-4 text-base font-semibold text-foreground">{t('similarDorms')}</h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
               {similarDorms.map((similar) => (
                 <DormCard
