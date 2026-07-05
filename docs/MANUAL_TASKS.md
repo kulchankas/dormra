@@ -2,25 +2,25 @@
 
 Tasks that **cannot be done in code** or require access to external dashboards. Work through these before public launch or after merging audit PRs.
 
-**Quick path:** see [`YOUR_TODO.md`](./YOUR_TODO.md) for your personal checklist, or [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md) for launch order.
+**Quick path:** [`YOUR_TODO.md`](./YOUR_TODO.md) for today's checklist · [`SUPABASE_SETUP.md`](./SUPABASE_SETUP.md) for migrations + seeds · [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md) for launch order.
 
 ---
 
-## Your action list (2026-07-02)
+## Your action list (2026-07-04)
 
-**Full checklist with checkboxes:** [`YOUR_TODO.md`](./YOUR_TODO.md)
-
-Agent verified production after PRs #33–#40. **You still need to complete the unchecked items in YOUR_TODO.md.**
+**Full checklist:** [`YOUR_TODO.md`](./YOUR_TODO.md)  
+**Supabase migrations + seeds:** [`SUPABASE_SETUP.md`](./SUPABASE_SETUP.md)
 
 | # | Task | Status | Blocker? |
 |---|------|--------|----------|
-| 1 | **cron-job.org** — create/enable **3 split jobs** (§3) | ⬜ **You** | **Yes** — data goes stale without cron |
-| 2 | **Supabase Site URL** → `https://dormra.eu` + redirect URLs (§6) | ⬜ **You** | **Yes** — OAuth/reset broken until fixed |
-| 3 | **RLS smoke test** with anon key (§1.1 step 4) | ⬜ **You** | **Yes** — confirm no data leak |
-| 4 | **Rotate exposed secrets** (§2.1) — CRON, Supabase service role, Resend | ⬜ **You** | **Yes** if keys were pasted in chat |
-| 5 | **Resend domain** verify `dormra.eu` + `RESEND_FROM` (§4) | ⬜ **You** | Recommended |
-| 6 | **Post-deploy smoke tests** (§7) — signup, alert, reset | ⬜ **You** | Recommended |
-| 7 | **Google OAuth** — enable provider + Google Cloud credentials (§5b) | ⬜ **You** | **Yes** if using “Continue with Google” (currently **disabled** in Supabase) |
+| 1 | **Supabase** — migrations + seeds (Part A + B in setup guide) | ⬜ **You** | **Yes** — map, admin cron widget, dedup |
+| 2 | **cron-job.org** — enable 3 split jobs (§3) | ⬜ **You** | **Yes** — data goes stale without cron |
+| 3 | **Supabase Site URL** → `https://dormra.eu` + redirect URLs (§6) | ⬜ **You** | **Yes** — OAuth/reset broken until fixed |
+| 4 | **RLS smoke test** with anon key (§1.1 step 4) | ⬜ **You** | **Yes** — confirm no data leak |
+| 5 | **Rotate exposed secrets** (§2.1) | ⬜ **You** | **Yes** if keys were pasted in chat |
+| 6 | **Resend domain** + `RESEND_FROM` (§4) | ⬜ **You** | Recommended |
+| 7 | **Post-deploy smoke tests** (§7) | ⬜ **You** | Recommended |
+| 8 | **Google OAuth** (§5b) | ⬜ **You** | Only if using Google sign-in |
 
 **Already done (agent / code):**
 
@@ -70,39 +70,35 @@ curl "https://YOUR_PROJECT.supabase.co/rest/v1/user_alerts?select=id" \
 
 Expected: empty array `[]` or 401 — **not** other users' alerts.
 
-### 1.2 Apply pending migrations
+### 1.2 Apply pending migrations + seeds
 
-Run in order if not already applied:
+**Full step-by-step guide:** [`SUPABASE_SETUP.md`](./SUPABASE_SETUP.md)
 
-```bash
-psql "$DATABASE_URL" -f supabase/migrations/20260701120000_user_alerts_locale.sql
-psql "$DATABASE_URL" -f supabase/migrations/20260701130000_snapshot_rpc_and_retention.sql
-psql "$DATABASE_URL" -f supabase/migrations/20260701140000_alert_log_dedup.sql
-psql "$DATABASE_URL" -f supabase/migrations/20260702220000_cron_runs.sql
-psql "$DATABASE_URL" -f supabase/migrations/20260702220100_alert_log_alert_id.sql
-psql "$DATABASE_URL" -f supabase/migrations/20260702150000_dorm_coordinates.sql
-psql "$DATABASE_URL" -f supabase/migrations/20260702160000_dorm_images.sql
+Summary — run in order:
+
+**Part A — migrations** (SQL Editor: paste each file · Terminal: `psql "$DATABASE_URL" -f …`)
+
+1. `20260702150000_dorm_coordinates.sql`
+2. `20260702160000_dorm_images.sql`
+3. `20260702220000_cron_runs.sql`
+4. `20260702220100_alert_log_alert_id.sql`
+
+**Part B — seeds** (required for map; paste **file contents** in SQL Editor, or use `psql -f` in terminal)
+
+1. `seeds/stuwo_vienna.sql`
+2. `seeds/oead_vienna.sql`
+3. `seeds/home4students_vienna.sql`
+
+**Part C — optional:** `ojab_vienna.sql`, `dorm_images.sql`, `dorm_image_galleries.sql`
+
+**Verify:**
+
+```sql
+SELECT count(*) AS mapped FROM public.dorms WHERE lat IS NOT NULL;
+-- Expected: ~49 (or ~64 with ÖJAB)
 ```
 
-Or paste each file into Supabase SQL Editor.
-
-**After applying `20260702150000_dorm_coordinates.sql`**, re-run the seed files to backfill `lat`/`lng` for existing rows (they're idempotent upserts, safe to re-run):
-
-```bash
-psql "$DATABASE_URL" -f supabase/seeds/stuwo_vienna.sql
-psql "$DATABASE_URL" -f supabase/seeds/oead_vienna.sql
-psql "$DATABASE_URL" -f supabase/seeds/home4students_vienna.sql
-```
-
-Without this, the `/dorms` map view will show "No mapped locations" until coordinates are backfilled. New dorms added going forward should include `lat`/`lng` too — see `scripts/geocode-dorms.mjs` for the geocoding approach (Nominatim/OpenStreetMap, no API key required).
-
-**After applying `20260702160000_dorm_images.sql`**, seed the photo galleries (idempotent, safe to re-run):
-
-```bash
-psql "$DATABASE_URL" -f supabase/seeds/dorm_image_galleries.sql
-```
-
-Currently populated for OeAD only (24/26 dorms, ~5 photos each) — see `scripts/fetch-dorm-galleries.mjs` to re-run or extend to STUWO/home4students. Dorms with no `dorm_images` rows fall back to their single `image_url` on the detail page, so this is optional, not launch-blocking.
+See [`SUPABASE_SETUP.md`](./SUPABASE_SETUP.md) for verify queries, common mistakes, and SQL Editor vs terminal instructions.
 
 ### 1.3 Regenerate TypeScript types (optional)
 
