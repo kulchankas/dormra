@@ -106,14 +106,19 @@
     font-family: var(--font-poppins), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
-  html[lang="ru"] {
+  html[lang="ru"],
+  html[lang="uk"] {
     --font-sans: var(--font-onest);
     --font-heading: var(--font-onest);
   }
   html[lang="ru"] body,
   html[lang="ru"] h1,
   html[lang="ru"] h2,
-  html[lang="ru"] h3 {
+  html[lang="ru"] h3,
+  html[lang="uk"] body,
+  html[lang="uk"] h1,
+  html[lang="uk"] h2,
+  html[lang="uk"] h3 {
     font-family: var(--font-onest), system-ui, sans-serif;
   }
   html {

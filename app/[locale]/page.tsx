@@ -16,14 +16,7 @@ import UniversityLogos from '@/components/UniversityLogos'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 
-const TRACKED_PROVIDERS = [
-  { name: 'OeAD', live: true },
-  { name: 'STUWO', live: true },
-  { name: 'home4students', live: true },
-  { name: 'ÖJAB', live: false },
-  { name: 'Akademikerhilfe', live: false },
-  { name: 'Viennabase', live: false },
-] as const
+import { HERO_TRACKED_PROVIDERS, LIVE_SCRAPER_COUNT } from '@/lib/providers'
 
 type PageProps = { params: Promise<{ locale: string }> }
 
@@ -57,7 +50,7 @@ async function LiveStats() {
 
   const stats = [
     { value: dormCount != null ? `${dormCount}+` : '49+', label: t('statsListings') },
-    { value: providerCount != null ? String(providerCount) : '3', label: t('statsProviders') },
+    { value: providerCount != null ? String(providerCount) : String(LIVE_SCRAPER_COUNT), label: t('statsProviders') },
     { value: '15 min', label: t('statsRefresh') },
   ]
 
@@ -166,7 +159,7 @@ export default async function HomePage({ params }: PageProps) {
             <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
               {t('tracking')}
             </span>
-            {TRACKED_PROVIDERS.map(({ name, live }) => (
+            {HERO_TRACKED_PROVIDERS.map(({ name, live }) => (
               <span
                 key={name}
                 className={

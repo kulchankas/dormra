@@ -17,11 +17,13 @@ const LOCALE_SHORT: Record<Locale, string> = {
   en: 'EN',
   de: 'DE',
   ru: 'RU',
+  uk: 'UK',
 }
 
 /** Onest renders Cyrillic more cleanly than Poppins in the switcher dropdown. */
 const LOCALE_ITEM_CLASS: Partial<Record<Locale, string>> = {
   ru: 'font-onest',
+  uk: 'font-onest',
 }
 
 export default function LanguageSwitcher({ className }: { className?: string }) {

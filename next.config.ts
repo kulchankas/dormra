@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'oeadstudenthousing-public-production.s3.amazonaws.com' },
       { protocol: 'https', hostname: 'www.stuwo.at' },
       { protocol: 'https', hostname: 'www.home4students.at' },
+      { protocol: 'https', hostname: 'www.oejab.at' },
     ],
   },
 }
