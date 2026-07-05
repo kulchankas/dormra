@@ -6,21 +6,22 @@ Tasks that **cannot be done in code** or require access to external dashboards. 
 
 ---
 
-## Your action list (2026-07-02)
+## Your action list (2026-07-04)
 
 **Full checklist with checkboxes:** [`YOUR_TODO.md`](./YOUR_TODO.md)
 
-Agent verified production after PRs #33–#40. **You still need to complete the unchecked items in YOUR_TODO.md.**
+Agent verified production after PRs #33–#54. **You still need to complete the unchecked items in YOUR_TODO.md.**
 
 | # | Task | Status | Blocker? |
 |---|------|--------|----------|
 | 1 | **cron-job.org** — create/enable **3 split jobs** (§3) | ⬜ **You** | **Yes** — data goes stale without cron |
 | 2 | **Supabase Site URL** → `https://dormra.eu` + redirect URLs (§6) | ⬜ **You** | **Yes** — OAuth/reset broken until fixed |
-| 3 | **RLS smoke test** with anon key (§1.1 step 4) | ⬜ **You** | **Yes** — confirm no data leak |
-| 4 | **Rotate exposed secrets** (§2.1) — CRON, Supabase service role, Resend | ⬜ **You** | **Yes** if keys were pasted in chat |
-| 5 | **Resend domain** verify `dormra.eu` + `RESEND_FROM` (§4) | ⬜ **You** | Recommended |
-| 6 | **Post-deploy smoke tests** (§7) — signup, alert, reset | ⬜ **You** | Recommended |
-| 7 | **Google OAuth** — enable provider + Google Cloud credentials (§5b) | ⬜ **You** | **Yes** if using “Continue with Google” (currently **disabled** in Supabase) |
+| 3 | **Apply pending migrations** (coordinates, dorm_images, cron_runs, alert_id) | ⬜ **You** | **Yes** — admin cron widget, galleries, dedup |
+| 4 | **RLS smoke test** with anon key (§1.1 step 4) | ⬜ **You** | **Yes** — confirm no data leak |
+| 5 | **Rotate exposed secrets** (§2.1) — CRON, Supabase service role, Resend | ⬜ **You** | **Yes** if keys were pasted in chat |
+| 6 | **Resend domain** verify `dormra.eu` + `RESEND_FROM` (§4) | ⬜ **You** | Recommended |
+| 7 | **Post-deploy smoke tests** (§7) — signup, alert, reset, save dorm | ⬜ **You** | Recommended |
+| 8 | **Google OAuth** — enable provider + Google Cloud credentials (§5b) | ⬜ **You** | Only if using Google sign-in (app hides button when disabled) |
 
 **Already done (agent / code):**
 
@@ -29,6 +30,7 @@ Agent verified production after PRs #33–#40. **You still need to complete the 
 - [x] Vercel env: `ADMIN_EMAILS`, `CRON_SECRET`, Supabase, Resend keys set
 - [x] RLS migration + other SQL applied in Supabase (you confirmed)
 - [x] `/api/test-alert` route for E2E email testing (§3.1)
+- [x] PRs #47–#54 merged — sign-out, alerts, saved dorms, dorm pages, OAuth, agent queue
 
 Check off items below as you complete them.
 

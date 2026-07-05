@@ -76,11 +76,24 @@ psql $DATABASE_URL -f supabase/migrations/20260701130000_snapshot_rpc_and_retent
 # 5. Alert email dedup index
 psql $DATABASE_URL -f supabase/migrations/20260701140000_alert_log_dedup.sql
 
-# 6. Seed dorm listings
+# 6. Dorm coordinates (map + near-me)
+psql $DATABASE_URL -f supabase/migrations/20260702150000_dorm_coordinates.sql
+
+# 7. Dorm photo galleries
+psql $DATABASE_URL -f supabase/migrations/20260702160000_dorm_images.sql
+
+# 8. Cron run log (admin widget)
+psql $DATABASE_URL -f supabase/migrations/20260702220000_cron_runs.sql
+
+# 9. Per-alert email dedup
+psql $DATABASE_URL -f supabase/migrations/20260702220100_alert_log_alert_id.sql
+
+# 10. Seed dorm listings
 psql $DATABASE_URL -f supabase/seeds/oead_vienna.sql
 psql $DATABASE_URL -f supabase/seeds/stuwo_vienna.sql
 psql $DATABASE_URL -f supabase/seeds/home4students_vienna.sql
-psql $DATABASE_URL -f supabase/seeds/dorm_images.sql
+psql $DATABASE_URL -f supabase/seeds/ojab_vienna.sql
+psql $DATABASE_URL -f supabase/seeds/dorm_image_galleries.sql
 ```
 
 Regenerate TypeScript types after schema changes:

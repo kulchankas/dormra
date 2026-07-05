@@ -1,11 +1,11 @@
 # Dormra Strategy
 
-Living strategy doc. **Status column** reflects the repo and production as of 2026-07-02.  
+Living strategy doc. **Status column** reflects the repo and production as of 2026-07-04.  
 Operator checklist: [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md)
 
 ---
 
-## Current status snapshot (2026-07-02)
+## Current status snapshot (2026-07-04)
 
 | Area | State |
 |------|--------|
@@ -13,8 +13,12 @@ Operator checklist: [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md)
 | **Cron code** | ✅ Split scrape live (PR #39); fast ~20s, OeAD batch ~125s |
 | **Cron scheduler** | ⬜ **You** must enable 3 jobs on cron-job.org |
 | **Auth URLs** | ⬜ Supabase Site URL likely still `localhost` — fix manually |
+| **Google OAuth** | ✅ Code detects disabled provider (PR #52); enable in Supabase if wanted |
 | **Alert E2E** | ✅ `/api/test-alert` route shipped |
-| **Next agent work** | Admin provider scrape times (in progress); h4s attribution after cron |
+| **User features** | ✅ Saved dorms, application tracker, alert UX, dorm galleries, map |
+| **Dorms in DB** | 49 with scrapers + 15 ÖJAB seeded (no scraper yet) |
+| **Tests** | ✅ 98 pass; CI green |
+| **Next agent work** | Hold new scrapers; verify h4s attribution after cron live |
 
 ---
 
@@ -47,9 +51,11 @@ Everything else — design, branding, monetization — is secondary until those 
 | Fix home4students shared-URL attribution | Wrong attribution kills trust | ✅ **Done** | Room-card parser; Döbling front/back share one building listing by design |
 | Rotate exposed secrets | Security hygiene | ⬜ **Manual** | CRON, Supabase service role, Resend — see MANUAL_TASKS §2.1 |
 | Cron running every 15 min | Data stays fresh | ⚠️ **Code ready** | Endpoint 200; **cron-job.org disabled** — enable 3 split jobs |
-| Auth flows (login, reset, Google) | Users can sign up | ⚠️ **Partial** | Callback route fixed; **Supabase Site URL → dormra.eu** still manual |
+| Auth flows (login, reset, Google) | Users can sign up | ⚠️ **Partial** | Callback + provider detection fixed (PR #52); **Site URL → dormra.eu** still manual |
 | RLS + auth hardening | Before real users | ✅ **Done in code** | Migration applied; middleware guards `/dashboard` and `/admin` |
-| Admin observability | Trust the data | ✅ **Done** | `/admin` — dorm health, email log, alert stats |
+| Admin observability | Trust the data | ✅ **Done** | `/admin` — dorm health, email log, cron runs, auth status |
+| Saved dorms + tracker | Retention before alerts | ✅ **Done** | PR #49 — bookmark + status at `/dashboard/saved` |
+| Dorm detail enrichment | SEO + trust | ✅ **Done** | PR #50 — gallery, JSON-LD, universities, save button |
 
 ### Phase 1 verdict
 
@@ -69,8 +75,8 @@ Everything else — design, branding, monetization — is secondary until those 
 
 | Item | Plan | Status | Notes |
 |------|------|--------|-------|
-| Scraper count | 9 providers | **3 / 9** | OeAD (26), home4students (11), STUWO — see `scrapers/index.ts` |
-| Prioritize by bed-count | Biggest providers first | ⏳ **Not started** | ÖJAB, WIHAST, etc. have no scraper registered |
+| Scraper count | 9 providers | **3 / 9** | OeAD (26), home4students (11), STUWO (12) — see `scrapers/index.ts` |
+| Prioritize by bed-count | Biggest providers first | ⏳ **Seed only** | ÖJAB 15 dorms seeded (`ojab_vienna.sql`); no scraper yet |
 | Per-dorm “Alert me when this opens” | High-intent conversion | ✅ **Done** | `/dorms/[slug]` + directory link to `/dashboard/alerts/new?…` |
 | Auth hardening + RLS | Before user data accumulates | ✅ **Done** | See Phase 1; verify anon smoke test in checklist |
 | Snapshot scale + dedup | Trust at volume | ✅ **Done** | RPC latest snapshots, 30-day prune, weekly email dedup |
@@ -92,7 +98,8 @@ Everything else — design, branding, monetization — is secondary until those 
 | Item | Plan | Status | Notes |
 |------|------|--------|-------|
 | Telegram before paid ads | Lower latency for Erasmus students | ❌ **UI only** | Form field disabled; no dispatcher |
-| SEO content per provider | Intent-driven traffic | ❌ **Not started** | Sitemap/robots in code; content pages not built |
+| SEO content per provider | Intent-driven traffic | ⚠️ **Partial** | JSON-LD on dorm detail; sitemap/robots live; no provider landing pages |
+| Community reviews | Social proof | ⏳ **Branch only** | `cursor/dorm-community-reviews-fc38` not merged |
 | Community seeding | FB/Telegram/r/Austria | ⏳ **Manual** | No code dependency |
 | Hold Stripe/monetization | Prove value first | ✅ **Correct** | Not started — aligned with strategy |
 
@@ -136,8 +143,9 @@ Everything else — design, branding, monetization — is secondary until those 
 **Agent (code):** after you enable cron
 
 1. Verify home4students attribution in `/admin` dorm health
-2. Improve admin cron observability (last run per provider batch)
-3. Hold new scrapers until Phase 1 metric met
+2. Hold new scrapers (incl. ÖJAB) until Phase 1 metric met
+3. Decide on community reviews branch merge vs defer
+4. Ship or strip Telegram UI
 
 ---
 

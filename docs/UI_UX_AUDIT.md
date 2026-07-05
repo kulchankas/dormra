@@ -1,6 +1,6 @@
 # Dormra UI/UX Audit
 
-Last updated: 2026-07-02
+Last updated: 2026-07-04
 Scope: `/`, `/dorms`, `/dorms/[slug]`, `/dashboard/*`, auth pages, `/how-it-works`, header/footer, and shared UI primitives.
 Method: full read-through of pages/components, running the app locally (`npm run dev`) with Playwright for interaction/rendering checks, plus `npm run lint` / `npm run typecheck` / `npm run test`.
 
@@ -48,14 +48,12 @@ Two High-priority items originally found in this pass were independently fixed b
 
 **M1 — Move-in date filter looks functional but silently does nothing** — ✅ Partially fixed. Hero date picker now shows upfront hint; banner on `/dorms` unchanged.
 **M2 — Sort-order label mismatch** — ✅ Fixed. `allSorted` copy uses the same `sortLabels` map as the Select.
-**M3 — Dashboard "coming soon" cards are the least discoverable pattern for a beta**
-`Saved dorms` and `Application tracker` cards on `/dashboard` are dimmed with a small "Coming soon" label — good adherence to the project's own "no decorative controls" rule, but the cards are still large, prominent grid items competing visually with the one working feature (Alerts). *Recommendation: consider deprioritizing unshipped features to a single compact "What's next" row/list rather than three equal-weight grid cells, so the one functional card doesn't have to compete 1-of-3 for attention.*
+**M3 — Dashboard "coming soon" cards are the least discoverable pattern for a beta** — ✅ Fixed (PR #49). Saved dorms and application tracker are now live at `/dashboard/saved`; dashboard grid shows real counts instead of dimmed placeholders.
 
 **M4 — ~~Dashboard has no loading skeleton~~ (resolved by the concurrent audit)**
 Tracked as PROJECT_AUDIT 3.7. `/dashboard` and `/dashboard/alerts` now have `loading.tsx` files. `/dorms/[slug]/loading.tsx` added in follow-up pass.
 
-**M5 — Alert list cards bury the "how many dorms match right now" signal**
-On `/dashboard/alerts`, the match-count pill (`{matchCount} dorms match`) is useful but sits below a wall of small badges (pets/couples/deposit/email), competing for attention. Given alerts exist specifically so users don't have to keep checking manually, surfacing "3 dorms match right now" more prominently (e.g., as a colored stat rather than a same-weight pill) would reinforce the core value prop every time a user opens the page.
+**M5 — Alert list cards bury the "how many dorms match right now" signal** — ✅ Fixed (PR #48). Availability-aware match breakdown (`countMatchBreakdown`) surfaced prominently; post-create banner when matches exist.
 
 ### Low priority / polish
 
@@ -88,7 +86,7 @@ Tracked as PROJECT_AUDIT 3.10; `app/sitemap.ts` and `app/robots.ts` now exist, f
 
 ## Suggested next steps
 
-1. Add error handling to `/dorms` (**H3**) — cheap, prevents full-page failure from a transient Supabase issue. Now the only remaining High-priority item.
-2. Add a `loading.tsx` to `/dorms/[slug]` (remainder of M4).
-3. Batch the other Medium items (M1, M2, M3, M5, M6) into a single "dashboard & alerts polish" pass, since they're all small, localized changes.
-4. Work through the Low-priority polish list (L1–L5) opportunistically alongside other frontend changes.
+1. Work through remaining Low-priority polish (L1–L5) opportunistically.
+2. Decide on community reviews branch (`cursor/dorm-community-reviews-fc38`) — merge or defer.
+3. Ship or strip Telegram UI field on alert form.
+4. After cron live: verify dorm detail "last checked" timestamps feel accurate to users.
