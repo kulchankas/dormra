@@ -36,7 +36,7 @@ function isAdminPath(pathname: string): boolean {
   )
 }
 
-function authRedirectUrl(request: NextRequest, pathPrefix: string, redirectPath: string): URL {
+function authRedirectUrl(request: NextRequest, pathPrefix: string): URL {
   const pathname = request.nextUrl.pathname
   const locale = LOCALE_PREFIXES.find((l) => pathname.startsWith(`/${l}/`))
   const prefix = locale ? `/${locale}` : pathPrefix
@@ -46,11 +46,11 @@ function authRedirectUrl(request: NextRequest, pathPrefix: string, redirectPath:
 }
 
 function loginRedirectUrl(request: NextRequest): URL {
-  return authRedirectUrl(request, '', request.nextUrl.pathname)
+  return authRedirectUrl(request, '')
 }
 
 function adminLoginRedirectUrl(request: NextRequest): URL {
-  return authRedirectUrl(request, '', request.nextUrl.pathname)
+  return authRedirectUrl(request, '')
 }
 
 function homeRedirectUrl(request: NextRequest): URL {

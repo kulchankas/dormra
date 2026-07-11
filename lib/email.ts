@@ -263,3 +263,88 @@ export async function sendWelcomeDigest({
     return { sent: false, error: msg }
   }
 }
+
+export async function sendSavedDormAvailabilityEmail({
+  to,
+  dorm,
+  locale,
+}: {
+  to: string
+  dorm: DormAlertInfo
+  locale?: string | null
+}): Promise<{ success: boolean; error?: string }> {
+  const resolvedLocale = resolveLocale(locale)
+  const t = getEmailMessages(resolvedLocale)
+
+  const from = process.env.RESEND_FROM ?? 'Dormra <onboarding@resend.dev>'
+  const subject = t.savedSubject.replace('{name}', dorm.name)
+  const dormUrl = absoluteUrl(localePath(`/dorms/${dorm.slug}`, resolvedLocale))
+  const savedUrl = absoluteUrl(localePath('/dashboard/saved', resolvedLocale))
+
+  const priceRange = dorm.price_min && dorm.price_max
+    ? t.priceRange.replace('{min}', String(dorm.price_min)).replace('{max}', String(dorm.price_max))
+    : dorm.price_min
+      ? t.priceFrom.replace('{min}', String(dorm.price_min))
+      : dorm.price_max
+        ? t.priceUpTo.replace('{max}', String(dorm.price_max))
+        : t.priceNotListed
+
+  const html = `<!DOCTYPE html>
+<html lang="${resolvedLocale}">
+<body style="margin:0;padding:0;background-color:#FFF8F4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FFF8F4;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+        <tr><td style="padding-bottom:24px;text-align:center;font-size:22px;font-weight:600;color:#B8381A;">Dormra</td></tr>
+        <tr><td style="background:#fff;border-radius:12px;padding:32px;border:1px solid #FFE4D6;">
+          <p style="margin:0 0 16px;font-size:16px;color:#1A1410;">${t.greetingAnonymous}</p>
+          <p style="margin:0 0 20px;font-size:16px;color:#1A1410;">${t.savedBodyIntro.replace('{name}', dorm.name)}</p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFF8F4;border-radius:8px;border:1px solid #FFE4D6;margin-bottom:24px;">
+            <tr><td style="padding:20px;">
+              <p style="margin:0 0 4px;font-size:20px;font-weight:700;color:#1A1410;">${dorm.name}</p>
+              <p style="margin:0 0 12px;font-size:13px;color:#6B5C53;text-transform:uppercase;letter-spacing:0.5px;">${dorm.provider}</p>
+              <table cellpadding="0" cellspacing="0">
+                ${dorm.district !== null ? `<tr><td style="padding:2px 0;font-size:14px;color:#6B5C53;">${t.district}:&nbsp;</td><td style="padding:2px 0;font-size:14px;color:#1A1410;font-weight:500;">${dorm.district}</td></tr>` : ''}
+                <tr><td style="padding:2px 0;font-size:14px;color:#6B5C53;">${t.price}:&nbsp;</td><td style="padding:2px 0;font-size:14px;color:#1A1410;font-weight:500;">${priceRange}</td></tr>
+              </table>
+            </td></tr>
+          </table>
+          <p style="margin:0 0 20px;text-align:center;"><a href="${dormUrl}" style="display:inline-block;background:#C2401E;color:#fff;text-decoration:none;font-size:16px;font-weight:600;padding:14px 32px;border-radius:8px;">${t.cta}</a></p>
+        </td></tr>
+        <tr><td style="padding-top:20px;text-align:center;">
+          <p style="margin:0 0 8px;font-size:12px;color:#6B5C53;">${t.savedFooterReason}</p>
+          <a href="${savedUrl}" style="font-size:12px;color:#C2401E;">${t.manageSaved}</a>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+
+  const text = `${t.greetingAnonymous}
+
+${t.savedBodyIntro.replace('{name}', dorm.name)}
+
+${dorm.name}
+${dorm.provider}${dorm.district !== null ? `\n${t.district}: ${dorm.district}` : ''}
+${t.price}: ${priceRange}
+
+${t.cta} ${dormUrl}
+
+---
+${t.savedFooterReason}
+${t.manageSaved}: ${savedUrl}`
+
+  try {
+    const { error } = await getResend().emails.send({ from, to, subject, html, text })
+    if (error) {
+      console.error(`[EMAIL] Saved dorm alert failed for ${dorm.slug}:`, error.message)
+      return { success: false, error: error.message }
+    }
+    return { success: true }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error(`[EMAIL] Saved dorm alert error for ${dorm.slug}:`, msg)
+    return { success: false, error: msg }
+  }
+}

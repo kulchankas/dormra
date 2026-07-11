@@ -586,7 +586,11 @@
     "welcomeIntro": "Your alert is saved. These dorms matching your criteria are available right now:",
     "welcomeMore": "+ {count} more matching dorms on Dormra",
     "welcomeOutro": "We'll email you again when new rooms open that match your criteria.",
-    "welcomeBrowseCta": "Browse matching dorms"
+    "welcomeBrowseCta": "Browse matching dorms",
+    "savedSubject": "A dorm you saved just opened — {name}",
+    "savedBodyIntro": "Good news! {name}, which you saved on Dormra, just became available:",
+    "savedFooterReason": "You're receiving this because you saved this dorm on Dormra.",
+    "manageSaved": "View your saved dorms"
   },
   "admin": {
     "badge": "Operator",

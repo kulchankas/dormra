@@ -7,7 +7,6 @@ export async function scrapeOeAD(
   dormSlug: string,
   scrapeUrl: string,
   existingBrowser?: Browser,
-  _htmlCache?: import('@/lib/scrape-html-cache').ScrapeHtmlCache,
 ): Promise<ScraperResult> {
   const ownsBrowser = !existingBrowser
   const browser = existingBrowser ?? await launchScraperBrowser()

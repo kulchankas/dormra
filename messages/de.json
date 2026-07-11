@@ -586,7 +586,11 @@
     "welcomeIntro": "Dein Alert ist gespeichert. Diese passenden Heime sind gerade verfügbar:",
     "welcomeMore": "+ {count} weitere passende Heime auf Dormra",
     "welcomeOutro": "Wir mailen dir wieder, wenn neue passende Zimmer frei werden.",
-    "welcomeBrowseCta": "Passende Heime ansehen"
+    "welcomeBrowseCta": "Passende Heime ansehen",
+    "savedSubject": "Ein gespeichertes Heim ist frei — {name}",
+    "savedBodyIntro": "Gute Nachrichten! {name}, das du auf Dormra gespeichert hast, ist gerade verfügbar geworden:",
+    "savedFooterReason": "Du erhältst diese E-Mail, weil du dieses Heim auf Dormra gespeichert hast.",
+    "manageSaved": "Gespeicherte Heime ansehen"
   },
   "admin": {
     "badge": "Betrieb",

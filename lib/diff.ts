@@ -48,6 +48,8 @@ export async function processSnapshot(dormId: string, result: ScraperResult): Pr
   if (isNewlyAvailableTransition(previous, result)) {
     console.log(`[DIFF] ${dormId} became available — fetching dorm and matching alerts`)
     await sendAlertsForDorm(dormId, inserted.id)
+    const { sendSavedDormNotificationsForDorm } = await import('./saved-dorm-alerts')
+    await sendSavedDormNotificationsForDorm(dormId, inserted.id)
   }
 }
 
