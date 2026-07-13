@@ -24,8 +24,6 @@ const schema = z.object({
   pets_required: z.boolean(),
   couples: z.boolean(),
   notify_email: z.boolean(),
-  notify_telegram: z.boolean(),
-  telegram_chat_id: z.string().optional(),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -51,8 +49,6 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
       pets_required: defaultValues?.pets_required ?? false,
       couples: defaultValues?.couples ?? false,
       notify_email: defaultValues?.notify_email ?? true,
-      notify_telegram: defaultValues?.notify_telegram ?? false,
-      telegram_chat_id: defaultValues?.telegram_chat_id ?? '',
     },
   })
 
@@ -222,29 +218,8 @@ export default function AlertForm({ mode, alertId, defaultValues }: Props) {
 
         <section className="card-elevated rounded-2xl bg-surface p-5">
           <h2 className="mb-4 text-sm font-semibold text-foreground">{t('notifications')}</h2>
-          <div className="flex flex-col gap-4">
-            <FormField
-              control={form.control}
-              name="notify_email"
-              render={({ field }) => (
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm text-foreground">{t('email')}</p>
-                    <p className="text-xs text-muted-foreground">{t('emailRequiredHint')}</p>
-                  </div>
-                  <Switch checked={field.value} disabled aria-label={t('email')} />
-                </div>
-              )}
-            />
-            <div className="h-px bg-border" />
-            <div className="flex items-center justify-between gap-3 opacity-60">
-              <div>
-                <p className="text-sm text-foreground">{t('telegram')}</p>
-                <p className="text-xs text-muted-foreground">{t('telegramHint')}</p>
-              </div>
-              <Switch checked={false} disabled aria-label={t('telegramAria')} />
-            </div>
-          </div>
+          <p className="text-sm text-foreground">{t('email')}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t('emailRequiredHint')}</p>
         </section>
 
         <Button

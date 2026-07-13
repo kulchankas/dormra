@@ -83,7 +83,7 @@ Processed all 6 draft items from 2026-07-04. Shipped smart application tracking 
 
 ### Ideas for later
 
-- Saved-dorm availability emails when cron detects openings for tracked dorms
+- ~~Saved-dorm availability emails when cron detects openings for tracked dorms~~ → shipped PR (saved_dorm channel)
 - Stale-status nudges (“heard back from provider?”) after N days in `applied`
 - ÖJAB live scraper (images + seed exist; availability still unknown)
 - Expand Ukrainian translations beyond ru-derived base in `uk.json`

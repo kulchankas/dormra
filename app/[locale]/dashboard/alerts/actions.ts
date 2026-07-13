@@ -98,7 +98,6 @@ export async function createAlert(payload: AlertPayload): Promise<{ error?: stri
 
   if (user.email) {
     const digest = await maybeSendWelcomeDigest({
-      userId: user.id,
       userEmail: user.email,
       alertId: inserted.id,
       criteria: validated,

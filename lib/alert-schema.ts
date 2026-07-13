@@ -16,8 +16,8 @@ export const alertPayloadSchema = z.object({
   notify_email: z.boolean().refine((v) => v === true, {
     message: 'Email notifications must stay on',
   }),
-  notify_telegram: z.boolean(),
-  telegram_chat_id: z.string().max(64).nullable(),
+  notify_telegram: z.literal(false).default(false),
+  telegram_chat_id: z.null().default(null),
 })
 
 export type ValidatedAlertPayload = z.infer<typeof alertPayloadSchema>

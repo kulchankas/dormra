@@ -339,7 +339,9 @@
     "statusLabel": "Bewerbungsstatus",
     "remove": "Entfernen",
     "confirmRemove": "Entfernen bestätigen",
-    "removeConfirm": "Entfernen?"
+    "removeConfirm": "Entfernen?",
+    "staleAppliedBannerTitle": "Schon eine Antwort vom Anbieter?",
+    "staleAppliedBannerBody": "Einige Bewerbungen stehen seit über zwei Wochen auf „Beworben“. Aktualisiere den Status unten, wenn du eine Rückmeldung hast."
   },
   "howItWorks": {
     "badge": "So funktioniert Dormra",
@@ -586,7 +588,11 @@
     "welcomeIntro": "Dein Alert ist gespeichert. Diese passenden Heime sind gerade verfügbar:",
     "welcomeMore": "+ {count} weitere passende Heime auf Dormra",
     "welcomeOutro": "Wir mailen dir wieder, wenn neue passende Zimmer frei werden.",
-    "welcomeBrowseCta": "Passende Heime ansehen"
+    "welcomeBrowseCta": "Passende Heime ansehen",
+    "savedSubject": "Ein gespeichertes Heim ist frei — {name}",
+    "savedBodyIntro": "Gute Nachrichten! {name}, das du auf Dormra gespeichert hast, ist gerade verfügbar geworden:",
+    "savedFooterReason": "Du erhältst diese E-Mail, weil du dieses Heim auf Dormra gespeichert hast.",
+    "manageSaved": "Gespeicherte Heime ansehen"
   },
   "admin": {
     "badge": "Betrieb",
