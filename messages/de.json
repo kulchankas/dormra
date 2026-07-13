@@ -339,7 +339,9 @@
     "statusLabel": "Bewerbungsstatus",
     "remove": "Entfernen",
     "confirmRemove": "Entfernen bestätigen",
-    "removeConfirm": "Entfernen?"
+    "removeConfirm": "Entfernen?",
+    "staleAppliedBannerTitle": "Schon eine Antwort vom Anbieter?",
+    "staleAppliedBannerBody": "Einige Bewerbungen stehen seit über zwei Wochen auf „Beworben“. Aktualisiere den Status unten, wenn du eine Rückmeldung hast."
   },
   "howItWorks": {
     "badge": "So funktioniert Dormra",

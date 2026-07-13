@@ -1,20 +1,19 @@
 # Dormra Strategy
 
-Living strategy doc. **Status column** reflects the repo and production as of 2026-07-02.  
-Operator checklist: [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md)
+Living strategy doc. **Status as of 2026-07-13.**
 
 ---
 
-## Current status snapshot (2026-07-02)
+## Current status snapshot (2026-07-13)
 
 | Area | State |
 |------|--------|
-| **Phase** | Still **Phase 1** — prove the loop |
-| **Cron code** | ✅ Split scrape live (PR #39); fast ~20s, OeAD batch ~125s |
-| **Cron scheduler** | ⬜ **You** must enable 3 jobs on cron-job.org |
-| **Auth URLs** | ⬜ Supabase Site URL likely still `localhost` — fix manually |
-| **Alert E2E** | ✅ `/api/test-alert` route shipped |
-| **Next agent work** | Admin provider scrape times (in progress); h4s attribution after cron |
+| **Phase** | Still **Phase 1** |
+| **Cron code** | ✅ Split scrape live |
+| **Cron scheduler** | ⬜ Enable cron-job.org |
+| **Product** | Map, galleries, tracker, 4 locales, saved-dorm emails (PR #61) |
+| **Scrapers** | 3/11 live; ÖJAB seeded + images |
+| **Next agent** | h4s attribution check after cron; community reviews hold |
 
 ---
 

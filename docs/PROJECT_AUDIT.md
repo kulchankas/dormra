@@ -1,12 +1,26 @@
 # Dormra Project Audit & Roadmap
 
-Last updated: 2026-07-02 (audit implementation pass)
+Last updated: 2026-07-13 (audit refresh + PR #61 work in progress)
 
 ## Executive summary
 
-Dormra is a well-structured beta: clear scraper → snapshot → diff → alert pipeline, honest README about planned features, and solid RLS policy design. **Production cron code is working** (split jobs, Playwright on Vercel); remaining blockers are **operator tasks** (cron-job.org enable, Supabase auth URLs, secret rotation, Resend domain).
+Dormra is a polished beta with proven scrape → diff → alert pipeline, 4 locales (en/de/ru/uk), custom Vienna map, saved-dorm tracker with auto-apply, and rich dorm directory. **Still Phase 1 operationally** — cron scheduler, auth URLs, and prod migrations may remain incomplete.
 
-**Latest agent pass:** sign-out fix, alert list UX, welcome digest email, `alert_id` dedup, admin cron run log, dashboard polish.
+**Health check (2026-07-13, `main` @ e0b1417 + PR #61 branch):**
+
+| Area | Status |
+|------|--------|
+| Tests | ✅ **105+** pass |
+| Build / lint | ✅ Clean |
+| Scrapers | **3/11** live |
+| Locales | en, de, ru, **uk** |
+| Phase | **Phase 1** — 7-day clean cron not met |
+
+**Recent merges (#58–59):** custom brand map, dorm page overhaul, auto-track on Apply, dorm card refresh, Ukrainian locale, 8 websites/11 providers copy, ÖJAB image seed.
+
+**In PR #61:** saved-dorm availability emails, stale-applied nudges, Telegram UI strip, audit doc refresh.
+
+**Primary blockers:** operator — cron-job.org, Supabase auth URLs, migrations/seeds. See [`YOUR_TODO.md`](./YOUR_TODO.md) · [`SUPABASE_SETUP.md`](./SUPABASE_SETUP.md).
 
 ---
 
@@ -69,24 +83,23 @@ Dormra is a well-structured beta: clear scraper → snapshot → diff → alert 
 | 4.2 | Bot UA points to `/about` | ✅ Done | Now `/how-it-works` |
 | 4.3 | Skip-to-content link | ✅ Done | i18n label + `#main-content` target |
 | 4.4 | No local Supabase config | ✅ Done | `supabase/config.toml` |
+| 4.5 | Telegram UI misleading | ⏳ PR #61 | Strip disabled toggle |
+| 4.6 | Stale applied tracker nudges | ⏳ PR #61 | Banner on `/dashboard/saved` after 14 days |
+| 4.7 | Saved-dorm opening emails | ⏳ PR #61 | `saved_dorm` channel on false→true |
 
 ---
 
-## Agent schedule (post-audit 2026-07-02)
+## Agent schedule (post-audit 2026-07-13)
 
-Priority order — **do not start Phase 2 scrapers until Phase 1 metric met.**
-
-| Priority | Task | Rationale | Depends on |
-|----------|------|-----------|------------|
-| P0 | home4students room-card parser | ✅ This sprint — structured `.room-card` parsing | — |
-| P1 | Admin per-provider last scrape | ✅ Shipped PR #42 (CI fix in follow-up PR #45) | — |
-| P1 | Account settings page | ✅ This sprint | — |
-| P1 | Alert system UX + welcome digest | ✅ This sprint | PR #48 |
-| P1 | Sign-out fix | ✅ This sprint | PR #47 |
-| P1 | Admin cron run log | ✅ This sprint | migration + /admin widget |
-| P1 | alert_id dedup fix | ✅ This sprint | migration 20260702220100 |
-| P2 | Saved dorms + application tracker | ✅ This sprint | `/dashboard/saved`, reuses `tracker` table |
-| Hold | New scrapers (ÖJAB, WIHAST, …) | Phase 2 gate | Phase 1 week clean |
+| Priority | Task | Status |
+|----------|------|--------|
+| P0 | Operator: cron + auth URLs + migrations | ⬜ Manual |
+| P1 | Saved-dorm availability emails | ⏳ PR #61 |
+| P1 | Stale applied tracker nudges | ⏳ PR #61 |
+| P1 | Verify h4s attribution in `/admin` | After cron live |
+| P2 | Audit docs + Supabase setup guide | ⏳ PR #61 |
+| P2 | Community reviews branch | Hold post-Phase 1 |
+| Hold | ÖJAB scraper | Phase 2 gate |
 
 **Your manual schedule (parallel):**
 
@@ -109,6 +122,7 @@ cron-job.org (3 jobs)
   → scrapers (OeAD/Playwright, STUWO, home4students/Cheerio)
   → processSnapshot() → availability_snapshots
   → on false→true: matchAlertsForDorm() → sendAvailabilityAlert() → alert_log
+              → sendSavedDormNotifications() → saved_dorm channel
 
 Users → Next.js [locale] → Supabase (RLS) → user_alerts, dorms
 Operator → GET /api/test-alert?slug=…&dryRun=1|email=…
@@ -161,3 +175,6 @@ Operator → GET /api/test-alert?slug=…&dryRun=1|email=…
 | 2026-07-02 | `cursor/fix-admin-purity-lint-fc38` | Fixed `main` CI break from PR #42 (Date.now in render) |
 | 2026-07-02 | `cursor/saved-dorms-tracker-fc38` | Saved dorms + status tracker — bookmark toggle, `/dashboard/saved` |
 | 2026-07-02 | `cursor/dorms-pages-improvements-fc38` | Photo gallery, university proximity, save button, JSON-LD, map layout overhaul |
+| 2026-07-05 | PR #58 | Custom Vienna map + dorm page UI overhaul |
+| 2026-07-05 | PR #59 | Auto-track on Apply, dorm cards, Ukrainian locale, ÖJAB images, housing strategy doc |
+| 2026-07-13 | PR #61 (pending) | Saved-dorm emails, stale tracker nudges, Telegram strip, audit refresh |

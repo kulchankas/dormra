@@ -1,50 +1,58 @@
 # Your todo list
 
-Personal operator checklist — things **only you** can do in external dashboards.  
-Agent work is tracked in [`PROJECT_AUDIT.md`](./PROJECT_AUDIT.md) § Agent schedule.
+Personal operator checklist — things **only you** can do in external dashboards.
 
-**Last updated:** 2026-07-02  
-**Status:** Deferred — you'll return to these later. Agent continues code work in parallel.
+**Last updated:** 2026-07-13  
+**Supabase setup:** [`SUPABASE_SETUP.md`](./SUPABASE_SETUP.md)
 
 ---
 
-## Do first (blocks launch)
+## Do first (blocks Phase 1)
 
-- [ ] **cron-job.org** — enable 3 split jobs ([steps](./MANUAL_TASKS.md#3-cron-joborg--scrape-scheduler))
-  - Job 1: `?providers=stuwo,home4students&prune=1` — `*/15 * * * *`
-  - Job 2: `?provider=oead&batch=0&batches=2` — `5,20,35,50 * * * *`
-  - Job 3: `?provider=oead&batch=1&batches=2` — `10,25,40,55 * * * *`
-  - Or: `CRON_JOB_ORG_API_KEY=… CRON_SECRET=… ./scripts/setup-cron-jobs.sh`
-- [ ] **Supabase Site URL** → `https://dormra.eu` + redirect URLs ([§6](./MANUAL_TASKS.md#6-supabase-auth--redirect-urls-email--magic-link--password-reset))
-- [ ] **RLS smoke test** — anon key must not return other users' alerts ([§1.1](./MANUAL_TASKS.md#11-enable-row-level-security-rls))
-- [ ] **Rotate secrets** if pasted in chat — CRON, Supabase service role, Resend ([§2.1](./MANUAL_TASKS.md#21-rotate-secrets-if-exposed))
+### 1. Supabase migrations + seeds (~20 min)
+
+See **[`SUPABASE_SETUP.md`](./SUPABASE_SETUP.md)** — Parts A, B, optional C (ÖJAB + images).
+
+### 2. Supabase auth URLs (~5 min)
+
+- [ ] **Site URL** → `https://dormra.eu`
+- [ ] **Redirect URLs** — [`MANUAL_TASKS.md` §6](./MANUAL_TASKS.md#6-supabase-auth--redirect-urls-email--magic-link--password-reset)
+
+### 3. cron-job.org (~10 min)
+
+- [ ] Enable 3 split jobs — [`MANUAL_TASKS.md` §3](./MANUAL_TASKS.md#3-cron-joborg--scrape-scheduler)
+
+### 4. Security (~10 min)
+
+- [ ] RLS smoke test — [`MANUAL_TASKS.md` §1.1](./MANUAL_TASKS.md#11-enable-row-level-security-rls)
+- [ ] Rotate secrets if exposed — [`MANUAL_TASKS.md` §2.1](./MANUAL_TASKS.md#21-rotate-secrets-if-exposed)
+
+---
 
 ## This week
 
-- [ ] **Resend domain** — verify `dormra.eu`, set `RESEND_FROM=Dormra <alerts@dormra.eu>` ([§4](./MANUAL_TASKS.md#4-resend--email-domain-high))
-- [ ] **Test alert email** after deploy:
-  ```bash
-  curl -H "Authorization: Bearer YOUR_CRON_SECRET" \
-    "https://dormra.eu/api/test-alert?slug=oead-guadenzdorf&email=kulchankas@gmail.com"
-  ```
-- [ ] **End-user smoke tests** — signup, create alert, password reset ([§7](./MANUAL_TASKS.md#7-post-deploy-smoke-tests))
-- [ ] **Google OAuth** — only if using “Continue with Google” ([§5b](./MANUAL_TASKS.md#5b-google-oauth-optional))
+- [ ] Resend domain verify + `RESEND_FROM` — [`MANUAL_TASKS.md` §4](./MANUAL_TASKS.md#4-resend--email-domain-high)
+- [ ] Test alert: `curl -H "Authorization: Bearer CRON_SECRET" "https://dormra.eu/api/test-alert?slug=oead-guadenzdorf&email=YOUR_EMAIL"`
+- [ ] Smoke tests: signup, alert, save dorm, apply click, sign out
+- [ ] Merge + deploy PR #61 (saved-dorm emails) when ready
+
+---
 
 ## After cron runs (days 1–7)
 
-- [ ] Log in → `/admin` → confirm **Dorm health** updates every ~15 min
-- [ ] Watch **Email log** for false/missed alerts
-- [ ] Confirm **Resend** delivery matches admin log
+- [ ] `/admin` → Dorm health updates ~every 15 min
+- [ ] `/admin` → Cron runs widget shows history
+- [ ] Email log — no false/missed alerts; check `saved_dorm` channel after PR #61
 - [ ] Day 7: declare Phase 1 done or file bugs
 
 ---
 
-## Already done (skip)
+## Already done in code (skip)
 
-- [x] Cron endpoint live (split jobs, PR #39)
-- [x] Vercel env vars set (`ADMIN_EMAILS`, `CRON_SECRET`, Supabase, Resend)
-- [x] RLS + migrations applied in Supabase
-- [x] `/api/test-alert` route shipped (PR #40)
+- [x] 3 scrapers, split cron, test-alert route, admin dashboard
+- [x] Saved dorms + auto-track on Apply (PR #59)
+- [x] Ukrainian locale, custom Vienna map, dorm card refresh (PR #58–59)
+- [x] Saved-dorm + criteria alert emails (PR #61 — pending merge)
 
 ---
 
@@ -52,8 +60,7 @@ Agent work is tracked in [`PROJECT_AUDIT.md`](./PROJECT_AUDIT.md) § Agent sched
 
 | Link | Purpose |
 |------|---------|
-| [cron-job.org console](https://console.cron-job.org/) | Enable scrape jobs |
-| [Supabase dashboard](https://supabase.com/dashboard) | Auth URLs, SQL, RLS |
-| [Vercel dashboard](https://vercel.com/dashboard) | Env vars, logs |
-| [Resend domains](https://resend.com/domains) | Email verification |
-| [dormra.eu/admin](https://dormra.eu/admin) | In-app monitoring |
+| [Supabase setup](./SUPABASE_SETUP.md) | Migrations + seeds |
+| [cron-job.org](https://console.cron-job.org/) | Enable scrape jobs |
+| [Supabase dashboard](https://supabase.com/dashboard) | SQL Editor, auth |
+| [dormra.eu/admin](https://dormra.eu/admin) | Monitoring |

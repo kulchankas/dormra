@@ -339,7 +339,9 @@
     "statusLabel": "Application status",
     "remove": "Remove",
     "confirmRemove": "Confirm remove",
-    "removeConfirm": "Remove?"
+    "removeConfirm": "Remove?",
+    "staleAppliedBannerTitle": "Any news from the provider?",
+    "staleAppliedBannerBody": "Some applications have been marked “Applied” for over two weeks. Update the status below if you heard back — it helps you stay organized."
   },
   "howItWorks": {
     "badge": "How Dormra works",

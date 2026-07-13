@@ -10,6 +10,7 @@ import DormCard from '@/components/DormCard'
 import RemoveSavedDormButton from '@/components/RemoveSavedDormButton'
 import TrackerStatusSelect from '@/components/TrackerStatusSelect'
 import { TRACKER_STATUS_ORDER, isTrackerStatus, type TrackerStatus } from '@/lib/tracker'
+import { isStaleAppliedStatus } from '@/lib/tracker-stale'
 import { type Dorm } from '@/lib/helpers'
 import { Link, redirect } from '@/i18n/navigation'
 
@@ -20,6 +21,7 @@ type TrackerRow = {
   dorm_id: string
   status: string
   created_at: string
+  updated_at: string
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -44,7 +46,7 @@ export default async function SavedDormsPage({ params }: PageProps) {
 
   const { data: trackerData } = await supabase
     .from('tracker')
-    .select('id, dorm_id, status, created_at')
+    .select('id, dorm_id, status, created_at, updated_at')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
@@ -82,6 +84,9 @@ export default async function SavedDormsPage({ params }: PageProps) {
   }
 
   const total = trackerRows.length
+  const staleAppliedCount = trackerRows.filter(
+    (row) => row.status === 'applied' && isStaleAppliedStatus(row.updated_at),
+  ).length
 
   return (
     <main className="min-h-screen bg-background">
@@ -121,6 +126,15 @@ export default async function SavedDormsPage({ params }: PageProps) {
           </div>
         ) : (
           <div className="space-y-8">
+            {staleAppliedCount > 0 && (
+              <div
+                role="status"
+                className="rounded-2xl border border-amber-500/25 bg-amber-500/8 px-4 py-3 text-sm text-foreground"
+              >
+                <p className="font-medium">{t('staleAppliedBannerTitle')}</p>
+                <p className="mt-1 text-muted-foreground">{t('staleAppliedBannerBody')}</p>
+              </div>
+            )}
             {TRACKER_STATUS_ORDER.map((status) => {
               const entries = byStatus.get(status)
               if (!entries || entries.length === 0) return null

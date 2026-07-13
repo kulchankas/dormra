@@ -339,7 +339,9 @@
     "statusLabel": "Статус заявки",
     "remove": "Удалить",
     "confirmRemove": "Подтвердить удаление",
-    "removeConfirm": "Удалить?"
+    "removeConfirm": "Удалить?",
+    "staleAppliedBannerTitle": "Є відповідь від провайдера?",
+    "staleAppliedBannerBody": "Деякі заявки в статусі «Подано» вже понад два тижні. Онови статус ниже, якщо отримав відповідь."
   },
   "howItWorks": {
     "badge": "Як працює Dormra",
