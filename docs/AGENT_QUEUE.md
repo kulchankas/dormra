@@ -59,6 +59,34 @@ Completed items moved here by the night agent (newest date first).
 
 Newest report at the top. The agent adds one block per run.
 
+## Nightly report — 2026-11-05
+
+**Branch(es) / PR(s):** `cursor/dormra-agent-queue-run-b1c6` → main
+
+### Summary
+
+No tasks in queue. The **Draft** section had no dated bullets (cleared after the 2026-07-04 run). No code changes tonight.
+
+### Completed
+
+- Nightly queue check only — nothing to implement.
+
+### Issues / blockers
+
+- None.
+
+### Deferred
+
+- None (add bullets under **Draft** when you have work for the next run).
+
+### Ideas for later
+
+- See prior nightly reports (saved-dorm emails, ÖJAB scraper, hero move-in filter, etc.) if you want to queue them explicitly.
+
+### Manual tasks for you
+
+- None new tonight. Existing operator items remain in [`docs/MANUAL_TASKS.md`](./MANUAL_TASKS.md) and [`docs/YOUR_TODO.md`](./YOUR_TODO.md) (ÖJAB seeds, merge open PRs, etc.).
+
 ## Nightly report — 2026-07-04
 
 **Branch(es) / PR(s):** `cursor/dormra-nightly-agent-queue-222d` → main
