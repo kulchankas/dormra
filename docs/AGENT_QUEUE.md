@@ -59,6 +59,34 @@ Completed items moved here by the night agent (newest date first).
 
 Newest report at the top. The agent adds one block per run.
 
+## Nightly report — 2026-11-12
+
+**Branch(es) / PR(s):** `cursor/dormra-agent-queue-run-fc38` → main — https://github.com/kulchankas/dormra/pull/129
+
+### Summary
+
+No tasks in queue. The **Draft** section had no dated bullets or items to implement (last draft cleared 2026-07-04).
+
+### Completed
+
+- Nightly queue check only — no code changes.
+
+### Issues / blockers
+
+- None.
+
+### Deferred
+
+- None — add bullets under a new `## Draft — YYYY-MM-DD` when you have work for the next run.
+
+### Ideas for later
+
+- (unchanged from prior reports)
+
+### Manual tasks for you
+
+- [ ] Add tonight’s tasks to a new draft section when ready (see [`docs/MANUAL_TASKS.md`](./MANUAL_TASKS.md) for operator-only work from earlier runs)
+
 ## Nightly report — 2026-07-04
 
 **Branch(es) / PR(s):** `cursor/dormra-nightly-agent-queue-222d` → main
