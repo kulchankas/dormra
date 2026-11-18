@@ -59,6 +59,34 @@ Completed items moved here by the night agent (newest date first).
 
 Newest report at the top. The agent adds one block per run.
 
+## Nightly report — 2026-11-18
+
+**Branch(es) / PR(s):** `cursor/dormra-agent-queue-run-2026-11-18` → main
+
+### Summary
+
+No tasks in queue. The **Draft** section had no dated bullets (last draft cleared 2026-07-04). No implementation work this run.
+
+### Completed
+
+- Nightly queue doc updated with this report.
+
+### Issues / blockers
+
+- None.
+
+### Deferred
+
+- None (add items under `## Draft — YYYY-MM-DD` when you have work for the night agent).
+
+### Ideas for later
+
+- (unchanged — see prior reports)
+
+### Manual tasks for you
+
+- [ ] Jot new tasks in **Draft** when ready for the next run.
+
 ## Nightly report — 2026-07-04
 
 **Branch(es) / PR(s):** `cursor/dormra-nightly-agent-queue-222d` → main
