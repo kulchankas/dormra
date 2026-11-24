@@ -61,7 +61,7 @@ Newest report at the top. The agent adds one block per run.
 
 ## Nightly report — 2026-11-24
 
-**Branch(es) / PR(s):** `cursor/dormra-agent-queue-run-2026-11-24` → main (docs-only)
+**Branch(es) / PR(s):** [`cursor/dormra-agent-queue-run-2026-11-24`](https://github.com/kulchankas/dormra/pull/141) → main (docs-only)
 
 ### Summary
 
